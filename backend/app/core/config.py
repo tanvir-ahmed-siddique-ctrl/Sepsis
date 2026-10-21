@@ -61,6 +61,10 @@ class Settings(BaseSettings):
     # runs one disposable container and deliberately disables this lease: an
     # abandoned SQLite lease must never make the shared judge board read-only.
     writer_lease_enabled: bool = True
+    # The public deployment serves this API behind Next.js at /api. Keep the
+    # OpenAPI document itself at /openapi.json, while allowing its Swagger UI
+    # to request the correctly prefixed URL.
+    docs_openapi_url: str = "/openapi.json"
 
     # Readiness gates for leaving silent mode.
     pilot_min_days: int = 28

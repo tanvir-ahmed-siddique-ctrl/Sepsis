@@ -50,6 +50,7 @@ ENV DEMO_MODE=true \
     DEMO_CASES_DIR=/app/demo/cases \
     PUBLIC_DEMO_LOCKDOWN=true \
     WRITER_LEASE_ENABLED=false \
+    DOCS_OPENAPI_URL=/api/openapi.json \
     CORS_ORIGINS=[] \
     PORT=10000 \
     NEXT_TELEMETRY_DISABLED=1 \

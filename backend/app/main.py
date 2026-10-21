@@ -6,8 +6,9 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from app import ratelimit
 from app.api.routes import (
@@ -48,7 +49,17 @@ app = FastAPI(
         "Risk scores support, but do not replace, clinical judgment."
     ),
     lifespan=lifespan,
+    docs_url=None,
 )
+
+
+@app.get("/docs", include_in_schema=False)
+async def swagger_ui() -> HTMLResponse:
+    """Serve Swagger with the schema URL appropriate for this deployment."""
+    return get_swagger_ui_html(
+        openapi_url=settings.docs_openapi_url,
+        title=f"{app.title} — API documentation",
+    )
 
 @app.middleware("http")
 async def abuse_limits(request: Request, call_next):
