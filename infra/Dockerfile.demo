@@ -26,10 +26,11 @@ COPY --from=web /usr/local/bin/node /usr/local/bin/node
 
 WORKDIR /app
 COPY ml /app/ml
+WORKDIR /app/backend
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 COPY backend /app/backend
 COPY knowledge /app/knowledge
-WORKDIR /app/backend
-RUN pip install --no-cache-dir -r requirements.txt
 COPY demo/cases /app/demo/cases
 COPY control-plane/fleet_console.py control-plane/push_heartbeat.py /app/control-plane/
 
