@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { RiskBadge, TrustBadge } from "@/components/RiskBadge";
 import { ReplayControls } from "@/components/ReplayControls";
 import { ApiError, BAND_COLOR, Pill, SiteModeBanner, Sparkline, Stat } from "@/components/ui";
-import { api, DEMO_UNIT, pct, type PatientOverview, type UnitOverview } from "@/lib/api";
+import { api, API_UNIT, DEMO_UNIT, pct, type PatientOverview, type UnitOverview } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
 import { minutesLabel } from "@/lib/pilot";
 import { useSession } from "@/lib/session";
@@ -28,7 +28,7 @@ export default function OverviewPage() {
     if (unit || !units.data) return;
     const stored = window.localStorage.getItem(UNIT_KEY);
     const available = units.data.units;
-    setUnit(stored && available.includes(stored) ? stored : units.data.default_unit ?? DEMO_UNIT);
+    setUnit(stored && available.includes(stored) ? stored : available.includes(API_UNIT) ? API_UNIT : units.data.default_unit ?? DEMO_UNIT);
   }, [unit, units.data]);
 
   const { data, error, refresh } = usePoll(
@@ -57,7 +57,7 @@ export default function OverviewPage() {
         <div>
           <h1 className="font-display text-3xl text-ink">ICU command centre</h1>
           <p className="mt-1 text-sm text-ink/65">
-            Beds sorted by TrustGate urgency · model {data?.model_version ?? "…"}
+            Live simulation relay · updates every 30 seconds · model {data?.model_version ?? "…"}
           </p>
           {units.data && units.data.units.length > 1 && (
             <label className="mt-2 flex items-center gap-2 text-sm">

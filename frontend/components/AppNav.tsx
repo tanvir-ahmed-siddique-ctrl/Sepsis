@@ -25,17 +25,17 @@ export function AppNav() {
       ? [
           { href: "/pilot", label: t.nav.pilot },
           { href: "/integration", label: t.nav.integration },
-          { href: "/api-reference", label: "API & SDK" },
           { href: "/operations", label: "Operations" },
           { href: "/admin/setup", label: "Site setup" },
           { href: "/admin/users", label: t.nav.users },
+          { href: "/model", label: t.nav.model },
+          { href: "/readiness", label: t.nav.readiness },
+          { href: "/api-reference", label: "Integration API" },
         ]
       : []),
-    { href: "/model", label: t.nav.model },
-    { href: "/readiness", label: t.nav.readiness },
   ];
   return (
-    <header className="border-b border-ink/10 bg-white/90">
+    <header className="bg-white/90 shadow-sm">
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 sm:px-6" aria-label="Primary">
         <Link href="/" className="mr-auto font-display text-xl text-ink">
           PredictRx <span className="text-accent">Sentinel</span>
@@ -56,21 +56,21 @@ export function AppNav() {
           );
         })}
         {me && (
-          <span className="border border-ink/10 px-2 py-1 text-xs text-ink/60" title={`Auth: ${me.auth_mode}`}>
-            {humanize(me.site_mode)} · {me.user_id} ({me.role})
+            <span className="rounded-full bg-mist px-2.5 py-1 text-xs text-ink/60" title={`Auth: ${me.auth_mode}`}>
+              {humanize(me.site_mode)} · {me.role}
           </span>
         )}
         <Link
           href="/login"
           aria-current={pathname === "/login" ? "page" : undefined}
-          className="border border-ink/15 px-2 py-1 text-xs text-ink/70"
+          className="rounded-md bg-ink px-3 py-1.5 text-xs text-white"
         >
           {me ? "Session" : t.nav.signIn}
         </Link>
         <button
           type="button"
           onClick={() => setLocale(locale === "en" ? "bn" : "en")}
-          className="border border-ink/15 px-2 py-1 text-xs text-ink/70"
+          className="rounded-md bg-mist px-2.5 py-1.5 text-xs text-ink/70"
           aria-label="Toggle clinician language"
         >
           {locale === "en" ? "বাংলা" : "EN"}

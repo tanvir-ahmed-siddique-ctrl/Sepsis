@@ -1,5 +1,6 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export const DEMO_UNIT = process.env.NEXT_PUBLIC_DEMO_UNIT_ID ?? "icu-demo-1";
+export const API_UNIT = "icu-api";
 
 export type RiskBand = "insufficient_data" | "stable" | "watch" | "high_risk";
 export type TrustState = "alert" | "watch" | "verify_data" | "abstain";

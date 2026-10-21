@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DisclaimerBar } from "@/components/DisclaimerBar";
 import { AppNav } from "@/components/AppNav";
 import { AttentionBanner } from "@/components/AttentionBanner";
 import { OfflineSync } from "@/components/OfflineSync";
@@ -18,7 +17,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-mist text-ink font-sans antialiased">
         <LocaleProvider>
           <SessionProvider>
-            <DisclaimerBar />
             <AppNav />
             <AttentionBanner />
             <OfflineSync />

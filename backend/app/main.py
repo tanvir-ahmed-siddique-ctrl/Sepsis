@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 from contextlib import asynccontextmanager
 
@@ -36,9 +37,24 @@ from app.services.engine import ModeError, ReadOnlyError, get_engine, shutdown_e
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     validate_security_configuration()
-    get_engine()  # load model, take the writer lease and restore state at startup
-    yield
-    shutdown_engine()
+    engine = get_engine()  # load model, take the writer lease and restore state at startup
+    task: asyncio.Task | None = None
+    if settings.public_simulation_enabled:
+        async def simulation_loop() -> None:
+            while True:
+                await asyncio.sleep(max(10, settings.public_simulation_interval_seconds))
+                try:
+                    engine.advance_public_simulation()
+                except Exception:
+                    # A public display loop must never take down the clinical API.
+                    pass
+        task = asyncio.create_task(simulation_loop())
+    try:
+        yield
+    finally:
+        if task:
+            task.cancel()
+        shutdown_engine()
 
 
 app = FastAPI(

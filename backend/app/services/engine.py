@@ -41,6 +41,7 @@ from app.records import (
     RecordStore,
     bed_ownership,
     care_units,
+    connector_events,
     encounters,
     handoff_notes,
     news2_records,
@@ -623,32 +624,40 @@ class Engine:
         # mode so it appears in bedside charting and integration telemetry.
         source = replay_sources[0].source
         if source is not None and len(source) >= 12:
-            raw = source.iloc[-12:].copy().reset_index(drop=True)
-            raw["_hour"] = np.arange(now_hour - 11, now_hour + 1)
-            age = int(raw["Age"].iloc[-1]) if "Age" in raw else 64
-            gender = int(raw["Gender"].iloc[-1]) if "Gender" in raw else 0
-            icu = Patient(
-                encounter_key="SIM-ICU-01--SIM-ICU-01-ENC",
-                patient_id="SIM-ICU-01",
-                encounter_id="SIM-ICU-01-ENC",
-                display_name="Simulation ICU A-01",
-                unit_id=settings.api_unit_id,
-                source_mode="api",
-                age=age,
-                sex={0: "F", 1: "M"}.get(gender),
-                raw=raw,
-                static_values={"Age": float(age), "Gender": float(gender)},
-                icu_start_hour=now_hour - 11,
-                segment_start_hour=now_hour - 11,
-                bed_id="A-01",
-                kind="icu",
-                admitted_at=(datetime.now(timezone.utc) - timedelta(hours=12)).isoformat(),
-                replay_meta={"public_demo_seed": True, "data_class": "synthetic commissioning feed"},
-            )
-            self.patients[icu.encounter_key] = icu
-            for size in range(1, len(raw) + 1):
-                self._score(icu, emit_alerts=True, upto=size, raw_frame=raw, audit_event="synthetic_feed_prediction")
-            self._upsert_encounter(icu, "demo-seed")
+            # Ten generated beds make the charting and command-centre workflow
+            # representative of an ICU. They are synthetic commissioning data.
+            for index in range(10):
+                raw = source.iloc[-12:].copy().reset_index(drop=True)
+                raw["_hour"] = np.arange(now_hour - 11, now_hour + 1)
+                raw["HR"] = raw["HR"].fillna(82) + index * 2
+                raw["SBP"] = raw["SBP"].fillna(118) - index * 2
+                raw["MAP"] = raw["MAP"].fillna(76) - index
+                raw["Resp"] = raw["Resp"].fillna(18) + index
+                raw["O2Sat"] = raw["O2Sat"].fillna(97) - min(index, 5)
+                raw["Temp"] = raw["Temp"].fillna(37.0) + index * 0.08
+                raw["Lactate"] = raw["Lactate"].fillna(1.2) + index * 0.24
+                if index >= 7:
+                    # Generated deterioration pattern for alert-workflow drills.
+                    raw.loc[raw.index[-4:], ["HR", "SBP", "MAP", "Resp", "O2Sat", "Temp", "Lactate"]] = [
+                        132 + index, 84 - index, 58 - index / 2, 30 + index, 89, 39.1, 4.8 + index / 4
+                    ]
+                age = 42 + index * 4
+                gender = index % 2
+                bed = f"A-{index + 1:02d}"
+                icu = Patient(
+                    encounter_key=f"SIM-ICU-{index + 1:02d}--SIM-ICU-{index + 1:02d}-ENC",
+                    patient_id=f"SIM-ICU-{index + 1:02d}",
+                    encounter_id=f"SIM-ICU-{index + 1:02d}-ENC",
+                    display_name=f"Simulation ICU {bed}", unit_id=settings.api_unit_id,
+                    source_mode="api", age=age, sex={0: "F", 1: "M"}.get(gender), raw=raw,
+                    static_values={"Age": float(age), "Gender": float(gender)},
+                    icu_start_hour=now_hour - 11, segment_start_hour=now_hour - 11, bed_id=bed, kind="icu",
+                    admitted_at=(datetime.now(timezone.utc) - timedelta(hours=12 + index)).isoformat(),
+                    replay_meta={"public_demo_seed": True, "data_class": "synthetic commissioning feed"},
+                )
+                self.patients[icu.encounter_key] = icu
+                self._score(icu, emit_alerts=True, raw_frame=raw, audit_event="synthetic_feed_prediction")
+                self._upsert_encounter(icu, "demo-seed")
 
         # Ward encounters use the published NEWS2 rule only. They never enter
         # the frozen ICU sepsis model.
@@ -694,6 +703,17 @@ class Engine:
             self.patients[ward.encounter_key] = ward
             self._score_news2(ward)
             self._upsert_encounter(ward, "demo-seed")
+        # The integration board is driven by recorded commissioning relay events,
+        # rather than a decorative connected badge.
+        for connector, received in (("fhir_r4", 180), ("hl7v2_oru", 96), ("csv_lab", 42)):
+            self.records.insert(connector_events, {
+                "event_id": f"commissioning-{connector}-{now_hour}", "connector": connector,
+                "received_at": utc_now(), "status": "accepted", "received": received,
+                "accepted": received, "quarantined": 0, "duplicates": 0,
+                "max_source_time": datetime.now(timezone.utc).isoformat(), "lag_seconds": 12.0,
+                "processing_ms": 38.0, "error": None, "idempotency_key": None,
+                "actor": "simulation-relay", "backfill": 0,
+            })
 
     def step(self, hours: int = 1) -> dict:
         with self.lock:
@@ -708,6 +728,33 @@ class Engine:
                         advanced += 1
             self._persist_state()
             return {"advanced_patient_hours": advanced, "open_alerts": self.open_alert_count()}
+
+    def advance_public_simulation(self) -> None:
+        """Advance one synthetic ICU stream; called only by the public display runtime."""
+        with self.lock:
+            self._require_writable()
+            candidates = [p for p in self.patients.values() if p.replay_meta.get("public_demo_seed") and p.kind == "icu"]
+            if not candidates:
+                return
+            patient = candidates[int(time.time() // max(10, settings.public_simulation_interval_seconds)) % len(candidates)]
+            row = patient.raw.iloc[[-1]].copy()
+            row["_hour"] = int(row["_hour"].iloc[-1]) + 1
+            phase = int(row["_hour"].iloc[-1]) % 5 - 2
+            for field, change in (("HR", 1.5), ("SBP", -1.0), ("MAP", -0.7), ("Resp", 0.5), ("Temp", 0.04)):
+                if field in row:
+                    row[field] = row[field].fillna(0) + phase * change
+            patient.raw = pd.concat([patient.raw.iloc[-23:], row], ignore_index=True)
+            patient.revision += 1
+            self._score(patient, emit_alerts=True, audit_event="simulated_live_prediction")
+            self._upsert_encounter(patient, "simulation-relay")
+            self.records.insert(connector_events, {
+                "event_id": f"simulation-fhir-{uuid.uuid4().hex[:16]}", "connector": "fhir_r4",
+                "received_at": utc_now(), "status": "accepted", "received": 8, "accepted": 8,
+                "quarantined": 0, "duplicates": 0, "max_source_time": datetime.now(timezone.utc).isoformat(),
+                "lag_seconds": 4.0, "processing_ms": round(time.perf_counter() % 40 + 12, 1),
+                "error": None, "idempotency_key": None, "actor": "simulation-relay", "backfill": 0,
+            })
+            self._persist_state()
 
     def _advance(self, p: Patient, emit_alerts: bool) -> None:
         row = p.source.iloc[[p.cursor]]

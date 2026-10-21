@@ -20,6 +20,14 @@ body {
     var(--bg);
 }
 
+button, select, input {
+  border-radius: 0.5rem;
+}
+
+section {
+  border-radius: 0.9rem;
+}
+
 .risk-pill {
   @apply inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
 }

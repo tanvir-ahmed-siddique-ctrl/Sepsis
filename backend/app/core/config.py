@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     # from blinding the shared board or attempting a live-mode transition.
     # Hospital installations leave this false and retain audited mode changes.
     public_demo_lockdown: bool = False
+    public_simulation_enabled: bool = False
+    public_simulation_interval_seconds: int = 30
     database_url: str = f"sqlite:///{(REPO_ROOT / 'backend' / 'predictrx.db').as_posix()}"
 
     # Site operation. ``site_mode`` is the *requested* mode at first start; afterwards the
