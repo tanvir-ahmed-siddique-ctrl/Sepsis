@@ -1,0 +1,61 @@
+# RESIDUAL-HAZARD-SETB-01 — preregistered before final fit and Dataset B access.
+# Candidate selection is fixed by RESIDUAL-HAZARD-01. Dataset B may be read once
+# only after the final artifact is frozen and the user runs the authorized command.
+run_id: RESIDUAL-HAZARD-SETB-01
+seed: 42
+
+source:
+  cv_result: artifacts/challengers/RESIDUAL-HAZARD-01/result.json
+  cv_result_sha256: e5ddc5d2e83bec87c88fc4d5c97cf7db0e64265be95c8f983b2600edf9538da5
+  development_config: configs/residual_hazard.yaml
+  development_config_lf_sha256: 5dd641978ceb015b159a7722643a0a062b250d2fea10a1399e4fea914837a983
+  selected_features: plus_healthy_residual
+  selected_risk: plus_healthy_residual
+  rejected_components: [safe_stack, multi_horizon_hazard]
+
+final_fit:
+  features: data/processed/features_setA.parquet
+  features_sha256: 4427d518b9a2c0ad39b9fce43818553ce3d4c210adacacd52b6e0411912cbb68
+  fit_split: train
+  calibration_split: val
+  prohibited_splits: [test, holdout]
+  early_stopping_fraction: 0.10
+  high_risk_min_specificity: 0.95
+  watch_patient_sensitivity: 0.85
+  model_params:
+    num_leaves: 7
+    max_depth: -1
+    min_child_samples: 1000
+    learning_rate: 0.03
+    n_estimators: 3000
+    subsample: 0.7
+    subsample_freq: 1
+    colsample_bytree: 0.3
+    reg_alpha: 0.0
+    reg_lambda: 5.0
+    max_bin: 255
+  healthy_residual:
+    targets: [HR, SBP, MAP, Resp, O2Sat, Temp, Lactate, Creatinine]
+    predictors: [HR, SBP, MAP, Resp, O2Sat, Temp, Age, Gender, ICULOS, HospAdmTime]
+    ridge_alpha: 10.0
+    minimum_observations: 500
+    windows: [3, 6, 12]
+    fit_nonseptic_patients_only: true
+  alert_policy:
+    kind: ema
+    alpha: 0.7
+    selection_basis: selected_in_4_of_5_held_out_development_folds
+
+external_comparison:
+  dataset: PhysioNet Challenge 2019 public training set B
+  anchor: artifacts/models/run4_frozen
+  candidate: artifacts/challengers/RESIDUAL-HAZARD-01/final
+  bootstrap_replicates: 500
+  one_time_only: true
+  no_post_result_tuning: true
+  release_rule:
+    require_any_paired_95ci_lower_above_zero: [normalized_utility, auprc]
+    require_high_risk_utility_point_not_worse: true
+    maximum_auroc_point_drop: 0.005
+    maximum_sensitivity_point_drop: 0.02
+    maximum_false_alert_increase_per_100h: 0.05

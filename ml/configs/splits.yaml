@@ -1,0 +1,4 @@
+seed: 42
+train_frac: 0.70
+val_frac: 0.15
+# remaining 0.15 → internal test within Dataset A

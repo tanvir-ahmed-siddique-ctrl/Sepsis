@@ -1,0 +1,61 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ML data (never commit patient files)
+ml/data/raw/
+ml/data/processed/
+demo/cases/
+*.parquet
+*.pkl
+
+# ML artefacts: only the frozen release model and its reports are versioned
+ml/artifacts/*
+!ml/artifacts/models/
+ml/artifacts/models/*
+!ml/artifacts/models/ACTIVE.json
+!ml/artifacts/models/latest/
+!ml/artifacts/models/run4_frozen/
+ml/artifacts/models/run4_frozen/*
+!ml/artifacts/models/run4_frozen/.immutable
+!ml/artifacts/models/run4_frozen/FROZEN.json
+!ml/artifacts/models/run4_frozen/MANIFEST.v2.json
+!ml/artifacts/models/run4_frozen/metrics.json
+!ml/artifacts/models/run4_frozen/eval_holdout.json
+!ml/artifacts/models/run4_frozen/eval_log_setB.txt
+!ml/artifacts/models/run4_frozen/model.joblib
+!ml/artifacts/governance/
+ml/artifacts/governance/*
+!ml/artifacts/governance/evaluation_access.json
+!ml/artifacts/governance/preflight.json
+!ml/artifacts/governance/challenger_gate.json
+!ml/artifacts/governance/model_registry.jsonl
+*.joblib
+!ml/artifacts/models/latest/model.joblib
+!ml/artifacts/models/run4_frozen/model.joblib
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Databases
+*.db
+*.sqlite3
+predictrx.db

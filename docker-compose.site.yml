@@ -1,0 +1,46 @@
+# Hospital silent-pilot override. Use together with the base file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.site.yml --env-file .env.site up -d
+#
+# Demo login, replay and synthetic payloads are disabled; the API starts in silent mode, so
+# predictions are stored for local evaluation but bedside staff are not shown risk scores.
+# Every secret is mandatory: compose refuses to start when one is missing.
+# Ports bind to loopback only; publish them through the hospital reverse proxy (TLS) instead.
+services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required for a site deployment}
+
+  api:
+    ports: !override
+      - "127.0.0.1:8000:8000"
+    volumes: !override
+      - ./ml/artifacts:/app/ml/artifacts:ro
+      - predictrx-backups:/app/backups
+    environment:
+      - DATABASE_URL=postgresql+psycopg://predictrx:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/predictrx
+      - DEMO_MODE=false
+      - SITE_ID=${SITE_ID:?SITE_ID is required, e.g. hospital-icu-dhaka}
+      - SITE_MODE=silent
+      # Local accounts are the default for sites without an IdP; set AUTH_MODE=oidc for hospital SSO.
+      - AUTH_MODE=${AUTH_MODE:-local}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required (32+ random bytes)}
+      - ACCOUNT_ENCRYPTION_KEY=${ACCOUNT_ENCRYPTION_KEY:?ACCOUNT_ENCRYPTION_KEY is required to encrypt local TOTP secrets}
+      - EXPORT_SALT=${EXPORT_SALT:?EXPORT_SALT is required (random, kept secret by the site)}
+      - METRICS_TOKEN=${METRICS_TOKEN:?METRICS_TOKEN is required for Prometheus scraping}
+      - INTEGRATION_API_KEYS=${INTEGRATION_API_KEYS:?INTEGRATION_API_KEYS is required; generate with python -m app.ops_cli new-integration-key}
+      - OIDC_ISSUER=${OIDC_ISSUER:-}
+      - OIDC_AUDIENCE=${OIDC_AUDIENCE:-}
+      - OIDC_JWKS_URL=${OIDC_JWKS_URL:-}
+      - RETENTION_DAYS=${RETENTION_DAYS:-365}
+      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS is required, e.g. ["https://predictrx.hospital.local"]}
+      # Address of the hospital reverse proxy as seen by the container; per-client login limits
+      # use X-Forwarded-For only from this address.
+      - FORWARDED_ALLOW_IPS=${FORWARDED_ALLOW_IPS:-127.0.0.1}
+
+  web:
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?PUBLIC_API_URL is required, e.g. https://predictrx.hospital.local/api}
+    ports: !override
+      - "127.0.0.1:3000:3000"

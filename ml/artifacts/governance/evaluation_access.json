@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "dataset": "PhysioNet Challenge 2019 public training set B",
+  "policy": "No feature selection, tuning, calibration, threshold selection, architecture selection, or ablation decisions may use Dataset B.",
+  "entries": [
+    {
+      "access_id": "setb-37b09d0b0fbf",
+      "occurred_at": "2026-09-28",
+      "recorded_at": "2026-09-29T18:56:07.723732+00:00",
+      "model_version": "v0.2.0-202609281906",
+      "model_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+      "purpose": "frozen_anchor_scoring",
+      "reason": "Historical Dataset B evaluation reconstructed from eval_holdout.json; exact access time unavailable and no tuning followed.",
+      "authorized_by": "Taskin",
+      "command": "python -m predict_rx.eval.run --features data/processed/features_setB.parquet --model-dir artifacts/models/latest --split holdout",
+      "repeat_override": false
+    },
+    {
+      "access_id": "setb-4a1c8a8ad790",
+      "occurred_at": "2026-09-29T20:48:37.403330+00:00",
+      "recorded_at": "2026-09-29T20:48:37.403330+00:00",
+      "model_version": "no-model:data-audit-v1",
+      "model_sha256": "not-applicable",
+      "purpose": "data_integrity_audit",
+      "reason": "Tanvir authorizes this structural Dataset B audit only",
+      "authorized_by": "Tanvir",
+      "command": "C:\\Users\\Tanvir Ahmed\\Downloads\\PredictRx Sentinel 2\\PredictRx Sentinel\\.venv\\Scripts\\python.exe -m predict_rx.audit.data --set-a data/processed/features_setA.parquet --set-b data/processed/features_setB.parquet --targets-out data/processed/incident_targets_v1.parquet --authorized-by Tanvir --authorize-dataset-b Tanvir authorizes this structural Dataset B audit only",
+      "repeat_override": false
+    },
+    {
+      "access_id": "setb-74f8e400d83b",
+      "occurred_at": "2026-09-29T20:58:03.063757+00:00",
+      "recorded_at": "2026-09-29T20:58:03.063757+00:00",
+      "model_version": "v0.2.0-202609281906",
+      "model_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+      "purpose": "baseline_comparison",
+      "reason": "Tanvir authorizes this one-time preregistered baseline comparison",
+      "authorized_by": "Tanvir",
+      "command": "C:\\Users\\Tanvir Ahmed\\Downloads\\PredictRx Sentinel 2\\PredictRx Sentinel\\.venv\\Scripts\\python.exe -m predict_rx.eval.baselines_setb --authorized-by Tanvir --authorize-dataset-b Tanvir authorizes this one-time preregistered baseline comparison",
+      "repeat_override": false
+    },
+    {
+      "access_id": "setb-14836f6bc211",
+      "occurred_at": "2026-10-14T17:33:40.521123+00:00",
+      "recorded_at": "2026-10-14T17:33:40.521123+00:00",
+      "model_version": "residual-healthy-ema-202610141727",
+      "model_sha256": "7c430b30e66c882a4ddf467a8adbea1c403730f8c9f733f0d4d464b95e6ef33b",
+      "purpose": "residual_hazard_one_time_setb_comparison",
+      "reason": "Tanvir Ahmed authorizes RESIDUAL-HAZARD-SETB-01 one-time frozen candidate comparison",
+      "authorized_by": "Tanvir Ahmed",
+      "command": "python -m predict_rx.residual_hazard.compare_setb",
+      "repeat_override": false
+    }
+  ]
+}

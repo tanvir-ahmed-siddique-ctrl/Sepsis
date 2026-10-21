@@ -1,0 +1,78 @@
+{
+  "passport_version": "1.0.0",
+  "generated_at": "2026-09-30T10:20:04.230304+00:00",
+  "site_id": "physionet-2019-public-setb",
+  "model_version": "v0.2.0-202609281906",
+  "evidence_sha256": "de0dc5c26bbad3809e472f162604b9d1a804f08a97c9cf14913b1939f39e8ecb",
+  "recommended_mode": "Retrospective validation",
+  "blockers": [
+    "no_local_retrospective_validation"
+  ],
+  "next_actions": [
+    "Run retrospective local validation without live clinician alerts.",
+    "Assess calibration, prevalence, alert burden, subgroups, and threshold transfer."
+  ],
+  "sections": {
+    "cohort_and_prevalence": {
+      "description": "Site-held-out retrospective validation on a geographically distinct public hospital cohort.",
+      "patients_after_age_exclusion": 19978,
+      "positive_hour_prevalence": 0.014285
+    },
+    "discrimination_and_calibration": {
+      "auroc": 0.808395,
+      "auprc": 0.079208,
+      "brier": 0.013652,
+      "calibration_slope": 0.803449,
+      "calibration_intercept": -0.779907,
+      "false_alerts_per_100h": 0.192185,
+      "patient_bootstrap_95ci": {
+        "auroc": [
+          0.796562,
+          0.820346
+        ],
+        "auprc": [
+          0.070619,
+          0.08968
+        ],
+        "high_risk_utility": [
+          0.212975,
+          0.262667
+        ]
+      },
+      "evidence": "ml/artifacts/experiments/baselines_setb_20260929T205614Z/report.json"
+    },
+    "alert_burden": {
+      "high_risk_false_alerts_per_100_patient_hours": 0.192185,
+      "watch_false_alerts_per_100_patient_hours": 2.052819
+    },
+    "measurement_shift": {
+      "status": "audited_dataset_a_only",
+      "finding": "A care-process-only ablation (missingness and measurement frequency) reaches cross-validated utility 0.367 versus 0.413 for all features; physiology with trends reaches 0.258. Measurement patterns are site-specific and must be re-checked before any local use.",
+      "evidence": "ml/artifacts/challengers/TABULAR-AONLY-01/study.sqlite3"
+    },
+    "subgroups": {
+      "status": "not_yet_available"
+    },
+    "threshold_transfer": {
+      "high_risk_utility": 0.237928,
+      "watch_utility": 0.282592,
+      "interpretation": "High-risk utility transferred better than Watch sensitivity and alert burden. Calibration slope 0.80 on Dataset B means scores are somewhat too extreme at the new site; local recalibration is required."
+    },
+    "baseline_comparison": {
+      "clinical_rule_high_risk_utility": 0.052928,
+      "logistic_high_risk_utility": 0.123702,
+      "run4_high_risk_utility": 0.237928,
+      "preregistered_release_rule_passed": true
+    },
+    "schema_and_units": {
+      "required_field_coverage": 1.0,
+      "units_validated": true,
+      "encounter_identity_validated": true
+    }
+  },
+  "limitations": [
+    "A readiness recommendation is not regulatory or clinical approval.",
+    "Retrospective performance does not establish clinical outcome improvement.",
+    "Local silent/prospective evaluation is required before interruptive use."
+  ]
+}

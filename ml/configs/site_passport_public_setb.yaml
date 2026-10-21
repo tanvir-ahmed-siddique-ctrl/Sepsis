@@ -1,0 +1,58 @@
+site_id: physionet-2019-public-setb
+model_version: v0.2.0-202609281906
+local_site_evidence: false
+cohort:
+  description: Site-held-out retrospective validation on a geographically distinct public hospital cohort.
+  patients_after_age_exclusion: 19978
+  positive_hour_prevalence: 0.014285
+integrity:
+  critical_failures: []
+schema:
+  required_field_coverage: 1.0
+  units_validated: true
+  encounter_identity_validated: true
+metrics:
+  auroc: 0.808395
+  auprc: 0.079208
+  brier: 0.013652
+  calibration_slope: 0.803449
+  calibration_intercept: -0.779907
+  false_alerts_per_100h: 0.192185
+  patient_bootstrap_95ci:
+    auroc: [0.796562, 0.820346]
+    auprc: [0.070619, 0.089680]
+    high_risk_utility: [0.212975, 0.262667]
+  evidence: ml/artifacts/experiments/baselines_setb_20260929T205614Z/report.json
+alert_burden:
+  high_risk_false_alerts_per_100_patient_hours: 0.192185
+  watch_false_alerts_per_100_patient_hours: 2.052819
+measurement_shift:
+  status: audited_dataset_a_only
+  finding: >-
+    A care-process-only ablation (missingness and measurement frequency) reaches
+    cross-validated utility 0.367 versus 0.413 for all features; physiology with
+    trends reaches 0.258. Measurement patterns are site-specific and must be
+    re-checked before any local use.
+  evidence: ml/artifacts/challengers/TABULAR-AONLY-01/study.sqlite3
+subgroups:
+  status: not_yet_available
+threshold_transfer:
+  high_risk_utility: 0.237928
+  watch_utility: 0.282592
+  interpretation: >-
+    High-risk utility transferred better than Watch sensitivity and alert burden.
+    Calibration slope 0.80 on Dataset B means scores are somewhat too extreme at
+    the new site; local recalibration is required.
+baseline_comparison:
+  clinical_rule_high_risk_utility: 0.052928
+  logistic_high_risk_utility: 0.123702
+  run4_high_risk_utility: 0.237928
+  preregistered_release_rule_passed: true
+subgroup_evidence_complete: false
+failure_simulation_complete: false
+local_threshold_reviewed: false
+silent_pilot_completed: false
+approvals:
+  ethics_data_use: false
+  clinical_owner: false
+prospective_protocol_defined: false

@@ -1,0 +1,36 @@
+# LOWRES-FALLBACK-01, preregistered 2026-09-30 before any fallback trial ran.
+# A separately selected low-resource model for sites without routine labs:
+# vitals, vital trends, vital measurement timing, age, sex, ICU/hospital time.
+# Selection uses the same grouped folds, weighting, and rule as TABULAR-AONLY-01.
+# The locked internal test is scored only by the final multi-candidate comparison.
+version: 1
+seed: 42
+outer_folds: 5
+calibration_fraction: 0.2
+feature_family: low_resource_vitals
+selection:
+  primary: mean_normalized_utility
+  secondary: mean_auprc
+  safety_floor: worst_pseudo_site_auprc
+families:
+  lightgbm:
+    trials: 10
+    search:
+      num_leaves: [7, 15, 31, 63]
+      max_depth: [4, 6, 8, -1]
+      min_child_samples: [100, 250, 500]
+      learning_rate: [0.02, 0.03, 0.05]
+      n_estimators: [800, 1500, 2500]
+      subsample: [0.7, 0.9, 1.0]
+      subsample_freq: [1]
+      colsample_bytree: [0.35, 0.5, 0.7, 0.9]
+      reg_alpha: [0.0, 0.5, 2.0]
+      reg_lambda: [1.0, 5.0, 10.0]
+      max_bin: [63, 127, 255]
+pseudo_sites:
+  clusters: 3
+  minimum_rows_for_metric: 25
+refit:
+  early_stopping_fraction: 0.1
+  high_risk_min_specificity: 0.95
+  watch_patient_sensitivity: 0.85

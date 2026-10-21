@@ -1,0 +1,78 @@
+# GRAPH-HAZARD-01, preregistered 2026-09-30 before any temporal training ran.
+# Dataset A train+validation only. Same folds, calibration split, weighting,
+# isotonic calibration, threshold rule, and metrics as TABULAR-AONLY-01.
+version: 1
+seed: 42
+calibration_fraction: 0.2
+fold_assignments: artifacts/challengers/TABULAR-AONLY-01/fold_assignments.json
+tree_oof: artifacts/challengers/TABULAR-AONLY-01/best_oof.parquet
+tree_reference:
+  run: TABULAR-AONLY-01 trial 16 (LightGBM, all features)
+  mean_normalized_utility: 0.4129
+  mean_auprc: 0.0907
+  note: >-
+    Frozen Run 4 has no out-of-fold predictions on these folds; the trial-16
+    OOF is the tree proxy for fusion analysis. The final fusion uses frozen
+    Run 4, whose validation predictions are genuinely out-of-sample.
+pseudo_sites:
+  clusters: 3
+  minimum_rows_for_metric: 25
+# Schedule set in a fold-0 pilot (plus_organ_graph only) before the ladder ran:
+# 16k-token batches gave ~30 steps/epoch and underfit.
+training:
+  lr: 0.001
+  weight_decay: 0.0001
+  max_epochs: 30
+  patience: 6
+  max_tokens: 3000
+# Ablation ladder required by the master plan (Phase 5H) plus temporal baselines (5A).
+experiments:
+  grud_baseline:
+    model: grud
+    params: {d_hidden: 128, dropout: 0.2}
+  tcn_baseline:
+    model: tcn
+    params: {channels: 96, levels: 5, dropout: 0.2}
+  sparse_temporal:
+    model: graph_hazard
+    params: {use_graph: false, d_token: 32, d_node: 64, d_hidden: 128, dropout: 0.2}
+  plus_organ_graph:
+    model: graph_hazard
+    params: {use_graph: true, d_token: 32, d_node: 64, d_hidden: 128, graph_layers: 2, dropout: 0.2}
+  plus_multi_horizon:
+    model: graph_hazard
+    params: {use_graph: true, d_token: 32, d_node: 64, d_hidden: 128, graph_layers: 2, dropout: 0.2}
+    hazard_weight: 1.0
+  plus_auxiliary:
+    model: graph_hazard
+    params: {use_graph: true, d_token: 32, d_node: 64, d_hidden: 128, graph_layers: 2, dropout: 0.2}
+    hazard_weight: 1.0
+    aux_weight: 0.1
+  graph_hazard_full:
+    model: graph_hazard
+    params: {use_graph: true, d_token: 32, d_node: 64, d_hidden: 128, graph_layers: 2, dropout: 0.2}
+    hazard_weight: 1.0
+    aux_weight: 0.1
+    augment: true
+    consistency_weight: 1.0
+selection:
+  # Best mean utility, then AUPRC, then worst pseudo-site AUPRC, among all temporal runs.
+  candidates: [grud_baseline, tcn_baseline, sparse_temporal, plus_organ_graph, plus_multi_horizon,
+               plus_auxiliary, graph_hazard_full]
+  # Fusion (frozen Run 4 + selected temporal) is the final challenger only if the
+  # cross-fitted tree+temporal OOF blend beats the temporal model alone by this margin.
+  fusion_min_utility_gain: 0.005
+  # The final challenger scores the locked Dataset A internal test once (second
+  # use of that split, authorized by Tanvir on 2026-09-30 and recorded in the ledger).
+refit:
+  high_risk_min_specificity: 0.95
+  watch_patient_sensitivity: 0.85
+# Rule for asking the user to run the one-time Dataset B comparison. Paired
+# differences are challenger minus frozen Run 4 at each model's own
+# validation-derived high-risk threshold (patient bootstrap, 1000 replicates).
+locked_test_rule:
+  bootstrap_replicates: 1000
+  require_any_lower_bound_above_zero: [auprc, normalized_utility]
+  max_auroc_point_drop: 0.01
+  require_utility_point_not_worse: true
+  descriptive_only: [temporal_only, lowres_fallback]

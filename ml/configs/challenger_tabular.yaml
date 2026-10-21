@@ -1,0 +1,48 @@
+version: 1
+seed: 42
+outer_folds: 5
+calibration_fraction: 0.2
+selection:
+  primary: mean_normalized_utility
+  secondary: mean_auprc
+  safety_floor: worst_pseudo_site_auprc
+  internal_test_access: locked_by_default
+sample_weighting:
+  patient_balanced: true
+  desired_pre_onset_window_hours: 12
+  desired_window_multiplier: 2.0
+  positive_row_multiplier: 1.5
+families:
+  lightgbm:
+    trials: 40
+    search:
+      num_leaves: [5, 7, 11, 15, 23]
+      max_depth: [3, 4, 5, 6, -1]
+      min_child_samples: [100, 250, 500, 800]
+      learning_rate: [0.01, 0.02, 0.03, 0.05]
+      n_estimators: [500, 1000, 1800, 2600]
+      subsample: [0.6, 0.75, 0.9, 1.0]
+      colsample_bytree: [0.2, 0.35, 0.5, 0.7]
+      reg_alpha: [0.0, 0.5, 2.0, 5.0]
+      reg_lambda: [1.0, 5.0, 10.0, 20.0]
+      max_bin: [63, 127, 255]
+  catboost:
+    trials: 30
+    search:
+      depth: [4, 5, 6, 7, 8]
+      learning_rate: [0.01, 0.02, 0.03, 0.05]
+      iterations: [500, 1000, 1800, 2600]
+      l2_leaf_reg: [3.0, 6.0, 10.0, 20.0]
+      random_strength: [0.5, 1.0, 2.0]
+      bagging_temperature: [0.0, 0.5, 1.0]
+feature_ablations:
+  - physiology_current
+  - physiology_temporal
+  - vitals_only
+  - care_process_only
+  - clinical_scores_only
+  - physiology_plus_care_process
+  - all
+pseudo_sites:
+  clusters: 3
+  minimum_rows_for_metric: 25

@@ -1,0 +1,331 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.demo
+#1 transferring dockerfile: 2.77kB 0.0s done
+#1 WARN: FromPlatformFlagConstDisallowed: FROM --platform flag should not use constant value "linux/amd64" (line 10)
+#1 WARN: FromPlatformFlagConstDisallowed: FROM --platform flag should not use constant value "linux/amd64" (line 22)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-bookworm-slim
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 1.7s
+
+#2 [internal] load metadata for docker.io/library/node:20-bookworm-slim
+#2 DONE 1.7s
+
+#4 [web 1/6] FROM docker.io/library/node:20-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
+#4 resolve docker.io/library/node:20-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0 0.0s done
+#4 DONE 0.0s
+
+#5 [stage-1  1/16] FROM docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+#5 resolve docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 133.38kB 0.0s done
+#6 DONE 0.0s
+
+#7 [web 3/6] COPY frontend/package.json frontend/package-lock.json ./
+#7 CACHED
+
+#8 [web 2/6] WORKDIR /web
+#8 CACHED
+
+#9 [web 4/6] RUN npm ci
+#9 CACHED
+
+#10 [web 5/6] COPY frontend ./
+#10 DONE 0.1s
+
+#11 [web 6/6] RUN npm run build
+#11 0.702 
+#11 0.702 > predictrx-sentinel-frontend@0.1.0 build
+#11 0.702 > next build
+#11 0.702 
+#11 1.360 ▲ Next.js 16.4.2 (Turbopack)
+#11 1.381 ✓ Running next.config.js took 20ms
+#11 1.437 
+#11 1.478   Creating an optimized production build ...
+#11 13.92 ✓ Compiled successfully in 12.4s
+#11 13.93   Running TypeScript ...
+#11 21.77   Finished TypeScript in 7.8s ...
+#11 21.78   Collecting page data using 11 workers ...
+#11 23.50   Generating static pages using 11 workers (0/17) ...
+#11 24.05   Generating static pages using 11 workers (4/17) 
+#11 24.05   Generating static pages using 11 workers (8/17) 
+#11 24.50   Generating static pages using 11 workers (12/17) 
+#11 24.54 ✓ Generating static pages using 11 workers (17/17) in 1045ms
+#11 24.55   Finalizing page optimization ...
+#11 25.56 
+#11 25.57 Route (app)
+#11 25.57 ┌ ○ /
+#11 25.57 ├ ○ /_not-found
+#11 25.57 ├ ○ /admin/setup
+#11 25.57 ├ ○ /admin/users
+#11 25.57 ├ ○ /alerts
+#11 25.57 ├ ○ /chart
+#11 25.57 ├ ○ /docs
+#11 25.57 ├ ○ /handoff
+#11 25.57 ├ ○ /integration
+#11 25.57 ├ ○ /login
+#11 25.57 ├ ○ /model
+#11 25.57 ├ ○ /operations
+#11 25.57 ├ ƒ /patient/[id]
+#11 25.57 ├ ○ /pilot
+#11 25.57 ├ ○ /presentation
+#11 25.57 ├ ○ /readiness
+#11 25.57 └ ○ /ward
+#11 25.57 
+#11 25.57 
+#11 25.57 ○  (Static)   prerendered as static content
+#11 25.57 ƒ  (Dynamic)  server-rendered on demand
+#11 25.57 
+#11 DONE 25.8s
+
+#12 [stage-1  3/16] COPY --from=web /usr/local/bin/node /usr/local/bin/node
+#12 CACHED
+
+#13 [stage-1  4/16] WORKDIR /app
+#13 CACHED
+
+#14 [stage-1  2/16] RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm -rf /var/lib/apt/lists/*
+#14 CACHED
+
+#15 [stage-1  5/16] COPY ml /app/ml
+#15 CACHED
+
+#16 [stage-1  6/16] COPY backend /app/backend
+#16 DONE 0.1s
+
+#17 [stage-1  7/16] COPY knowledge /app/knowledge
+#17 DONE 0.1s
+
+#18 [stage-1  8/16] WORKDIR /app/backend
+#18 DONE 0.0s
+
+#19 [stage-1  9/16] RUN pip install --no-cache-dir -r requirements.txt
+#19 2.977 Obtaining file:///app/ml (from -r requirements.txt (line 20))
+#19 2.982   Installing build dependencies: started
+#19 5.011   Installing build dependencies: finished with status 'done'
+#19 5.013   Checking if build backend supports build_editable: started
+#19 5.251   Checking if build backend supports build_editable: finished with status 'done'
+#19 5.253   Getting requirements to build editable: started
+#19 5.527   Getting requirements to build editable: finished with status 'done'
+#19 5.529   Preparing editable metadata (pyproject.toml): started
+#19 5.788   Preparing editable metadata (pyproject.toml): finished with status 'done'
+#19 5.949 Collecting fastapi>=0.115 (from -r requirements.txt (line 1))
+#19 6.004   Downloading fastapi-0.156.2-py3-none-any.whl.metadata (26 kB)
+#19 6.063 Collecting uvicorn>=0.30 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 6.081   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+#19 6.227 Collecting pydantic>=2.8 (from -r requirements.txt (line 3))
+#19 6.246   Downloading pydantic-2.14.1-py3-none-any.whl.metadata (133 kB)
+#19 6.394 Collecting pydantic-settings>=2.4 (from -r requirements.txt (line 4))
+#19 6.411   Downloading pydantic_settings-2.16.1-py3-none-any.whl.metadata (4.0 kB)
+#19 6.460 Collecting httpx>=0.27 (from -r requirements.txt (line 5))
+#19 6.476   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#19 6.608 Collecting pytest>=8.3 (from -r requirements.txt (line 6))
+#19 6.621   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+#19 6.759 Collecting joblib>=1.4 (from -r requirements.txt (line 7))
+#19 6.777   Downloading joblib-1.6.0-py3-none-any.whl.metadata (6.5 kB)
+#19 8.044 Collecting numpy>=1.26 (from -r requirements.txt (line 8))
+#19 8.088   Downloading numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+#19 8.598 Collecting pandas>=2.2 (from -r requirements.txt (line 9))
+#19 8.612   Downloading pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+#19 9.612 Collecting scikit-learn>=1.5 (from -r requirements.txt (line 10))
+#19 9.628   Downloading scikit_learn-1.9.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.3 kB)
+#19 9.987 Collecting lightgbm>=4.5 (from -r requirements.txt (line 11))
+#19 10.01   Downloading lightgbm-4.7.0-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (18 kB)
+#19 11.34 Collecting sqlalchemy>=2.0 (from -r requirements.txt (line 12))
+#19 11.37   Downloading sqlalchemy-2.1.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.7 kB)
+#19 11.47 Collecting alembic>=1.13 (from -r requirements.txt (line 13))
+#19 11.50   Downloading alembic-1.20.0-py3-none-any.whl.metadata (7.3 kB)
+#19 11.56 Collecting psycopg>=3.2 (from psycopg[binary]>=3.2->-r requirements.txt (line 14))
+#19 11.58   Downloading psycopg-3.3.6-py3-none-any.whl.metadata (4.4 kB)
+#19 11.65 Collecting PyJWT>=2.9 (from -r requirements.txt (line 15))
+#19 11.66   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+#19 12.50 Collecting cryptography>=42 (from -r requirements.txt (line 17))
+#19 12.51   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+#19 12.70 Collecting pyyaml>=6.0 (from -r requirements.txt (line 18))
+#19 12.72   Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+#19 12.81 Collecting starlette>=0.46.0 (from fastapi>=0.115->-r requirements.txt (line 1))
+#19 12.82   Downloading starlette-1.9.0-py3-none-any.whl.metadata (6.6 kB)
+#19 12.89 Collecting typing-extensions>=4.8.0 (from fastapi>=0.115->-r requirements.txt (line 1))
+#19 12.90   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#19 12.92 Collecting typing-inspection>=0.4.2 (from fastapi>=0.115->-r requirements.txt (line 1))
+#19 12.94   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+#19 12.97 Collecting annotated-doc>=0.0.2 (from fastapi>=0.115->-r requirements.txt (line 1))
+#19 12.98   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+#19 13.29 Collecting opentelemetry-api>=1.44.0 (from fastapi>=0.115->-r requirements.txt (line 1))
+#19 13.31   Downloading opentelemetry_api-1.45.1-py3-none-any.whl.metadata (1.4 kB)
+#19 13.35 Collecting click>=7.0 (from uvicorn>=0.30->uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 13.36   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+#19 13.39 Collecting h11>=0.8 (from uvicorn>=0.30->uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 13.40   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#19 13.46 Collecting annotated-types>=0.6.0 (from pydantic>=2.8->-r requirements.txt (line 3))
+#19 13.47   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#19 16.56 Collecting pydantic-core==2.50.1 (from pydantic>=2.8->-r requirements.txt (line 3))
+#19 16.58   Downloading pydantic_core-2.50.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+#19 16.66 Collecting python-dotenv>=1.2.2 (from pydantic-settings>=2.4->-r requirements.txt (line 4))
+#19 16.67   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+#19 16.83 Collecting anyio (from httpx>=0.27->-r requirements.txt (line 5))
+#19 16.84   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+#19 16.92 Collecting certifi (from httpx>=0.27->-r requirements.txt (line 5))
+#19 16.94   Downloading certifi-2026.10.19-py3-none-any.whl.metadata (2.5 kB)
+#19 17.01 Collecting httpcore==1.* (from httpx>=0.27->-r requirements.txt (line 5))
+#19 17.03   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#19 17.22 Collecting idna (from httpx>=0.27->-r requirements.txt (line 5))
+#19 17.24   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#19 17.37 Collecting iniconfig>=1.0.1 (from pytest>=8.3->-r requirements.txt (line 6))
+#19 17.38   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+#19 17.46 Collecting packaging>=22 (from pytest>=8.3->-r requirements.txt (line 6))
+#19 17.48   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+#19 17.54 Collecting pluggy<2,>=1.5 (from pytest>=8.3->-r requirements.txt (line 6))
+#19 17.55   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+#19 17.66 Collecting pygments>=2.7.2 (from pytest>=8.3->-r requirements.txt (line 6))
+#19 17.69   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+#19 18.03 Collecting cloudpickle>=3.0 (from joblib>=1.4->-r requirements.txt (line 7))
+#19 18.05   Downloading cloudpickle-3.1.2-py3-none-any.whl.metadata (7.1 kB)
+#19 18.12 Collecting python-dateutil>=2.8.2 (from pandas>=2.2->-r requirements.txt (line 9))
+#19 18.14   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+#19 18.86 Collecting scipy>=1.10.0 (from scikit-learn>=1.5->-r requirements.txt (line 10))
+#19 18.89   Downloading scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+#19 19.21 Collecting narwhals>=2.0.1 (from scikit-learn>=1.5->-r requirements.txt (line 10))
+#19 19.23   Downloading narwhals-2.27.1-py3-none-any.whl.metadata (15 kB)
+#19 19.28 Collecting threadpoolctl>=3.5.0 (from scikit-learn>=1.5->-r requirements.txt (line 10))
+#19 19.30   Downloading threadpoolctl-3.7.0-py3-none-any.whl.metadata (24 kB)
+#19 19.43 Collecting Mako (from alembic>=1.13->-r requirements.txt (line 13))
+#19 19.44   Downloading mako-1.4.3-py3-none-any.whl.metadata (2.9 kB)
+#19 19.85 Collecting cffi>=2.0.0 (from cryptography>=42->-r requirements.txt (line 17))
+#19 19.88   Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+#19 20.60 Collecting psycopg-binary==3.3.6 (from psycopg[binary]>=3.2->-r requirements.txt (line 14))
+#19 20.62   Downloading psycopg_binary-3.3.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.7 kB)
+#19 20.76 Collecting httptools>=0.8.0 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 20.78   Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#19 20.91 Collecting uvloop>=0.15.1 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 20.92   Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+#19 21.20 Collecting watchfiles>=0.20 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 21.22   Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#19 21.63 Collecting websockets>=13.0 (from uvicorn[standard]>=0.30->-r requirements.txt (line 2))
+#19 21.65   Downloading websockets-17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+#19 21.69 Collecting pycparser (from cffi>=2.0.0->cryptography>=42->-r requirements.txt (line 17))
+#19 21.70   Downloading pycparser-3.11-py3-none-any.whl.metadata (8.2 kB)
+#19 21.79 Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas>=2.2->-r requirements.txt (line 9))
+#19 21.81   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+#19 22.12 Collecting MarkupSafe>=2.0 (from Mako->alembic>=1.13->-r requirements.txt (line 13))
+#19 22.14   Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+#19 22.18 Downloading fastapi-0.156.2-py3-none-any.whl (146 kB)
+#19 22.34 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+#19 22.50 Downloading pydantic-2.14.1-py3-none-any.whl (488 kB)
+#19 23.39 Downloading pydantic_core-2.50.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+#19 27.26    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 519.0 kB/s eta 0:00:00
+#19 27.28 Downloading pydantic_settings-2.16.1-py3-none-any.whl (80 kB)
+#19 27.37 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#19 27.44 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#19 27.51 Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+#19 27.85 Downloading joblib-1.6.0-py3-none-any.whl (306 kB)
+#19 28.23 Downloading numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.7 MB)
+#19 55.13    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.7/16.7 MB 618.2 kB/s eta 0:00:00
+#19 55.15 Downloading pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (10.8 MB)
+#19 73.16    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.8/10.8 MB 591.0 kB/s eta 0:00:00
+#19 73.18 Downloading scikit_learn-1.9.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (9.2 MB)
+#19 87.67    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.2/9.2 MB 629.1 kB/s eta 0:00:00
+#19 87.69 Downloading lightgbm-4.7.0-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (3.5 MB)
+#19 92.81    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.5/3.5 MB 660.1 kB/s eta 0:00:00
+#19 92.82 Downloading sqlalchemy-2.1.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.7 MB)
+#19 99.96    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 669.8 kB/s eta 0:00:00
+#19 99.97 Downloading alembic-1.20.0-py3-none-any.whl (268 kB)
+#19 100.6 Downloading psycopg-3.3.6-py3-none-any.whl (215 kB)
+#19 100.9 Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+#19 101.0 Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+#19 108.1    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 652.8 kB/s eta 0:00:00
+#19 108.1 Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+#19 109.5    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 525.9 kB/s eta 0:00:00
+#19 109.5 Downloading psycopg_binary-3.3.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.2 MB)
+#19 118.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 577.6 kB/s eta 0:00:00
+#19 118.8 Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+#19 118.8 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#19 118.9 Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+#19 119.0 Downloading click-8.5.0-py3-none-any.whl (125 kB)
+#19 119.1 Downloading cloudpickle-3.1.2-py3-none-any.whl (22 kB)
+#19 119.2 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#19 119.2 Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (552 kB)
+#19 119.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 552.8/552.8 kB 882.5 kB/s eta 0:00:00
+#19 119.9 Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+#19 119.9 Downloading narwhals-2.27.1-py3-none-any.whl (483 kB)
+#19 120.7 Downloading opentelemetry_api-1.45.1-py3-none-any.whl (60 kB)
+#19 120.8 Downloading packaging-26.3-py3-none-any.whl (129 kB)
+#19 121.0 Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+#19 121.1 Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+#19 123.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 538.0 kB/s eta 0:00:00
+#19 123.2 Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+#19 123.6 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+#19 123.6 Downloading scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.3 MB)
+#19 181.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.3/35.3 MB 617.3 kB/s eta 0:00:00
+#19 181.5 Downloading starlette-1.9.0-py3-none-any.whl (80 kB)
+#19 181.6 Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+#19 181.6 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#19 181.7 Downloading threadpoolctl-3.7.0-py3-none-any.whl (26 kB)
+#19 181.7 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#19 181.8 Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+#19 181.8 Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+#19 188.6    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 670.1 kB/s eta 0:00:00
+#19 188.6 Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+#19 189.8 Downloading websockets-17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (225 kB)
+#19 190.6 Downloading certifi-2026.10.19-py3-none-any.whl (136 kB)
+#19 190.8 Downloading mako-1.4.3-py3-none-any.whl (80 kB)
+#19 190.9 Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+#19 191.0 Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+#19 191.0 Downloading pycparser-3.11-py3-none-any.whl (51 kB)
+#19 191.6 Building wheels for collected packages: predict-rx
+#19 191.6   Building editable for predict-rx (pyproject.toml): started
+#19 192.4   Building editable for predict-rx (pyproject.toml): finished with status 'done'
+#19 192.4   Created wheel for predict-rx: filename=predict_rx-0.1.0-0.editable-py3-none-any.whl size=1230 sha256=f47e30ed6b5b8f09bb7aca60616cf2b6ad268659ba4b803a45d76bd9315d8917
+#19 192.4   Stored in directory: /tmp/pip-ephem-wheel-cache-vtp_4axl/wheels/e9/52/42/880e8708ffb587e896e0a120f834ff8f3866e143bd15f65246
+#19 192.4 Successfully built predict-rx
+#19 192.8 Installing collected packages: websockets, uvloop, typing-extensions, threadpoolctl, six, pyyaml, python-dotenv, PyJWT, pygments, pycparser, psycopg-binary, predict-rx, pluggy, packaging, numpy, narwhals, MarkupSafe, iniconfig, idna, httptools, h11, cloudpickle, click, certifi, annotated-types, annotated-doc, uvicorn, typing-inspection, sqlalchemy, scipy, python-dateutil, pytest, pydantic-core, psycopg, opentelemetry-api, Mako, joblib, httpcore, cffi, anyio, watchfiles, starlette, scikit-learn, pydantic, pandas, lightgbm, httpx, cryptography, alembic, pydantic-settings, fastapi
+#19 234.4 Successfully installed Mako-1.4.3 MarkupSafe-3.0.4 PyJWT-2.15.1 alembic-1.20.0 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 certifi-2026.10.19 cffi-2.1.1 click-8.5.0 cloudpickle-3.1.2 cryptography-50.0.2 fastapi-0.156.2 h11-0.16.0 httpcore-1.0.9 httptools-0.9.0 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 joblib-1.6.0 lightgbm-4.7.0 narwhals-2.27.1 numpy-2.5.4 opentelemetry-api-1.45.1 packaging-26.3 pandas-3.0.6 pluggy-1.7.0 predict-rx-0.1.0 psycopg-3.3.6 psycopg-binary-3.3.6 pycparser-3.11 pydantic-2.14.1 pydantic-core-2.50.1 pydantic-settings-2.16.1 pygments-2.21.0 pytest-9.1.1 python-dateutil-2.9.0.post0 python-dotenv-1.2.4 pyyaml-6.0.3 scikit-learn-1.9.1 scipy-1.18.1 six-1.17.0 sqlalchemy-2.1.5 starlette-1.9.0 threadpoolctl-3.7.0 typing-extensions-4.16.0 typing-inspection-0.4.4 uvicorn-0.54.0 uvloop-0.23.0 watchfiles-1.3.0 websockets-17.3
+#19 234.4 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#19 234.6 
+#19 234.6 [notice] A new release of pip is available: 25.0.1 -> 26.2.2
+#19 234.6 [notice] To update, run: pip install --upgrade pip
+#19 DONE 235.5s
+
+#20 [stage-1 10/16] COPY demo/cases /app/demo/cases
+#20 DONE 0.2s
+
+#21 [stage-1 11/16] COPY control-plane/fleet_console.py control-plane/push_heartbeat.py /app/control-plane/
+#21 DONE 0.1s
+
+#22 [stage-1 12/16] COPY --from=web /web/.next/standalone /app/web
+#22 DONE 0.5s
+
+#23 [stage-1 13/16] COPY --from=web /web/.next/static /app/web/.next/static
+#23 DONE 0.1s
+
+#24 [stage-1 14/16] COPY --from=web /web/public /app/web/public
+#24 DONE 0.1s
+
+#25 [stage-1 15/16] COPY infra/demo-start.sh /app/demo-start.sh
+#25 DONE 0.1s
+
+#26 [stage-1 16/16] RUN useradd --system --uid 10001 --home-dir /app predictrx && chmod +x /app/demo-start.sh
+#26 0.391 useradd warning: predictrx's uid 10001 is greater than SYS_UID_MAX 999
+#26 DONE 0.4s
+
+#27 exporting to image
+#27 exporting layers
+#27 exporting layers 19.2s done
+#27 exporting manifest sha256:e5fc53793f0d0e6ff583a91c46181f0193a442c770ceb3a44150421fc3741d53 0.0s done
+#27 exporting config sha256:3f1791c1f75fb67af629575dd7ca98dd3b32d3daf24ed68bc3ee79216bf902ea 0.0s done
+#27 exporting attestation manifest sha256:6e5bd2b8f2690164f66918b5778072bafe0c3fdefaa451c917cbf1c31aced89e 0.0s done
+#27 exporting manifest list sha256:ce0f85421e689b95a70b2f176e0f72d7c4180583558663bce24da81f35c32407 0.0s done
+#27 naming to docker.io/library/predictrx-demo:local 0.0s done
+#27 unpacking to docker.io/library/predictrx-demo:local
+#27 unpacking to docker.io/library/predictrx-demo:local 6.9s done
+#27 DONE 26.3s
+
+ [33m2 warnings found (use docker --debug to expand):
+[0m - FromPlatformFlagConstDisallowed: FROM --platform flag should not use constant value "linux/amd64" (line 10)
+ - FromPlatformFlagConstDisallowed: FROM --platform flag should not use constant value "linux/amd64" (line 22)

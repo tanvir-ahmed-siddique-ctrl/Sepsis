@@ -1,0 +1,40 @@
+{
+  "graph_id": "predictrx-organ-graph",
+  "version": "1.0.0",
+  "status": "curated-structure-not-causal",
+  "purpose": "Inductive bias inside Sentinel Graph-Hazard: which PhysioNet variables inform which organ-system node, and which organ systems may exchange messages. Edges constrain message passing; they are not causal claims. Learned attention weights are reported separately from these curated edges.",
+  "provenance": [
+    {"id": "sepsis3", "citation": "Singer M, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801-810.", "used_for": "organ systems scored by SOFA: respiratory, coagulation, hepatic, cardiovascular, renal (CNS unavailable in PhysioNet 2019)"},
+    {"id": "sofa", "citation": "Vincent JL, et al. The SOFA score to describe organ dysfunction/failure. Intensive Care Med. 1996;22(7):707-710.", "used_for": "variable-to-organ assignment for platelets, bilirubin, creatinine, MAP, PaO2/FiO2 surrogates"},
+    {"id": "physionet2019", "citation": "Reyna MA, et al. Early Prediction of Sepsis From Clinical Data: the PhysioNet/Computing in Cardiology Challenge 2019. Crit Care Med. 2020;48(2):210-217.", "used_for": "variable definitions and units"},
+    {"id": "physiology", "citation": "Standard critical-care physiology: oxygen delivery couples cardiovascular, respiratory and haematological systems; renal and respiratory systems regulate acid-base balance; hepatic synthetic function affects coagulation.", "used_for": "curated inter-organ edges"}
+  ],
+  "organs": {
+    "cardiovascular": {"variables": ["HR", "SBP", "MAP", "DBP", "TroponinI"], "source": ["sofa", "physiology"]},
+    "respiratory": {"variables": ["Resp", "O2Sat", "FiO2", "SaO2", "PaCO2", "EtCO2"], "source": ["sofa", "physiology"]},
+    "renal": {"variables": ["BUN", "Creatinine"], "source": ["sofa"]},
+    "hepatic": {"variables": ["AST", "Alkalinephos", "Bilirubin_direct", "Bilirubin_total"], "source": ["sofa", "physiology"]},
+    "coagulation": {"variables": ["Platelets", "PTT", "Fibrinogen"], "source": ["sofa", "physiology"]},
+    "inflammatory_perfusion": {"variables": ["Temp", "WBC", "Lactate", "Hct", "Hgb"], "source": ["sepsis3", "physiology"]},
+    "acid_base_metabolic": {"variables": ["BaseExcess", "HCO3", "pH", "Glucose", "Potassium", "Chloride", "Calcium", "Magnesium", "Phosphate"], "source": ["physiology"]}
+  },
+  "separate_nodes": {
+    "care_process": "Measurement mask and time-since-measurement of every variable. Kept separate from organ nodes so the model's reliance on ordering behaviour is isolated and ablatable.",
+    "context": "Age, sex, ICU unit, hospital-admission time, ICU length of stay."
+  },
+  "edges": [
+    {"source": "cardiovascular", "target": "respiratory", "rationale": "oxygen delivery and cardiopulmonary coupling", "provenance": "physiology"},
+    {"source": "cardiovascular", "target": "renal", "rationale": "renal perfusion depends on blood pressure", "provenance": "physiology"},
+    {"source": "cardiovascular", "target": "inflammatory_perfusion", "rationale": "hypoperfusion and lactate in septic shock", "provenance": "sepsis3"},
+    {"source": "respiratory", "target": "acid_base_metabolic", "rationale": "respiratory acid-base compensation (PaCO2, pH)", "provenance": "physiology"},
+    {"source": "renal", "target": "acid_base_metabolic", "rationale": "metabolic acid-base and electrolyte regulation", "provenance": "physiology"},
+    {"source": "inflammatory_perfusion", "target": "acid_base_metabolic", "rationale": "lactic acidosis", "provenance": "physiology"},
+    {"source": "hepatic", "target": "coagulation", "rationale": "hepatic synthesis of clotting factors", "provenance": "physiology"},
+    {"source": "inflammatory_perfusion", "target": "coagulation", "rationale": "sepsis-associated coagulopathy", "provenance": "sepsis3"},
+    {"source": "inflammatory_perfusion", "target": "hepatic", "rationale": "septic liver dysfunction", "provenance": "sepsis3"},
+    {"source": "inflammatory_perfusion", "target": "renal", "rationale": "septic acute kidney injury", "provenance": "sepsis3"},
+    {"source": "inflammatory_perfusion", "target": "respiratory", "rationale": "sepsis-associated lung injury", "provenance": "sepsis3"},
+    {"source": "context", "target": "*", "rationale": "patient context conditions every organ node", "provenance": "design"},
+    {"source": "care_process", "target": "*", "rationale": "measurement behaviour is visible to every node but never merged into organ inputs", "provenance": "design"}
+  ]
+}

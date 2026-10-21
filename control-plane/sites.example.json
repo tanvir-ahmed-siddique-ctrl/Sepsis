@@ -1,0 +1,7 @@
+{
+  "predictrx-local-site": {
+    "name": "Demo hospital (local)",
+    "key": "replace-with-the-site-FLEET_SIGNING_KEY",
+    "expected_model_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d"
+  }
+}

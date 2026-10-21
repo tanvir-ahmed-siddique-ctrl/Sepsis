@@ -1,0 +1,28 @@
+# Build context for infra/Dockerfile.demo only (BuildKit picks this file over .dockerignore).
+# Same exclusions as .dockerignore, except the public PhysioNet replay cases are included.
+.git
+.github
+.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/*.egg-info
+*.db
+*.sqlite3
+.env
+.env.*
+
+ml/data
+ml/artifacts/challengers
+ml/artifacts/experiments
+ml/artifacts/tmp_*
+ml/artifacts/*.log
+ml/artifacts/*.txt
+ml/artifacts/models/_smoke
+ml/artifacts/models/run2
+ml/artifacts/models/run3
+
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/*.tsbuildinfo

@@ -1,0 +1,33 @@
+{
+  "gate_version": 1,
+  "passed": true,
+  "requirements": {
+    "valid_dataset_a": {
+      "passed": true,
+      "detail": "790215 rows"
+    },
+    "baseline_bundle": {
+      "passed": true,
+      "detail": [
+        "artifacts/experiments/baselines_setb_20260929T205614Z/report.json"
+      ]
+    },
+    "data_target_audit": {
+      "passed": true,
+      "detail": [
+        "artifacts/experiments/data_target_audit_20260929T204835Z/report.json"
+      ]
+    },
+    "tabular_challenger": {
+      "passed": true,
+      "detail": [
+        "artifacts/challengers/TABULAR-AONLY-01/result.json"
+      ]
+    },
+    "critical_backend_and_trustgate_tests_present": {
+      "passed": true,
+      "detail": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/backend/tests/test_trustgate.py"
+    }
+  },
+  "decision": "Temporal and Graph-Hazard challengers may enter bounded A-only development."
+}

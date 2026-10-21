@@ -1,0 +1,30 @@
+# Public demo front door: one origin, automatic HTTPS, password in front of everything.
+# The app behind it runs DEMO_MODE with de-identified public PhysioNet replay records only. Never put patient data here.
+#
+#   SITE_ADDRESS=demo.example.org   -> Caddy obtains a Let's Encrypt certificate
+#   SITE_ADDRESS=:80                -> plain HTTP, for use behind a Cloudflare Tunnel
+{$SITE_ADDRESS}
+
+encode gzip
+
+basic_auth {
+	{$DEMO_USER} {$DEMO_PASSWORD_HASH}
+}
+
+handle_path /api/* {
+	# Browsers resend the demo password on every same-origin call; the API accepts Bearer only.
+	@basic header_regexp Authorization ^Basic\s
+	request_header @basic -Authorization
+	reverse_proxy api:8000
+}
+
+handle {
+	reverse_proxy web:3000
+}
+
+header {
+	X-Content-Type-Options nosniff
+	X-Frame-Options DENY
+	Referrer-Policy no-referrer
+	-Server
+}

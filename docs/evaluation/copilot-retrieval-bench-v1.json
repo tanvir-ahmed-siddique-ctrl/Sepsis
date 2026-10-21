@@ -1,0 +1,326 @@
+{
+  "benchmark": "copilot-retrieval-bench/v1",
+  "registry_sha256": "f3d80ce45bed89cb9e26feffca010934d17892c2b176001b898252735e0aeb12",
+  "results": [
+    {
+      "mode": "lexical deterministic",
+      "recall_at_5": 0.677,
+      "top1_accuracy": 0.484,
+      "negative_abstention": 1.0,
+      "positives": 31,
+      "negatives": 6,
+      "misses": [
+        {
+          "display": "হৃদস্পন্দন",
+          "expected": "HR",
+          "got": null
+        },
+        {
+          "display": "রক্তে শর্করা",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "শ্বাসের হার",
+          "expected": "Resp",
+          "got": null
+        },
+        {
+          "display": "অক্সিজেন স্যাচুরেশন",
+          "expected": "O2Sat",
+          "got": null
+        },
+        {
+          "display": "রক্তের হিমোগ্লোবিন",
+          "expected": "Hgb",
+          "got": null
+        },
+        {
+          "display": "ক্রিয়েটিনিন",
+          "expected": "Creatinine",
+          "got": null
+        },
+        {
+          "display": "পটাশিয়াম",
+          "expected": "Potassium",
+          "got": null
+        },
+        {
+          "display": "ল্যাকটেট",
+          "expected": "Lactate",
+          "got": null
+        },
+        {
+          "display": "প্লাটিলেট",
+          "expected": "Platelets",
+          "got": null
+        },
+        {
+          "display": "Thrombocyte count",
+          "expected": "Platelets",
+          "got": null
+        },
+        {
+          "display": "Leucocyte count",
+          "expected": "WBC",
+          "got": null
+        },
+        {
+          "display": "Lactic acid",
+          "expected": "Lactate",
+          "got": null
+        },
+        {
+          "display": "Serum Kreatinin",
+          "expected": "Creatinine",
+          "got": null
+        },
+        {
+          "display": "Breathing rate",
+          "expected": "Resp",
+          "got": null
+        },
+        {
+          "display": "Sugar (random)",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "Arterial CO2 tension",
+          "expected": "PaCO2",
+          "got": null
+        }
+      ]
+    },
+    {
+      "mode": "hybrid deterministic",
+      "recall_at_5": 0.903,
+      "top1_accuracy": 0.484,
+      "negative_abstention": 1.0,
+      "positives": 31,
+      "negatives": 6,
+      "misses": [
+        {
+          "display": "হৃদস্পন্দন",
+          "expected": "HR",
+          "got": null
+        },
+        {
+          "display": "রক্তে শর্করা",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "শ্বাসের হার",
+          "expected": "Resp",
+          "got": null
+        },
+        {
+          "display": "অক্সিজেন স্যাচুরেশন",
+          "expected": "O2Sat",
+          "got": null
+        },
+        {
+          "display": "রক্তের হিমোগ্লোবিন",
+          "expected": "Hgb",
+          "got": null
+        },
+        {
+          "display": "ক্রিয়েটিনিন",
+          "expected": "Creatinine",
+          "got": null
+        },
+        {
+          "display": "পটাশিয়াম",
+          "expected": "Potassium",
+          "got": null
+        },
+        {
+          "display": "ল্যাকটেট",
+          "expected": "Lactate",
+          "got": null
+        },
+        {
+          "display": "প্লাটিলেট",
+          "expected": "Platelets",
+          "got": null
+        },
+        {
+          "display": "Thrombocyte count",
+          "expected": "Platelets",
+          "got": null
+        },
+        {
+          "display": "Leucocyte count",
+          "expected": "WBC",
+          "got": null
+        },
+        {
+          "display": "Lactic acid",
+          "expected": "Lactate",
+          "got": null
+        },
+        {
+          "display": "Serum Kreatinin",
+          "expected": "Creatinine",
+          "got": null
+        },
+        {
+          "display": "Breathing rate",
+          "expected": "Resp",
+          "got": null
+        },
+        {
+          "display": "Sugar (random)",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "Arterial CO2 tension",
+          "expected": "PaCO2",
+          "got": null
+        }
+      ]
+    },
+    {
+      "mode": "lexical + LLM",
+      "recall_at_5": 0.677,
+      "top1_accuracy": 0.548,
+      "negative_abstention": 1.0,
+      "positives": 31,
+      "negatives": 6,
+      "misses": [
+        {
+          "display": "নাড়ি",
+          "expected": "HR",
+          "got": null
+        },
+        {
+          "display": "TC (WBC)",
+          "expected": "WBC",
+          "got": null
+        },
+        {
+          "display": "শরীরের তাপমাত্রা",
+          "expected": "Temp",
+          "got": null
+        },
+        {
+          "display": "হৃদস্পন্দন",
+          "expected": "HR",
+          "got": null
+        },
+        {
+          "display": "রক্তে শর্করা",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "শ্বাসের হার",
+          "expected": "Resp",
+          "got": null
+        },
+        {
+          "display": "অক্সিজেন স্যাচুরেশন",
+          "expected": "O2Sat",
+          "got": null
+        },
+        {
+          "display": "রক্তের হিমোগ্লোবিন",
+          "expected": "Hgb",
+          "got": null
+        },
+        {
+          "display": "ক্রিয়েটিনিন",
+          "expected": "Creatinine",
+          "got": null
+        },
+        {
+          "display": "পটাশিয়াম",
+          "expected": "Potassium",
+          "got": null
+        },
+        {
+          "display": "ল্যাকটেট",
+          "expected": "Lactate",
+          "got": null
+        },
+        {
+          "display": "প্লাটিলেট",
+          "expected": "Platelets",
+          "got": null
+        },
+        {
+          "display": "Sugar (random)",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "Body temp axillary",
+          "expected": "Temp",
+          "got": null
+        }
+      ]
+    },
+    {
+      "mode": "hybrid + LLM",
+      "recall_at_5": 0.903,
+      "top1_accuracy": 0.677,
+      "negative_abstention": 1.0,
+      "positives": 31,
+      "negatives": 6,
+      "misses": [
+        {
+          "display": "নাড়ি",
+          "expected": "HR",
+          "got": null
+        },
+        {
+          "display": "TC (WBC)",
+          "expected": "WBC",
+          "got": null
+        },
+        {
+          "display": "শরীরের তাপমাত্রা",
+          "expected": "Temp",
+          "got": null
+        },
+        {
+          "display": "হৃদস্পন্দন",
+          "expected": "HR",
+          "got": null
+        },
+        {
+          "display": "রক্তে শর্করা",
+          "expected": "Glucose",
+          "got": null
+        },
+        {
+          "display": "অক্সিজেন স্যাচুরেশন",
+          "expected": "O2Sat",
+          "got": "SaO2"
+        },
+        {
+          "display": "পটাশিয়াম",
+          "expected": "Potassium",
+          "got": null
+        },
+        {
+          "display": "প্লাটিলেট",
+          "expected": "Platelets",
+          "got": null
+        },
+        {
+          "display": "Breathing rate",
+          "expected": "Resp",
+          "got": null
+        },
+        {
+          "display": "Body temp axillary",
+          "expected": "Temp",
+          "got": null
+        }
+      ]
+    }
+  ]
+}

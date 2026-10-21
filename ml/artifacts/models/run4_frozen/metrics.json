@@ -1,0 +1,626 @@
+{
+  "candidates": {
+    "lgbm_0": {
+      "val_utility": 0.396032712963352,
+      "val_auprc": 0.11439848971476593,
+      "params": {
+        "num_leaves": 4
+      },
+      "best_iteration": 432,
+      "seconds": 145.3
+    },
+    "lgbm_1": {
+      "val_utility": 0.4014227898444174,
+      "val_auprc": 0.1103643617731569,
+      "params": {
+        "num_leaves": 7
+      },
+      "best_iteration": 311,
+      "seconds": 112.7
+    },
+    "lgbm_2": {
+      "val_utility": 0.39801285552241317,
+      "val_auprc": 0.1146482744727439,
+      "params": {
+        "num_leaves": 7,
+        "min_child_samples": 1000
+      },
+      "best_iteration": 267,
+      "seconds": 89.5
+    },
+    "lgbm_3": {
+      "val_utility": 0.3943508521334846,
+      "val_auprc": 0.11376221434215589,
+      "params": {
+        "num_leaves": 15,
+        "min_child_samples": 1000
+      },
+      "best_iteration": 211,
+      "seconds": 78.1
+    }
+  },
+  "ensemble_decision": {
+    "single": {
+      "utility": 0.4016916635158034,
+      "ece": 0.0005569359273543081
+    },
+    "ensemble": {
+      "utility": 0.39244352952709044,
+      "ece": 0.0006669134542196054
+    },
+    "use_ensemble": false
+  },
+  "reports": {
+    "clinical_rule": {
+      "val": {
+        "ranking": {
+          "auroc": 0.5958004996329478,
+          "auprc": 0.027615628294095074,
+          "brier": 0.020055593342214614,
+          "ece": 0.0011210857927163058,
+          "prevalence": 0.020532192963821593,
+          "rows": 108269
+        },
+        "patients": 3050,
+        "watch": {
+          "threshold": 0.02498048399687744,
+          "normalized_utility": 0.016635158033301144,
+          "sensitivity": 0.5002134016218523,
+          "specificity": 0.6603809656227189,
+          "ppv": 0.029115118994385653,
+          "npv": 0.9848247262359878,
+          "alerts_per_patient_day": 1.8070669993782948,
+          "false_alerts_per_100_patient_hours": 7.285873666101739,
+          "alert_precision": 0.03234928175545753,
+          "septic_patients": 246,
+          "detected_before_onset": 0.8739837398373984,
+          "detected_in_optimal_window": 0.3008130081300813,
+          "median_warning_hours": 27.0
+        },
+        "high_risk": {
+          "threshold": 0.03429517502365184,
+          "normalized_utility": 0.019227268271506517,
+          "sensitivity": 0.07383696116090482,
+          "specificity": 0.9598786888664882,
+          "ppv": 0.0361169102296451,
+          "npv": 0.9807332037041969,
+          "alerts_per_patient_day": 0.4059308970439196,
+          "false_alerts_per_100_patient_hours": 1.6002520886738942,
+          "alert_precision": 0.05387713997985901,
+          "septic_patients": 246,
+          "detected_before_onset": 0.3780487804878049,
+          "detected_in_optimal_window": 0.13821138211382114,
+          "median_warning_hours": 24.0
+        },
+        "utility_optimal": {
+          "threshold": 0.034096404965339354,
+          "normalized_utility": 0.05378313657942279,
+          "sensitivity": 0.25437473324797266,
+          "specificity": 0.8557475059960374,
+          "ppv": 0.03465922307513375,
+          "npv": 0.9825688714167407,
+          "alerts_per_patient_day": 1.0599988076887046,
+          "false_alerts_per_100_patient_hours": 4.235260051610046,
+          "alert_precision": 0.04107211723871963,
+          "septic_patients": 246,
+          "detected_before_onset": 0.6300813008130082,
+          "detected_in_optimal_window": 0.22764227642276422,
+          "median_warning_hours": 29.0
+        }
+      },
+      "test": {
+        "ranking": {
+          "auroc": 0.5995740975173574,
+          "auprc": 0.033820214205601114,
+          "brier": 0.023432107497153094,
+          "ece": 0.004152157836345811,
+          "prevalence": 0.02407458691036647,
+          "rows": 108330
+        },
+        "patients": 3051,
+        "watch": {
+          "threshold": 0.02498048399687744,
+          "normalized_utility": 0.09238517276483629,
+          "sensitivity": 0.5014673514306677,
+          "specificity": 0.6598551722335021,
+          "ppv": 0.03383579614365981,
+          "npv": 0.9823694247684285,
+          "alerts_per_patient_day": 1.8022011695309108,
+          "false_alerts_per_100_patient_hours": 7.214660844547721,
+          "alert_precision": 0.039220131489458174,
+          "septic_patients": 285,
+          "detected_before_onset": 0.8666666666666667,
+          "detected_in_optimal_window": 0.25263157894736843,
+          "median_warning_hours": 25.0
+        },
+        "high_risk": {
+          "threshold": 0.03429517502365184,
+          "normalized_utility": 0.04859093358883779,
+          "sensitivity": 0.09317681584739546,
+          "specificity": 0.9630175065573342,
+          "ppv": 0.05646954201867497,
+          "npv": 0.9781209895118821,
+          "alerts_per_patient_day": 0.39243124537167084,
+          "false_alerts_per_100_patient_hours": 1.538946060281062,
+          "alert_precision": 0.058823529411764705,
+          "septic_patients": 285,
+          "detected_before_onset": 0.3508771929824561,
+          "detected_in_optimal_window": 0.11929824561403508,
+          "median_warning_hours": 18.5
+        },
+        "utility_optimal": {
+          "threshold": 0.034096404965339354,
+          "normalized_utility": 0.0846302173782863,
+          "sensitivity": 0.2553191489361702,
+          "specificity": 0.856427058915796,
+          "ppv": 0.04053109713487072,
+          "npv": 0.9797629372651055,
+          "alerts_per_patient_day": 1.0769898623630654,
+          "false_alerts_per_100_patient_hours": 4.265297958002434,
+          "alert_precision": 0.04950682852807284,
+          "septic_patients": 285,
+          "detected_before_onset": 0.656140350877193,
+          "detected_in_optimal_window": 0.17192982456140352,
+          "median_warning_hours": 24.0
+        }
+      }
+    },
+    "logistic": {
+      "val": {
+        "ranking": {
+          "auroc": 0.7906060851939849,
+          "auprc": 0.10250280008561755,
+          "brier": 0.01918759196996689,
+          "ece": 0.000630609257955117,
+          "prevalence": 0.020532192963821593,
+          "rows": 108269
+        },
+        "patients": 3050,
+        "watch": {
+          "threshold": 0.02784455567598343,
+          "normalized_utility": 0.3359212424204232,
+          "sensitivity": 0.597524541186513,
+          "specificity": 0.8105512878445549,
+          "ppv": 0.060342226628162576,
+          "npv": 0.9899912967798086,
+          "alerts_per_patient_day": 0.8821740944821537,
+          "false_alerts_per_100_patient_hours": 3.5164666706410377,
+          "alert_precision": 0.04332715477293791,
+          "septic_patients": 246,
+          "detected_before_onset": 0.8495934959349594,
+          "detected_in_optimal_window": 0.2764227642276423,
+          "median_warning_hours": 27.0
+        },
+        "high_risk": {
+          "threshold": 0.07100118696689606,
+          "normalized_utility": 0.21511714209693467,
+          "sensitivity": 0.2731540759709774,
+          "specificity": 0.9551339984010567,
+          "ppv": 0.1102877821816302,
+          "npv": 0.9847423308486238,
+          "alerts_per_patient_day": 0.2790008431344161,
+          "false_alerts_per_100_patient_hours": 1.029645968710345,
+          "alert_precision": 0.11428571428571428,
+          "septic_patients": 246,
+          "detected_before_onset": 0.508130081300813,
+          "detected_in_optimal_window": 0.16666666666666666,
+          "median_warning_hours": 39.0
+        },
+        "utility_optimal": {
+          "threshold": 0.028513824567198753,
+          "normalized_utility": 0.33864498872691123,
+          "sensitivity": 0.5911224925309433,
+          "specificity": 0.8171382390767841,
+          "ppv": 0.061753165685749956,
+          "npv": 0.9899148340369087,
+          "alerts_per_patient_day": 0.888510377366525,
+          "false_alerts_per_100_patient_hours": 3.536906292848687,
+          "alert_precision": 0.04462847941108811,
+          "septic_patients": 246,
+          "detected_before_onset": 0.8455284552845529,
+          "detected_in_optimal_window": 0.27235772357723576,
+          "median_warning_hours": 27.5
+        }
+      },
+      "test": {
+        "ranking": {
+          "auroc": 0.7711505696210098,
+          "auprc": 0.08520918047354238,
+          "brier": 0.022985389456152916,
+          "ece": 0.0035401695579578654,
+          "prevalence": 0.02407458691036647,
+          "rows": 108330
+        },
+        "patients": 3051,
+        "watch": {
+          "threshold": 0.02784455567598343,
+          "normalized_utility": 0.35107132163602617,
+          "sensitivity": 0.5796038151137197,
+          "specificity": 0.8066261753095672,
+          "ppv": 0.06646754448697993,
+          "npv": 0.9877710431961755,
+          "alerts_per_patient_day": 0.8933377595056307,
+          "false_alerts_per_100_patient_hours": 3.5051879846445866,
+          "alert_precision": 0.05831237136976904,
+          "septic_patients": 285,
+          "detected_before_onset": 0.8736842105263158,
+          "detected_in_optimal_window": 0.27017543859649124,
+          "median_warning_hours": 24.0
+        },
+        "high_risk": {
+          "threshold": 0.07100118696689606,
+          "normalized_utility": 0.20386609976645317,
+          "sensitivity": 0.25715333822450476,
+          "specificity": 0.9492667113988689,
+          "ppv": 0.10746588992794727,
+          "npv": 0.9817501802451334,
+          "alerts_per_patient_day": 0.2684303260897321,
+          "false_alerts_per_100_patient_hours": 0.9839721491620065,
+          "alert_precision": 0.1202435312024353,
+          "septic_patients": 285,
+          "detected_before_onset": 0.47719298245614034,
+          "detected_in_optimal_window": 0.13333333333333333,
+          "median_warning_hours": 31.0
+        },
+        "utility_optimal": {
+          "threshold": 0.028513824567198753,
+          "normalized_utility": 0.34989879633510995,
+          "sensitivity": 0.5707997065297139,
+          "specificity": 0.8129090164434414,
+          "ppv": 0.06757578389646486,
+          "npv": 0.9876134113935442,
+          "alerts_per_patient_day": 0.8880263527489083,
+          "false_alerts_per_100_patient_hours": 3.483908310138488,
+          "alert_precision": 0.05843110190936278,
+          "septic_patients": 285,
+          "detected_before_onset": 0.8666666666666667,
+          "detected_in_optimal_window": 0.2736842105263158,
+          "median_warning_hours": 24.0
+        }
+      }
+    },
+    "lightgbm": {
+      "val": {
+        "ranking": {
+          "auroc": 0.8291094578338842,
+          "auprc": 0.10837950024130541,
+          "brier": 0.019028289832887704,
+          "ece": 0.0005569359273543081,
+          "prevalence": 0.020532192963821593,
+          "rows": 108269
+        },
+        "patients": 3050,
+        "watch": {
+          "threshold": 0.02364907819453274,
+          "normalized_utility": 0.38122645604895744,
+          "sensitivity": 0.7486128894579599,
+          "specificity": 0.7357398588758733,
+          "ppv": 0.05453301828130829,
+          "npv": 0.9930913142924168,
+          "alerts_per_patient_day": 0.6792086459601938,
+          "false_alerts_per_100_patient_hours": 2.7133598480654753,
+          "alert_precision": 0.04122780619921757,
+          "septic_patients": 246,
+          "detected_before_onset": 0.9065040650406504,
+          "detected_in_optimal_window": 0.3048780487804878,
+          "median_warning_hours": 27.0
+        },
+        "high_risk": {
+          "threshold": 0.08355437665782493,
+          "normalized_utility": 0.28882773880043133,
+          "sensitivity": 0.34229620145113104,
+          "specificity": 0.9539869303764469,
+          "ppv": 0.13154010168935543,
+          "npv": 0.9861572734949067,
+          "alerts_per_patient_day": 0.10832999770054251,
+          "false_alerts_per_100_patient_hours": 0.391759425646616,
+          "alert_precision": 0.1320754716981132,
+          "septic_patients": 246,
+          "detected_before_onset": 0.42276422764227645,
+          "detected_in_optimal_window": 0.10569105691056911,
+          "median_warning_hours": 38.5
+        },
+        "utility_optimal": {
+          "threshold": 0.03135888501742161,
+          "normalized_utility": 0.4016916635158034,
+          "sensitivity": 0.6244131455399061,
+          "specificity": 0.8355434669262053,
+          "ppv": 0.07175789680204042,
+          "npv": 0.9909307334769301,
+          "alerts_per_patient_day": 0.48401025387714086,
+          "false_alerts_per_100_patient_hours": 1.89832991253545,
+          "alert_precision": 0.05869932432432432,
+          "septic_patients": 246,
+          "detected_before_onset": 0.8048780487804879,
+          "detected_in_optimal_window": 0.25203252032520324,
+          "median_warning_hours": 26.5
+        }
+      },
+      "test": {
+        "ranking": {
+          "auroc": 0.8213377346543655,
+          "auprc": 0.10928292955276611,
+          "brier": 0.022376674718932375,
+          "ece": 0.0038042809191394826,
+          "prevalence": 0.02407458691036647,
+          "rows": 108330
+        },
+        "patients": 3051,
+        "watch": {
+          "threshold": 0.02364907819453274,
+          "normalized_utility": 0.43244026588418477,
+          "sensitivity": 0.7435803374908291,
+          "specificity": 0.7351185548593986,
+          "ppv": 0.06251542067604243,
+          "npv": 0.9917821747257786,
+          "alerts_per_patient_day": 0.6947728607543219,
+          "false_alerts_per_100_patient_hours": 2.7621017508916186,
+          "alert_precision": 0.04586886209938253,
+          "septic_patients": 285,
+          "detected_before_onset": 0.9228070175438596,
+          "detected_in_optimal_window": 0.2807017543859649,
+          "median_warning_hours": 24.0
+        },
+        "high_risk": {
+          "threshold": 0.08355437665782493,
+          "normalized_utility": 0.2438493322953471,
+          "sensitivity": 0.29236977256052826,
+          "specificity": 0.9548611413682826,
+          "ppv": 0.13334448720093692,
+          "npv": 0.9827004824852474,
+          "alerts_per_patient_day": 0.10377671663134241,
+          "false_alerts_per_100_patient_hours": 0.359200905662947,
+          "alert_precision": 0.16929133858267717,
+          "septic_patients": 285,
+          "detected_before_onset": 0.4245614035087719,
+          "detected_in_optimal_window": 0.12982456140350876,
+          "median_warning_hours": 26.0
+        },
+        "utility_optimal": {
+          "threshold": 0.03135888501742161,
+          "normalized_utility": 0.42243607401640826,
+          "sensitivity": 0.6107850330154072,
+          "specificity": 0.8359054349625731,
+          "ppv": 0.08123536299765809,
+          "npv": 0.989060389536742,
+          "alerts_per_patient_day": 0.4841551543627588,
+          "false_alerts_per_100_patient_hours": 1.88112322633913,
+          "alert_precision": 0.06751054852320675,
+          "septic_patients": 285,
+          "detected_before_onset": 0.8210526315789474,
+          "detected_in_optimal_window": 0.24561403508771928,
+          "median_warning_hours": 24.5
+        }
+      }
+    }
+  },
+  "subgroups_test": {
+    "sex": {
+      "female": {
+        "rows": 44900,
+        "auroc": 0.8207506558965166,
+        "auprc": 0.11067199432508465,
+        "brier": 0.022066526070681183,
+        "ece": 0.004993003326222824,
+        "prevalence": 0.023697104677060134,
+        "sensitivity": 0.26597744360902253,
+        "specificity": 0.9589606715941236,
+        "ppv": 0.13592699327569643,
+        "npv": 0.9817600074734925,
+        "septic_patients": 118,
+        "detected_before_onset": 0.4067796610169492,
+        "detected_in_optimal_window": 0.13559322033898305,
+        "median_warning_hours": 25.0
+      },
+      "male": {
+        "rows": 63430,
+        "auroc": 0.8217608333491013,
+        "auprc": 0.10932502399431959,
+        "brier": 0.022596218693494548,
+        "ece": 0.0032976281833001385,
+        "prevalence": 0.0243417941037364,
+        "sensitivity": 0.3329015544041451,
+        "specificity": 0.9453672882396665,
+        "ppv": 0.1319640564826701,
+        "npv": 0.9826992525405224,
+        "septic_patients": 167,
+        "detected_before_onset": 0.437125748502994,
+        "detected_in_optimal_window": 0.12574850299401197,
+        "median_warning_hours": 32.0
+      }
+    },
+    "age": {
+      "18-44": {
+        "rows": 14533,
+        "auroc": 0.8415936270945804,
+        "auprc": 0.1557915739685635,
+        "brier": 0.02303085893340703,
+        "ece": 0.005606183021667014,
+        "prevalence": 0.025459299525218467,
+        "sensitivity": 0.37567567567567567,
+        "specificity": 0.9539645555320201,
+        "ppv": 0.17572692793931732,
+        "npv": 0.9831902197642265,
+        "septic_patients": 40,
+        "detected_before_onset": 0.525,
+        "detected_in_optimal_window": 0.15,
+        "median_warning_hours": 34.0
+      },
+      "45-64": {
+        "rows": 37527,
+        "auroc": 0.8234646187286365,
+        "auprc": 0.11595304091159411,
+        "brier": 0.02155519688977076,
+        "ece": 0.0028772936694685582,
+        "prevalence": 0.023183308018226878,
+        "sensitivity": 0.3080459770114943,
+        "specificity": 0.9491502305153177,
+        "ppv": 0.12570356472795496,
+        "npv": 0.9829919480152564,
+        "septic_patients": 94,
+        "detected_before_onset": 0.4148936170212766,
+        "detected_in_optimal_window": 0.14893617021276595,
+        "median_warning_hours": 24.0
+      },
+      "65-79": {
+        "rows": 38062,
+        "auroc": 0.8179143685130887,
+        "auprc": 0.09531065437449125,
+        "brier": 0.023613034404732038,
+        "ece": 0.006499038355363756,
+        "prevalence": 0.025143187431033578,
+        "sensitivity": 0.2601880877742947,
+        "specificity": 0.9524861878453039,
+        "ppv": 0.12375745526838966,
+        "npv": 0.9803606102635228,
+        "septic_patients": 105,
+        "detected_before_onset": 0.3904761904761905,
+        "detected_in_optimal_window": 0.11428571428571428,
+        "median_warning_hours": 24.0
+      },
+      "80+": {
+        "rows": 18208,
+        "auroc": 0.8155382950214278,
+        "auprc": 0.10943728430279488,
+        "brier": 0.02096312116802515,
+        "ece": 0.0038177086770864637,
+        "prevalence": 0.02257249560632689,
+        "sensitivity": 0.34306569343065696,
+        "specificity": 0.9493734899140305,
+        "ppv": 0.13531669865642995,
+        "npv": 0.9842712338343237,
+        "septic_patients": 46,
+        "detected_before_onset": 0.43478260869565216,
+        "detected_in_optimal_window": 0.10869565217391304,
+        "median_warning_hours": 26.0
+      }
+    },
+    "icu_type": {
+      "MICU": {
+        "rows": 29240,
+        "auroc": 0.8088395927617645,
+        "auprc": 0.1258190924952484,
+        "brier": 0.03184284618361885,
+        "ece": 0.010658575883838155,
+        "prevalence": 0.034439124487004105,
+        "sensitivity": 0.2502482621648461,
+        "specificity": 0.9382637339283817,
+        "ppv": 0.12631578947368421,
+        "npv": 0.9722884933015232,
+        "septic_patients": 111,
+        "detected_before_onset": 0.42342342342342343,
+        "detected_in_optimal_window": 0.14414414414414414,
+        "median_warning_hours": 24.0
+      },
+      "SICU": {
+        "rows": 26119,
+        "auroc": 0.8657805194200964,
+        "auprc": 0.11748528443073572,
+        "brier": 0.010619433687082187,
+        "ece": 0.0019334333658958566,
+        "prevalence": 0.01140931888663425,
+        "sensitivity": 0.3288590604026846,
+        "specificity": 0.9801711784981216,
+        "ppv": 0.16065573770491803,
+        "npv": 0.9921596299345329,
+        "septic_patients": 33,
+        "detected_before_onset": 0.3939393939393939,
+        "detected_in_optimal_window": 0.09090909090909091,
+        "median_warning_hours": 26.0
+      },
+      "unknown": {
+        "rows": 52971,
+        "auroc": 0.7935655333173587,
+        "auprc": 0.1001487726164704,
+        "brier": 0.022948620215212656,
+        "ece": 0.0029657067829066226,
+        "prevalence": 0.024598365143191556,
+        "sensitivity": 0.3430544896392939,
+        "specificity": 0.9433885577146396,
+        "ppv": 0.13256227758007116,
+        "npv": 0.9827415875320067,
+        "septic_patients": 141,
+        "detected_before_onset": 0.4326241134751773,
+        "detected_in_optimal_window": 0.1276595744680851,
+        "median_warning_hours": 31.0
+      }
+    },
+    "missingness": {
+      "high": {
+        "rows": 14919,
+        "auroc": 0.8540313994718849,
+        "auprc": 0.131404249380177,
+        "brier": 0.020438201109388782,
+        "ece": 0.0054585777519117066,
+        "prevalence": 0.02225350224545881,
+        "sensitivity": 0.3072289156626506,
+        "specificity": 0.9592788098992253,
+        "ppv": 0.14655172413793102,
+        "npv": 0.9838290093510511
+      },
+      "low": {
+        "rows": 40062,
+        "auroc": 0.8051029803921279,
+        "auprc": 0.1273865610777108,
+        "brier": 0.025425761950560885,
+        "ece": 0.003949548880276332,
+        "prevalence": 0.0276571314462583,
+        "sensitivity": 0.3483754512635379,
+        "specificity": 0.9415207680854341,
+        "ppv": 0.1448948948948949,
+        "npv": 0.9806941547676347
+      },
+      "medium": {
+        "rows": 53349,
+        "auroc": 0.8250252988609458,
+        "auprc": 0.08958172589025562,
+        "brier": 0.02062907973322092,
+        "ece": 0.003851148792304685,
+        "prevalence": 0.021893568764175524,
+        "sensitivity": 0.2645547945205479,
+        "specificity": 0.9557693413311359,
+        "ppv": 0.1180741306839893,
+        "npv": 0.9830678861468107
+      }
+    }
+  },
+  "release_criteria_internal_test": {
+    "beats_baselines_utility": true,
+    "beats_baselines_auprc": true,
+    "auprc_lift_vs_logistic": 0.28252529769017887,
+    "ece_le_0_05": true
+  },
+  "cpu_latency_ms_per_prediction": 5.161661455058493,
+  "global_shap_top25": {
+    "FiO2_hours_since": 0.2525913394158639,
+    "ICULOS": 0.14665614614461575,
+    "Temp_max_6h": 0.08820571087248837,
+    "hours_observed": 0.07786873462078926,
+    "Lactate_hours_since": 0.07463875444299144,
+    "Resp_min_24h": 0.0653862044398234,
+    "Unit1": 0.05274512704413906,
+    "sofa_lite_rise_24h": 0.04003934914117562,
+    "HospAdmTime": 0.039571039976887296,
+    "Calcium_std_24h": 0.03546907671668171,
+    "SBP_min_12h": 0.03329141221968381,
+    "Hct_max_24h": 0.03324543099720326,
+    "Unit2": 0.030312534574656085,
+    "O2Sat_std_6h": 0.03030587417887146,
+    "WBC_std_24h": 0.028930457021646986,
+    "BaseExcess_hours_since": 0.02656158187867913,
+    "HR_dev_baseline": 0.026039490906695398,
+    "shock_index": 0.025566220407508375,
+    "Temp": 0.02271913618968366,
+    "Resp_mean_12h": 0.022214069014979507,
+    "Resp_min_since_admit": 0.022084346577183604,
+    "Temp_max_12h": 0.021438107312857987,
+    "Phosphate_std_24h": 0.02117440743614912,
+    "HR_delta_6h": 0.020002093213351984,
+    "Resp_max_since_admit": 0.019667693450898048
+  },
+  "model_version": "v0.2.0-202609281906",
+  "thresholds": {
+    "watch": 0.02364907819453274,
+    "high_risk": 0.08355437665782493
+  }
+}

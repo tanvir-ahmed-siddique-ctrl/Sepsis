@@ -1,0 +1,27 @@
+seed: 42
+ensemble_members: 5
+# Watch band (screening flag, no alert): the lower of the utility-optimal threshold
+# and the threshold flagging this share of septic validation patients before onset.
+watch_patient_sensitivity: 0.85
+# High-risk band (fires alerts): best validation utility subject to this hour-level
+# specificity floor, which caps false-alert burden.
+high_risk_min_specificity: 0.95
+# Average precision peaks within a few trees at ~2% prevalence; logloss is steadier.
+early_stopping_metric: binary_logloss
+
+lightgbm:
+  learning_rate: 0.03
+  num_leaves: 15
+  min_child_samples: 500
+  subsample: 0.7
+  colsample_bytree: 0.3
+  reg_lambda: 5.0
+  scale_pos_weight: 1.0
+  max_estimators: 3000
+  early_stopping_rounds: 150
+
+sweep:
+  - {num_leaves: 4}
+  - {num_leaves: 7}
+  - {num_leaves: 7, min_child_samples: 1000}
+  - {num_leaves: 15, min_child_samples: 1000}

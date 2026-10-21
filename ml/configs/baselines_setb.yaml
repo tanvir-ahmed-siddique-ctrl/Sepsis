@@ -1,0 +1,45 @@
+version: 1
+seed: 42
+bootstrap_replicates: 500
+confidence_level: 0.95
+
+eligibility:
+  minimum_hours_observed: 4
+  require_identical_dataset_b_rows: true
+  expected_dataset_b_eligible_rows: 701312
+  expected_dataset_b_patients: 19978
+
+training:
+  dataset: "Dataset A train patients only"
+  logistic_features: "Frozen Run 4 feature columns"
+  logistic_class_weight: balanced
+  logistic_max_iter: 500
+
+calibration:
+  method: isotonic
+  dataset: "Dataset A validation patients only"
+
+thresholds:
+  high_risk_min_specificity: 0.95
+  watch_patient_sensitivity: 0.85
+  own_high_risk:
+    rule: "Best Dataset A validation utility with hour-level specificity >= 0.95"
+  watch:
+    rule: "Lower of utility-optimal and 85% validation-patient pre-onset sensitivity, capped by high-risk threshold"
+  matched_specificity:
+    rule: "Match frozen Run 4 validation high-risk specificity using Dataset A validation only"
+  matched_alert_burden:
+    rule: "Match frozen Run 4 validation alerts per patient-day using Dataset A validation only"
+
+release_rule:
+  primary: >
+    On Dataset B, frozen Run 4 must exceed both baselines in AUPRC and normalized
+    utility at each model's Dataset A-validation-selected high-risk threshold.
+  secondary: >
+    Report sensitivity and PPV at thresholds matched to Run 4 specificity and
+    alert burden on Dataset A validation. Do not move these criteria after
+    Dataset B results are observed.
+  decision_curve: >
+    Not reported for the official Challenge-label view because it is not a
+    pure incident risk horizon; decision-curve analysis is reserved for the
+    explicitly defined incident-hazard targets.

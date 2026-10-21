@@ -1,0 +1,38 @@
+version: 1
+seed: 42
+policy:
+  dataset_b_model_selection: forbidden
+  patient_level_splits: required
+  retain_negative_results: true
+  require_config_hash: true
+  require_patient_bootstrap_ci: true
+
+budgets:
+  baseline_setb:
+    executions: 1
+    purpose: "Preregistered rule, logistic, and frozen Run 4 comparison on identical rows."
+  feature_family_ablations:
+    runs: 6
+    dataset: "Dataset A only"
+  optimized_lightgbm:
+    trials: 40
+    dataset: "Dataset A grouped cross-validation only"
+  optimized_catboost:
+    trials: 30
+    dataset: "Dataset A grouped cross-validation only"
+  temporal_baselines:
+    model_families: 3
+    max_configs_per_family: 4
+    dataset: "Dataset A only"
+  graph_hazard:
+    enabled_only_after:
+      - phase_0_integrity_pass
+      - phase_1_baseline_bundle_complete
+      - phase_2_data_target_audit_complete
+      - critical_backend_correctness_tests_pass
+    max_architecture_configs: 8
+    max_ablation_runs: 7
+    dataset: "Dataset A only"
+  final_challenger_setb:
+    executions: 1
+    requires_user_authorization: true

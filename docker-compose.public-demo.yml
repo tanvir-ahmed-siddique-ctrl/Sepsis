@@ -1,0 +1,49 @@
+# Password-protected public demo link (de-identified public PhysioNet replay records only). Use with the base file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.public-demo.yml --env-file .env.demo up -d --build
+#
+# Only Caddy publishes ports. The browser calls the API on the same origin under /api,
+# so the same build works for a real domain or a Cloudflare Tunnel URL.
+services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required for a public demo}
+
+  api:
+    ports: !reset []
+    environment:
+      - DATABASE_URL=postgresql+psycopg://predictrx:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/predictrx
+      - DEMO_MODE=true
+      - SITE_ID=${SITE_ID:-predictrx-public-demo}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required (32+ random bytes)}
+      - CORS_ORIGINS=[]
+      # Only Caddy can reach the API, so trust its X-Forwarded-For for per-client limits.
+      - FORWARDED_ALLOW_IPS=*
+
+  web:
+    ports: !reset []
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: /api
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS is required, e.g. demo.example.org or :80 behind a tunnel}
+      DEMO_USER: ${DEMO_USER:?DEMO_USER is required}
+      DEMO_PASSWORD_HASH: ${DEMO_PASSWORD_HASH:?DEMO_PASSWORD_HASH is required; create with caddy hash-password}
+    volumes:
+      - ./infra/Caddyfile.public-demo:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_healthy
+
+volumes:
+  caddy-data:

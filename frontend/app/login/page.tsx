@@ -1,0 +1,233 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Panel } from "@/components/ui";
+import { api, ROLE_LABELS, type UserRole } from "@/lib/api";
+import { useSession } from "@/lib/session";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { me, signInDemo, signInLocal, signInPin, signInWithToken, signOut } = useSession();
+  const [userId, setUserId] = useState("dr.demo");
+  const [password, setPassword] = useState("");
+  const [totp, setTotp] = useState("");
+  const [pin, setPin] = useState("");
+  const [role, setRole] = useState<UserRole>("clinician");
+  const [units, setUnits] = useState("");
+  const [token, setToken] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function run(action: () => Promise<string | void>) {
+    setBusy(true);
+    try {
+      const destination = await action();
+      setError(null);
+      router.push(destination || "/");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div>
+        <h1 className="font-display text-3xl">Sign in</h1>
+        <p className="mt-1 text-sm text-ink/60">
+          Hospital sites can use local accounts or their identity provider. A short PIN unlocks a shared ward tablet
+          for 15 minutes; use a password for administration.
+        </p>
+      </div>
+      {me && (
+        <>
+          <Panel className="border-accent/30 bg-accent/5">
+            <p className="text-sm">
+              Signed in as <strong>{me.display_name || me.user_id}</strong> ({me.role}, {me.auth_mode}) · units{" "}
+              {me.units ? me.units.join(", ") : "all"}
+            </p>
+            {me.must_change_password && <p className="mt-1 text-sm font-medium text-risk-high">Change the temporary password before routine use.</p>}
+            <button type="button" onClick={signOut} className="mt-2 border border-ink/20 px-3 py-1 text-sm">
+              Sign out
+            </button>
+          </Panel>
+          {["password", "pin"].includes(me.auth_mode) && (
+            <AccountSecurity onDone={signOut} mustChange={me.must_change_password} />
+          )}
+        </>
+      )}
+      {!me && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Panel title="Hospital account">
+            <form className="space-y-3 text-sm" onSubmit={(event) => {
+              event.preventDefault();
+              void run(async () => {
+                const result = await signInLocal(userId.trim(), password, totp || undefined);
+                return result.must_change_password ? "/login" : "/";
+              });
+            }}>
+              <Field label="User ID">
+                <input value={userId} onChange={(e) => setUserId(e.target.value)} required className={INPUT} autoComplete="username" />
+              </Field>
+              <Field label="Password">
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={INPUT} autoComplete="current-password" />
+              </Field>
+              <Field label="Authenticator code (if enabled)">
+                <input inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))} className={INPUT} />
+              </Field>
+              <button type="submit" disabled={busy} className="border border-accent bg-accent px-3 py-1.5 font-medium text-white disabled:opacity-50">
+                Sign in
+              </button>
+            </form>
+          </Panel>
+          <Panel title="Ward tablet quick unlock">
+            <form className="space-y-3 text-sm" onSubmit={(event) => {
+              event.preventDefault();
+              void run(() => signInPin(userId.trim(), pin, totp || undefined));
+            }}>
+              <p className="text-xs text-ink/55">Use your own user ID and 4–6 digit PIN. Never share one ward account.</p>
+              <Field label="User ID">
+                <input value={userId} onChange={(e) => setUserId(e.target.value)} required className={INPUT} autoComplete="username" />
+              </Field>
+              <Field label="PIN">
+                <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} required className={INPUT} />
+              </Field>
+              <Field label="Authenticator code (if enabled)">
+                <input inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))} className={INPUT} />
+              </Field>
+              <button type="submit" disabled={busy} className="border border-ink/20 px-3 py-1.5 font-medium disabled:opacity-50">
+                Unlock for 15 minutes
+              </button>
+            </form>
+          </Panel>
+        </div>
+      )}
+      <details open={Boolean(me?.demo_mode)} className="border border-ink/10 bg-white p-4">
+        <summary className="cursor-pointer text-sm font-medium">Demo and hospital IdP options</summary>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <Panel title="Demo sign-in">
+          <form
+            className="space-y-3 text-sm"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void run(() => signInDemo(userId.trim(), role, units));
+            }}
+          >
+            <Field label="User ID">
+              <input value={userId} onChange={(e) => setUserId(e.target.value)} required maxLength={128} className={INPUT} />
+            </Field>
+            <Field label="Role">
+              <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className={INPUT}>
+                {(Object.keys(ROLE_LABELS) as UserRole[]).map((value) => (
+                  <option key={value} value={value}>{ROLE_LABELS[value]}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Unit scope (optional, comma-separated)">
+              <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="icu-demo-1" className={INPUT} />
+            </Field>
+            <button type="submit" disabled={busy} className="border border-accent bg-accent px-3 py-1.5 font-medium text-white disabled:opacity-50">
+              Get demo session
+            </button>
+          </form>
+        </Panel>
+        <Panel title="Hospital identity provider token">
+          <form
+            className="space-y-3 text-sm"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void run(() => signInWithToken(token));
+            }}
+          >
+            <p className="text-xs text-ink/55">
+              For pilot testing, paste an access token issued by the hospital IdP. The backend validates issuer,
+              audience, signature (JWKS) and role/unit claims. Tokens stay in this browser tab only.
+            </p>
+            <Field label="Bearer token">
+              <textarea value={token} onChange={(e) => setToken(e.target.value)} rows={4} required className={`${INPUT} font-mono text-xs`} />
+            </Field>
+            <button type="submit" disabled={busy} className="border border-ink/20 px-3 py-1.5 font-medium disabled:opacity-50">
+              Use token
+            </button>
+          </form>
+        </Panel>
+      </div>
+      </details>
+      {error && <p role="alert" className="text-sm text-risk-high">{error}</p>}
+    </div>
+  );
+}
+
+const INPUT = "w-full border border-ink/20 bg-white px-2 py-1.5 outline-none focus:border-accent";
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function AccountSecurity({ onDone, mustChange }: { onDone: () => void; mustChange: boolean }) {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [pin, setPin] = useState("");
+  const [secret, setSecret] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  async function run(action: () => Promise<unknown>, done: string, logout = false) {
+    try {
+      await action();
+      setMessage(done);
+      if (logout) onDone();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : String(error));
+    }
+  }
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      <Panel title="Change password">
+        <form className="space-y-2 text-sm" onSubmit={(event) => {
+          event.preventDefault();
+          void run(() => api("/v1/auth/password", {
+            method: "POST", body: JSON.stringify({ current_password: current, new_password: next }),
+          }), "Password changed. Sign in again.", true);
+        }}>
+          <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Current password" className={INPUT} required />
+          <input type="password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="New password (12+ characters)" className={INPUT} required minLength={12} />
+          <button className="border border-ink/20 px-3 py-1.5">Change</button>
+        </form>
+      </Panel>
+      {!mustChange && <Panel title="Ward PIN">
+        <form className="space-y-2 text-sm" onSubmit={(event) => {
+          event.preventDefault();
+          void run(() => api("/v1/auth/pin", { method: "POST", body: JSON.stringify({ pin }) }), "PIN changed. Sign in again.", true);
+        }}>
+          <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="4–6 digits" className={INPUT} required />
+          <button className="border border-ink/20 px-3 py-1.5">Set PIN</button>
+        </form>
+      </Panel>}
+      {!mustChange && <Panel title="Two-factor authentication">
+        {!secret ? (
+          <button type="button" className="border border-ink/20 px-3 py-1.5 text-sm" onClick={() => void run(async () => {
+            const result = await api<{ secret: string }>("/v1/auth/totp/begin", { method: "POST" });
+            setSecret(result.secret);
+          }, "Enter this secret in an authenticator, then confirm a code.")}>Begin setup</button>
+        ) : (
+          <form className="space-y-2 text-sm" onSubmit={(event) => {
+            event.preventDefault();
+            void run(() => api("/v1/auth/totp/confirm", { method: "POST", body: JSON.stringify({ code }) }), "Two-factor authentication enabled.");
+          }}>
+            <code className="block break-all bg-mist p-2 text-xs">{secret}</code>
+            <input inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" className={INPUT} required />
+            <button className="border border-ink/20 px-3 py-1.5">Confirm</button>
+          </form>
+        )}
+      </Panel>}
+      {message && <p className="text-sm md:col-span-3">{message}</p>}
+    </div>
+  );
+}

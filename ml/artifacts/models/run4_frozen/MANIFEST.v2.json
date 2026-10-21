@@ -1,0 +1,118 @@
+{
+  "schema_version": 2,
+  "artifact_status": "immutable_evidence_copy",
+  "preserved_at": "2026-09-29T18:55:47.062437+00:00",
+  "source_directory": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/latest",
+  "destination_directory": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen",
+  "model": {
+    "version": "v0.2.0-202609281906",
+    "frozen_at": "2026-09-28T20:09:09.946413+00:00",
+    "sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+    "thresholds": {
+      "watch": 0.02364907819453274,
+      "high_risk": 0.08355437665782493
+    },
+    "target_definition": "Official PhysioNet Challenge 2019 SepsisLabel view; labels turn positive six hours before defined onset and remain positive afterward.",
+    "calibration_dataset": "Dataset A validation patients only",
+    "threshold_selection_dataset": "Dataset A validation patients only"
+  },
+  "artifacts": {
+    "model.joblib": {
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/model.joblib",
+      "sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+      "bytes": 1949656
+    },
+    "FROZEN.json": {
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/FROZEN.json",
+      "sha256": "d7fc13ddb85abfd076330650366faac01ec13660a7fadd7405949550df506d62",
+      "bytes": 275
+    },
+    "metrics.json": {
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/metrics.json",
+      "sha256": "8d791871a66ce184fd5315d3e53df765e1e500b18f785e3b48ccb3b1933d018f",
+      "bytes": 22968
+    },
+    "eval_holdout.json": {
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/eval_holdout.json",
+      "sha256": "c5a5492030541d78859cdf6287d2e902adee67ab7e767b3b8b8a5cc3f79489bf",
+      "bytes": 8138
+    },
+    "eval_log_setB.txt": {
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/eval_log_setB.txt",
+      "sha256": "513da02feda49a5f278cce1b0fd97b22bf4f189a4ab141ec2a1e266453c051a4",
+      "bytes": 104
+    }
+  },
+  "data_provenance": {
+    "raw_checksum_manifest": {
+      "status": "present",
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/checksums/raw_sha256.txt",
+      "sha256": "3d3966239463c88a71a640f380d342ac8522fd0264749c37c5b39e6a229d953a",
+      "bytes": 3711245
+    },
+    "split_manifest": {
+      "status": "present",
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setA.splits.json",
+      "sha256": "7eb0bbc3bd40b3787664e50b3bc7f5cd3c5297b9133ad6d15783bae7aa113a89",
+      "bytes": 438243
+    },
+    "processed_features_set_a": {
+      "status": "present",
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setA.parquet",
+      "sha256": "fa80f8a2dd7c94e3d79f7b898964aafd55603bd9676214f65af6d994ea4ff951",
+      "bytes": 10616832
+    },
+    "processed_features_set_b": {
+      "status": "present",
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setB.parquet",
+      "sha256": "353df287347a372ed8997e6587f26e3935b970cdfb52e9d4282199820455ace3",
+      "bytes": 208127286
+    }
+  },
+  "configuration": {
+    "splits.yaml": {
+      "status": "present",
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/configs/splits.yaml",
+      "sha256": "694ddc1de4a7ff4acf2233dfcd06fd4eda7e4aeae6db1dfd7650316a26b256f8",
+      "bytes": 93
+    },
+    "train_lightgbm.yaml": {
+      "status": "present",
+      "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/configs/train_lightgbm.yaml",
+      "sha256": "e594c5f562e1ce845d0abb08fe5123cef8cac76806f399d84df771365cdf7275",
+      "bytes": 868
+    }
+  },
+  "code": {
+    "predict_rx_tree_sha256": "b4c3fd87ace6a698c236ae19ec3a2e79c531fd877c08ed3e36cc5ce35e8af430",
+    "feature_pipeline_tree_sha256": "650f6b48ba99ac8a270eff1304349069cc670fec99cda350dfa804d821110f27"
+  },
+  "environment": {
+    "git_commit": "unavailable:not-a-git-repository",
+    "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "dependencies": {
+      "numpy": "2.4.5",
+      "pandas": "3.0.6",
+      "polars": "not-installed",
+      "pyarrow": "not-installed",
+      "scikit-learn": "1.9.1",
+      "lightgbm": "4.7.0",
+      "shap": "not-installed",
+      "joblib": "1.6.0",
+      "pydantic": "2.13.4"
+    }
+  },
+  "evaluation": {
+    "dataset_b_wording": "Site-held-out retrospective validation on a geographically distinct public hospital cohort.",
+    "dataset_b_is_public_training_set_b": true,
+    "dataset_b_is_secret_hospital_c": false,
+    "prospective_validation": false,
+    "clinical_outcome_improvement_validated": false
+  },
+  "provenance_limitations": [
+    "The current workspace is not a Git repository, so a source commit cannot be recorded.",
+    "Processed feature hashes are marked missing when local parquet files are unavailable.",
+    "This preservation manifest was reconstructed from surviving frozen artifacts."
+  ]
+}

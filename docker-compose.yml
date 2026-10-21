@@ -1,0 +1,100 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: predictrx
+      POSTGRES_USER: predictrx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-predictrx-local-only}
+    volumes:
+      - predictrx-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U predictrx -d predictrx"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Model artefacts and replay cases are generated locally and never baked into Git.
+      - ./ml/artifacts:/app/ml/artifacts:ro
+      - ./demo/cases:/app/demo/cases:ro
+      - predictrx-backups:/app/backups
+    environment:
+      - DATABASE_URL=postgresql+psycopg://predictrx:${POSTGRES_PASSWORD:-predictrx-local-only}@db:5432/predictrx
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - SITE_ID=${SITE_ID:-predictrx-local-site}
+      - SITE_MODE=${SITE_MODE:-demo}
+      - AUTH_MODE=${AUTH_MODE:-local}
+      - JWT_SECRET=${JWT_SECRET:-change-me-before-non-demo-use-32-bytes}
+      - EXPORT_SALT=${EXPORT_SALT:-change-me-before-exporting-pilot-data}
+      - METRICS_TOKEN=${METRICS_TOKEN:-}
+      - INTEGRATION_API_KEYS=${INTEGRATION_API_KEYS:-[]}
+      - OIDC_ISSUER=${OIDC_ISSUER:-}
+      - OIDC_AUDIENCE=${OIDC_AUDIENCE:-}
+      - OIDC_JWKS_URL=${OIDC_JWKS_URL:-}
+      - RETENTION_DAYS=${RETENTION_DAYS:-365}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000","http://127.0.0.1:3000"]}
+      # Optional LLM for the mapping copilot; blank = deterministic only. See .env.example.
+      - COPILOT_LLM_PROVIDER=${COPILOT_LLM_PROVIDER:-ollama}
+      - COPILOT_LLM_URL=${COPILOT_LLM_URL:-}
+      - COPILOT_LLM_MODEL=${COPILOT_LLM_MODEL:-qwen3.5:4b}
+      - COPILOT_LLM_API_KEY=${COPILOT_LLM_API_KEY:-}
+      - COPILOT_EXTERNAL_LLM_APPROVED=${COPILOT_EXTERNAL_LLM_APPROVED:-false}
+      - COPILOT_LLM_PER_MINUTE=${COPILOT_LLM_PER_MINUTE:-30}
+      - COPILOT_EMBED_MODEL=${COPILOT_EMBED_MODEL:-}
+      # Shared HMAC key for patient-free fleet heartbeats; blank = unsigned (not sent).
+      - FLEET_SIGNING_KEY=${FLEET_SIGNING_KEY:-}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-600}
+      - RATE_LIMIT_LOGIN_PER_MINUTE=${RATE_LIMIT_LOGIN_PER_MINUTE:-20}
+      - RATE_LIMIT_INGEST_PER_MINUTE=${RATE_LIMIT_INGEST_PER_MINUTE:-1200}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  edge:
+    profiles: ["edge"]
+    build:
+      context: .
+      dockerfile: edge/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${EDGE_MLLP_PORT:-2575}:2575"
+      - "${EDGE_HEALTH_PORT:-8081}:8081"
+    volumes:
+      - predictrx-edge:/var/lib/predictrx-edge
+    environment:
+      - EDGE_API_URL=http://api:8000
+      - EDGE_INTEGRATION_KEY=${EDGE_INTEGRATION_KEY:-}
+      - EDGE_QUEUE_PATH=/var/lib/predictrx-edge/queue.jsonl
+      - EDGE_RETRY_INITIAL_SECONDS=${EDGE_RETRY_INITIAL_SECONDS:-1}
+      - EDGE_RETRY_MAX_SECONDS=${EDGE_RETRY_MAX_SECONDS:-60}
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  predictrx-db:
+  predictrx-backups:
+  predictrx-edge:

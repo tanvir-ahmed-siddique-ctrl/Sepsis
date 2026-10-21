@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-09-29T20:34:58.464579+00:00",
+  "checks": {
+    "models": {
+      "latest": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/latest/model.joblib",
+        "status": "valid",
+        "expected_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+        "actual_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d"
+      },
+      "run4_frozen": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/model.joblib",
+        "status": "valid",
+        "expected_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+        "actual_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d"
+      }
+    },
+    "evidence_json": {
+      "latest_frozen": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/latest/FROZEN.json",
+        "status": "valid",
+        "sha256": "d7fc13ddb85abfd076330650366faac01ec13660a7fadd7405949550df506d62"
+      },
+      "latest_metrics": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/latest/metrics.json",
+        "status": "valid",
+        "sha256": "8d791871a66ce184fd5315d3e53df765e1e500b18f785e3b48ccb3b1933d018f"
+      },
+      "latest_holdout": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/latest/eval_holdout.json",
+        "status": "valid",
+        "sha256": "c5a5492030541d78859cdf6287d2e902adee67ab7e767b3b8b8a5cc3f79489bf"
+      },
+      "strengthened_manifest": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/models/run4_frozen/MANIFEST.v2.json",
+        "status": "valid",
+        "sha256": "65860d47061937d9b6eeddaf0756356bf5d31cb1ec8f1811ba559f1eca741093"
+      },
+      "evaluation_access": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/artifacts/governance/evaluation_access.json",
+        "status": "valid",
+        "sha256": "b56562a41ebce37eb9d268d81856098d44811406d204dfc51319f1f109043d8e"
+      }
+    },
+    "processed_data": {
+      "set_a": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setA.parquet",
+        "status": "valid",
+        "sha256": "4427d518b9a2c0ad39b9fce43818553ce3d4c210adacacd52b6e0411912cbb68",
+        "bytes": 276427925,
+        "rows": 790215,
+        "columns": 677
+      },
+      "set_b": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setB.parquet",
+        "status": "valid",
+        "sha256": "1d360d48127f98c1e986d38516f5906140d07a51cb4a53a7127e43693858f732",
+        "bytes": 236401699,
+        "rows": 761246,
+        "columns": 677
+      },
+      "set_a_splits": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setA.splits.json",
+        "status": "valid",
+        "sha256": "7eb0bbc3bd40b3787664e50b3bc7f5cd3c5297b9133ad6d15783bae7aa113a89"
+      },
+      "set_b_splits": {
+        "path": "C:/Users/Tanvir Ahmed/Downloads/PredictRx Sentinel 2/PredictRx Sentinel/ml/data/processed/features_setB.splits.json",
+        "status": "valid",
+        "sha256": "59050358f8791376b0357c78ce9902f82124f4a7345c157e9af02db4ef996f2c"
+      }
+    },
+    "source": {
+      "predict_rx": "present",
+      "frontend_components": "present"
+    },
+    "git": {
+      "status": "unavailable",
+      "reason": "not-a-git-repository"
+    }
+  },
+  "critical_failures": [],
+  "ready_for_data_heavy_evaluation": true
+}

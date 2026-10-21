@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "predictrx-sentinel": {
+      "command": "python",
+      "args": ["mcp-server/predictrx_mcp.py"],
+      "env": {
+        "PREDICTRX_API_URL": "http://127.0.0.1:8000",
+        "PREDICTRX_DEMO": "1"
+      }
+    }
+  }
+}

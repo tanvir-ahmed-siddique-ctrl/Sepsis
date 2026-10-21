@@ -1,0 +1,21 @@
+# Tiny config for pipeline smoke tests only — never for reported results.
+seed: 42
+ensemble_members: 2
+watch_patient_sensitivity: 0.85
+high_risk_min_specificity: 0.95
+early_stopping_metric: binary_logloss
+
+lightgbm:
+  learning_rate: 0.1
+  num_leaves: 15
+  min_child_samples: 50
+  subsample: 0.8
+  colsample_bytree: 0.5
+  reg_lambda: 1.0
+  scale_pos_weight: 1.0
+  max_estimators: 100
+  early_stopping_rounds: 20
+
+sweep:
+  - {num_leaves: 15}
+  - {num_leaves: 31}
