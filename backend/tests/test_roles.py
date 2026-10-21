@@ -86,3 +86,28 @@ def test_public_demo_lockdown_keeps_shared_replay_in_demo_mode(client):
         assert "locked to replay mode" in response.json()["detail"]
     finally:
         settings.public_demo_lockdown = False
+
+
+def test_public_demo_disables_the_production_writer_lease(tmp_path, monkeypatch):
+    from app.services.engine import Engine
+
+    monkeypatch.setattr(settings, "database_url", f"sqlite:///{(tmp_path / 'public-demo.db').as_posix()}")
+    monkeypatch.setattr(settings, "writer_lease_enabled", False)
+    first = Engine()
+    second = Engine()
+    try:
+        assert not first.read_only
+        assert not second.read_only
+    finally:
+        second.close()
+        first.close()
+
+
+def test_public_demo_replay_controls_are_locked(client):
+    settings.public_demo_lockdown = True
+    try:
+        response = client.post("/v1/demo/replay/reset")
+        assert response.status_code == 403
+        assert "prepared replay state" in response.json()["detail"]
+    finally:
+        settings.public_demo_lockdown = False

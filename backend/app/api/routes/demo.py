@@ -1,10 +1,19 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth import CLINICAL_ROLES, Actor, require_roles
+from app.core.config import settings
 from app.services.engine import get_engine
 
 router = APIRouter(tags=["demo"], prefix="/demo/replay")
 CLINICAL = require_roles(*CLINICAL_ROLES)
+
+
+def _reject_public_replay_mutation() -> None:
+    if settings.public_demo_lockdown:
+        raise HTTPException(
+            status_code=403,
+            detail="This public demo is locked to its prepared replay state. Hospital installations retain replay controls locally.",
+        )
 
 
 @router.post("/step")
@@ -12,11 +21,13 @@ def replay_step(
     hours: int = Query(1, ge=1, le=24),
     _: Actor = Depends(CLINICAL),
 ):
+    _reject_public_replay_mutation()
     return get_engine().step(hours)
 
 
 @router.post("/reset")
 def replay_reset(_: Actor = Depends(CLINICAL)):
+    _reject_public_replay_mutation()
     engine = get_engine()
     engine.reset_replay()
     return {"patients": sum(patient.source_mode == "replay" for patient in engine.patients.values())}

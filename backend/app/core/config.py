@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     circuit_failure_threshold: int = 3
     circuit_cooldown_seconds: int = 60
     writer_lease_seconds: int = 300
+    # A hospital deployment may have multiple API instances sharing one durable
+    # database, so only one instance may mutate state. The public replay demo
+    # runs one disposable container and deliberately disables this lease: an
+    # abandoned SQLite lease must never make the shared judge board read-only.
+    writer_lease_enabled: bool = True
 
     # Readiness gates for leaving silent mode.
     pilot_min_days: int = 28

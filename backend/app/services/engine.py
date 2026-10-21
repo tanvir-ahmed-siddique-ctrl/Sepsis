@@ -113,7 +113,7 @@ class Engine:
         self.records = RecordStore(self.store.engine)
         self.writer_id = f"{socket.gethostname()}:{os.getpid()}:{uuid.uuid4().hex[:8]}"
         self.read_only_reason: str | None = None
-        if not self.records.acquire_lease(LEASE_KEY, self.writer_id, settings.writer_lease_seconds):
+        if settings.writer_lease_enabled and not self.records.acquire_lease(LEASE_KEY, self.writer_id, settings.writer_lease_seconds):
             self.read_only_reason = "another_writer_holds_lease"
         self.site = SiteManager(self.records)
         self.patients: dict[str, Patient] = {}
@@ -130,6 +130,7 @@ class Engine:
         self._restore_state()
         if self.read_only_reason is None:
             self.reset_replay()
+        if self.read_only_reason is None and settings.writer_lease_enabled:
             self._heartbeat = threading.Thread(target=self._heartbeat_loop, name="writer-lease", daemon=True)
             self._heartbeat.start()
 
@@ -146,13 +147,13 @@ class Engine:
         interval = max(5.0, settings.writer_lease_seconds / 3)
         while not self._stop.wait(interval):
             with self.lock:
-                if self.read_only_reason is None and not self.records.renew_lease(LEASE_KEY, self.writer_id):
+                if self.read_only_reason is None and settings.writer_lease_enabled and not self.records.renew_lease(LEASE_KEY, self.writer_id):
                     self.read_only_reason = "writer_lease_lost"
 
     def close(self) -> None:
         self._stop.set()
         with self.lock:
-            if self.read_only_reason is None:
+            if self.read_only_reason is None and settings.writer_lease_enabled:
                 self.records.release_lease(LEASE_KEY, self.writer_id)
                 self.read_only_reason = "engine_closed"
         self.store.engine.dispose()
@@ -1380,7 +1381,7 @@ class Engine:
         self.alerts.update(state.get("alerts", {}))
 
     def _persist_state(self) -> None:
-        if not self.records.renew_lease(LEASE_KEY, self.writer_id):
+        if settings.writer_lease_enabled and not self.records.renew_lease(LEASE_KEY, self.writer_id):
             self.read_only_reason = "writer_lease_lost"
             raise ReadOnlyError(self.read_only_reason)
         if self._pending_records:

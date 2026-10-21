@@ -32,9 +32,6 @@ export function AppNav() {
       : []),
     { href: "/model", label: t.nav.model },
     { href: "/readiness", label: t.nav.readiness },
-    { href: "/judge-guide", label: "Judge guide" },
-    { href: "/docs", label: "Docs" },
-    { href: "/presentation", label: t.nav.presentation },
   ];
   return (
     <header className="border-b border-ink/10 bg-white/90">

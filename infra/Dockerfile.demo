@@ -48,6 +48,7 @@ ENV DEMO_MODE=true \
     METRICS_DIR=/app/ml/artifacts/models/latest \
     DEMO_CASES_DIR=/app/demo/cases \
     PUBLIC_DEMO_LOCKDOWN=true \
+    WRITER_LEASE_ENABLED=false \
     CORS_ORIGINS=[] \
     PORT=10000 \
     NEXT_TELEMETRY_DISABLED=1 \
