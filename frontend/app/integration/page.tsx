@@ -9,6 +9,7 @@ import { usePoll } from "@/lib/usePoll";
 
 type IntegrationStatus = {
   site: { effective_mode: SiteMode };
+  simulation_mode: boolean;
   connectors: ConnectorHealth[];
   feed_alarm: boolean;
   mapping_registry: { version: string; sha256: string; entries: number; status: string; signoff: Record<string, unknown> | null };
@@ -33,6 +34,7 @@ type ConnectorEvent = {
   processing_ms: number | null;
   error: string | null;
   backfill: number;
+  actor: string | null;
 };
 
 type QuarantineEvent = { audit_id: string; recorded_at: string; reason: string; connector?: string; code?: string; patient_id?: string };
@@ -130,6 +132,12 @@ export default function IntegrationPage() {
       </div>
       {status.error && <ApiError error={status.error} />}
       {data && <SiteModeBanner mode={data.site.effective_mode} />}
+      {data?.simulation_mode && (
+        <p className="bg-accent/5 px-4 py-3 text-sm text-ink/70">
+          Public commissioning simulation. The encounter counts and feed activity below are generated for this judge
+          session; no hospital EHR is connected. A hospital installation records its own verified connector events.
+        </p>
+      )}
       {data?.feed_alarm && (
         <p role="alert" className="border border-risk-high/40 bg-risk-high/5 px-3 py-2 text-sm text-risk-high">
           A connected feed is stale or its circuit breaker is open. Scores for affected encounters may be outdated —
@@ -146,7 +154,7 @@ export default function IntegrationPage() {
 
       {data && (
         <div className="flex flex-wrap gap-3">
-          <Stat label="Live-feed encounters" value={data.encounters.api} />
+          <Stat label={data.simulation_mode ? "Simulated encounters" : "Live-feed encounters"} value={data.encounters.api} />
           <Stat label="Replay beds" value={data.replay.beds} />
           <Stat label="Quarantined 24 h" value={data.quarantined_last_24h} color={data.quarantined_last_24h ? "text-risk-watch" : "text-ink"} />
           <Stat label="Backfill jobs" value={data.backfill.jobs} />
@@ -176,7 +184,9 @@ export default function IntegrationPage() {
                     <p className="text-xs text-ink/50">{connector.endpoint}</p>
                   </td>
                   <td className="py-2">
-                    <Pill tone={connectorTone(connector.state)}>{humanize(connector.state)}</Pill>
+                    <Pill tone={connectorTone(connector.state)}>
+                      {data.simulation_mode && connector.state === "healthy" ? "Simulation running" : humanize(connector.state)}
+                    </Pill>
                     <p className="mt-1 text-xs text-ink/50">circuit {humanize(connector.circuit)}</p>
                     {connector.last_error && <p className="mt-1 max-w-xs text-xs text-risk-high">{connector.last_error}</p>}
                   </td>
@@ -257,6 +267,7 @@ export default function IntegrationPage() {
               <li key={event.event_id} className="flex flex-wrap justify-between gap-2 border-b border-ink/5 pb-1">
                 <span>
                   {new Date(event.received_at).toLocaleTimeString()} · {event.connector} · <strong>{event.status}</strong>
+                  {event.actor === "simulation-relay" ? " · simulated" : ""}
                   {event.backfill ? " · backfill" : ""}
                 </span>
                 <span className="tabular-nums text-ink/60">

@@ -173,6 +173,7 @@ def integration_status(_: Actor = Depends(OPERATIONS)):
     mapping_ready = bool(mapping_signoff and mapping_signoff.get("registry_sha256") == service.registry.sha256)
     return {
         "site": engine.site.state.as_dict(),
+        "simulation_mode": settings.public_demo_lockdown,
         "connectors": health,
         "feed_alarm": any(item["state"] in {"stale", "circuit_open"} for item in connected),
         "mapping_registry": {
