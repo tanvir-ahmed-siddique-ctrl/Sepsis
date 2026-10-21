@@ -194,6 +194,7 @@ class Engine:
         defaults = (
             (settings.demo_unit_id, "Demo ICU", "icu"),
             (settings.api_unit_id, "API ICU", "icu"),
+            ("ward-demo-1", "Demo Ward", "ward"),
         )
         for unit_id, label, kind in defaults:
             if unit_id in self.units:
@@ -585,11 +586,114 @@ class Engine:
                 self.patients[p.patient_id] = p
                 for _ in range(case["replay_start_hour"]):
                     self._advance(p, emit_alerts=False)
+            self._seed_demo_care_workflow()
             self._log(
                 "replay_reset",
                 {"cases": sum(patient.source_mode == "replay" for patient in self.patients.values())},
             )
             self._persist_state()
+
+    def _seed_demo_care_workflow(self) -> None:
+        """Populate the non-model workflows with disclosed synthetic encounters.
+
+        The ICU replay beds remain the held-out, de-identified demonstration
+        cases. These additional encounters exist only to exercise the bedside
+        charting, integration and NEWS2 screens on the public competition link.
+        They are never model evidence, evaluation data or hospital data.
+        """
+        seeded_keys = {
+            key for key, patient in self.patients.items()
+            if patient.replay_meta.get("public_demo_seed")
+        }
+        for key in seeded_keys:
+            del self.patients[key]
+        for alert_id in [
+            key for key, alert in self.alerts.items()
+            if alert.get("encounter_key") in seeded_keys
+        ]:
+            del self.alerts[alert_id]
+
+        now_hour = int(datetime.now(timezone.utc).timestamp() // 3600)
+        replay_sources = [patient for patient in self.patients.values() if patient.source_mode == "replay"]
+        if not replay_sources:
+            return
+
+        # A Synthea-style commissioning feed, made from the same permitted
+        # de-identified feature schema as the replay. It has an API source
+        # mode so it appears in bedside charting and integration telemetry.
+        source = replay_sources[0].source
+        if source is not None and len(source) >= 12:
+            raw = source.iloc[-12:].copy().reset_index(drop=True)
+            raw["_hour"] = np.arange(now_hour - 11, now_hour + 1)
+            age = int(raw["Age"].iloc[-1]) if "Age" in raw else 64
+            gender = int(raw["Gender"].iloc[-1]) if "Gender" in raw else 0
+            icu = Patient(
+                encounter_key="SIM-ICU-01--SIM-ICU-01-ENC",
+                patient_id="SIM-ICU-01",
+                encounter_id="SIM-ICU-01-ENC",
+                display_name="Simulation ICU A-01",
+                unit_id=settings.api_unit_id,
+                source_mode="api",
+                age=age,
+                sex={0: "F", 1: "M"}.get(gender),
+                raw=raw,
+                static_values={"Age": float(age), "Gender": float(gender)},
+                icu_start_hour=now_hour - 11,
+                segment_start_hour=now_hour - 11,
+                bed_id="A-01",
+                kind="icu",
+                admitted_at=(datetime.now(timezone.utc) - timedelta(hours=12)).isoformat(),
+                replay_meta={"public_demo_seed": True, "data_class": "synthetic commissioning feed"},
+            )
+            self.patients[icu.encounter_key] = icu
+            for size in range(1, len(raw) + 1):
+                self._score(icu, emit_alerts=True, upto=size, raw_frame=raw, audit_event="synthetic_feed_prediction")
+            self._upsert_encounter(icu, "demo-seed")
+
+        # Ward encounters use the published NEWS2 rule only. They never enter
+        # the frozen ICU sepsis model.
+        ward_rows = (
+            ("SIM-WARD-01", "Simulation Ward B-11", "B-11", 72, "F", 24, 92, 96, 37.7, 108, 1.0, 10.8, 1.1, 205),
+            ("SIM-WARD-02", "Simulation Ward B-12", "B-12", 58, "M", 30, 89, 94, 38.5, 99, 2.8, 14.2, 1.5, 178),
+            ("SIM-WARD-03", "Simulation Ward B-14", "B-14", 67, "F", 18, 96, 98, 36.9, 124, 0.9, 7.6, 0.8, 242),
+        )
+        for index, (patient_id, label, bed, age, sex, resp, sbp, spo2, temp, hr, lactate, wbc, creatinine, platelets) in enumerate(ward_rows):
+            hours = np.arange(now_hour - 5, now_hour + 1)
+            raw = pd.DataFrame({
+                "_hour": hours,
+                "Resp": [resp - 1, resp, resp, resp + 1, resp, resp],
+                "O2Sat": [spo2 + 1, spo2, spo2, spo2, spo2, spo2],
+                "OxygenTherapy": [1 if spo2 <= 94 else 0] * 6,
+                "SBP": [sbp + 3, sbp + 2, sbp + 1, sbp, sbp, sbp],
+                "MAP": [max(45, sbp - 25)] * 6,
+                "HR": [hr - 3, hr - 2, hr - 1, hr, hr, hr],
+                "Temp": [temp - 0.2, temp - 0.1, temp, temp, temp, temp],
+                "AVPU": [0] * 6,
+                "Lactate": [lactate] * 6,
+                "WBC": [wbc] * 6,
+                "Creatinine": [creatinine] * 6,
+                "Platelets": [platelets] * 6,
+            })
+            ward = Patient(
+                encounter_key=f"{patient_id}--{patient_id}-ENC",
+                patient_id=patient_id,
+                encounter_id=f"{patient_id}-ENC",
+                display_name=label,
+                unit_id="ward-demo-1",
+                source_mode="api",
+                age=age,
+                sex=sex,
+                raw=raw,
+                static_values={"Age": float(age), "Gender": 0.0 if sex == "F" else 1.0},
+                segment_start_hour=now_hour - 5,
+                bed_id=bed,
+                kind="ward",
+                admitted_at=(datetime.now(timezone.utc) - timedelta(hours=6 + index)).isoformat(),
+                replay_meta={"public_demo_seed": True, "data_class": "synthetic commissioning feed"},
+            )
+            self.patients[ward.encounter_key] = ward
+            self._score_news2(ward)
+            self._upsert_encounter(ward, "demo-seed")
 
     def step(self, hours: int = 1) -> dict:
         with self.lock:

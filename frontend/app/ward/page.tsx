@@ -37,6 +37,10 @@ export default function WardPage() {
           {wards.map((ward) => <option key={ward.unit_id} value={ward.unit_id}>{ward.label}</option>)}
         </select>
       </div>
+      <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-xs text-ink/65">
+        Demo Ward contains synthetic commissioning encounters. NEWS2 is calculated deterministically and does not
+        enter the ICU sepsis model.
+      </p>
       {board.error && <ApiError error={board.error} />}
       {!wards.length && <Panel><p className="text-sm">Create a ward unit from the bedside charting workflow or API first.</p></Panel>}
       <div className="flex gap-3">

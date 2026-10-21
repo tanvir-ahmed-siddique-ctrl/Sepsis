@@ -25,6 +25,7 @@ export function AppNav() {
       ? [
           { href: "/pilot", label: t.nav.pilot },
           { href: "/integration", label: t.nav.integration },
+          { href: "/api-reference", label: "API & SDK" },
           { href: "/operations", label: "Operations" },
           { href: "/admin/setup", label: "Site setup" },
           { href: "/admin/users", label: t.nav.users },

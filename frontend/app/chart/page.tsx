@@ -163,6 +163,10 @@ export default function ChartPage() {
         <Stat label={bn ? "অফলাইন কিউ" : "Offline queue"} value={outbox} color={outbox ? "text-risk-watch" : "text-ink"} />
         {outbox > 0 && <button className="border border-ink/20 px-3 py-1.5 text-sm" onClick={() => void sync()}>{bn ? "এখন সিঙ্ক" : "Sync now"}</button>}
       </div>
+      <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-xs text-ink/65">
+        Competition environment: the API ICU and Demo Ward are populated with synthetic commissioning encounters so
+        this workflow can be demonstrated without hospital patient data.
+      </p>
       <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
         <Panel title={bn ? "বেড তালিকা" : "Bed list"}>
           <div className="space-y-2">
