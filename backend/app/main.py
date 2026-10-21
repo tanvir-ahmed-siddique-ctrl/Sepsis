@@ -44,10 +44,11 @@ async def lifespan(_: FastAPI):
             while True:
                 await asyncio.sleep(max(10, settings.public_simulation_interval_seconds))
                 try:
-                    engine.advance_public_simulation()
-                except Exception:
-                    # A public display loop must never take down the clinical API.
-                    pass
+                    await asyncio.to_thread(engine.advance_public_simulation)
+                except Exception as error:
+                    # Keep the API responsive and leave a visible diagnostic in
+                    # service logs if the simulation relay stops progressing.
+                    print(f"public simulation tick failed: {error!r}", flush=True)
         task = asyncio.create_task(simulation_loop())
     try:
         yield

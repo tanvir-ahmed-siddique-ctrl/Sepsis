@@ -123,6 +123,7 @@ class PatientOverviewCard(BaseModel):
     probability: float | None
     uncertainty: float | None
     hour: int
+    scored_at: str | None = None
     data_freshness_minutes: int | None
     trust_state: str
     unresolved_alerts: int

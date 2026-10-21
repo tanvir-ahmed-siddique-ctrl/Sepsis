@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import secrets
 import socket
 import threading
 import time
@@ -131,6 +132,8 @@ class Engine:
         self._restore_state()
         if self.read_only_reason is None:
             self.reset_replay()
+            if settings.public_demo_lockdown:
+                self._seed_public_staff()
         if self.read_only_reason is None and settings.writer_lease_enabled:
             self._heartbeat = threading.Thread(target=self._heartbeat_loop, name="writer-lease", daemon=True)
             self._heartbeat.start()
@@ -708,12 +711,30 @@ class Engine:
         for connector, received in (("fhir_r4", 180), ("hl7v2_oru", 96), ("csv_lab", 42)):
             self.records.insert(connector_events, {
                 "event_id": f"commissioning-{connector}-{now_hour}", "connector": connector,
-                "received_at": utc_now(), "status": "accepted", "received": received,
+                "received_at": utc_now(), "status": "processed", "received": received,
                 "accepted": received, "quarantined": 0, "duplicates": 0,
                 "max_source_time": datetime.now(timezone.utc).isoformat(), "lag_seconds": 12.0,
                 "processing_ms": 38.0, "error": None, "idempotency_key": None,
                 "actor": "simulation-relay", "backfill": 0,
             })
+
+    def _seed_public_staff(self) -> None:
+        """Create named, scoped commissioning accounts with unrevealed random secrets."""
+        from app.accounts import AccountStore
+
+        accounts = AccountStore(self.records)
+        roster = (
+            ("sim-admin", "Simulation site administrator", "admin", None),
+            ("sim-clinician-01", "Simulation ICU clinician 01", "clinician", [settings.api_unit_id]),
+            ("sim-clinician-02", "Simulation ICU clinician 02", "clinician", [settings.api_unit_id]),
+            ("sim-nurse-01", "Simulation ICU nurse 01", "nurse", [settings.api_unit_id]),
+            ("sim-nurse-02", "Simulation ward nurse 02", "nurse", ["ward-demo-1"]),
+        )
+        for user_id, display_name, role, units in roster:
+            if accounts.get(user_id):
+                continue
+            accounts.create(user_id, display_name, role, secrets.token_urlsafe(32),
+                            units=units, actor_id="simulation-commissioning")
 
     def step(self, hours: int = 1) -> dict:
         with self.lock:
@@ -730,26 +751,52 @@ class Engine:
             return {"advanced_patient_hours": advanced, "open_alerts": self.open_alert_count()}
 
     def advance_public_simulation(self) -> None:
-        """Advance one synthetic ICU stream; called only by the public display runtime."""
+        """Revise synthetic observations and rescore a few beds each display tick."""
         with self.lock:
             self._require_writable()
             candidates = [p for p in self.patients.values() if p.replay_meta.get("public_demo_seed") and p.kind == "icu"]
             if not candidates:
                 return
-            patient = candidates[int(time.time() // max(10, settings.public_simulation_interval_seconds)) % len(candidates)]
-            row = patient.raw.iloc[[-1]].copy()
-            row["_hour"] = int(row["_hour"].iloc[-1]) + 1
-            phase = int(row["_hour"].iloc[-1]) % 5 - 2
-            for field, change in (("HR", 1.5), ("SBP", -1.0), ("MAP", -0.7), ("Resp", 0.5), ("Temp", 0.04)):
-                if field in row:
-                    row[field] = row[field].fillna(0) + phase * change
-            patient.raw = pd.concat([patient.raw.iloc[-23:], row], ignore_index=True)
-            patient.revision += 1
-            self._score(patient, emit_alerts=True, audit_event="simulated_live_prediction")
-            self._upsert_encounter(patient, "simulation-relay")
+            tick = int(time.time() // max(10, settings.public_simulation_interval_seconds))
+            now_hour = int(time.time() // 3600)
+            phase = tick % 5 - 2
+            start = (tick * 3) % len(candidates)
+            for offset in range(min(3, len(candidates))):
+                patient = candidates[(start + offset) % len(candidates)]
+                row = patient.raw.iloc[[-1]].copy()
+                previous_hour = int(row["_hour"].iloc[-1])
+                row["_hour"] = now_hour
+                if now_hour > previous_hour and "ICULOS" in row and pd.notna(row["ICULOS"].iloc[-1]):
+                    row["ICULOS"] = row["ICULOS"] + (now_hour - previous_hour)
+                for field, change in (("HR", 3.0), ("SBP", -2.0), ("MAP", -1.4), ("Resp", 1.0), ("Temp", 0.08)):
+                    if field in row:
+                        row[field] = row[field].fillna(0) + phase * change
+                if now_hour > previous_hour:
+                    patient.raw = pd.concat([patient.raw.iloc[-23:], row], ignore_index=True)
+                else:
+                    patient.raw.iloc[-1] = row.iloc[0]
+                patient.revision += 1
+                self._score(patient, emit_alerts=True, audit_event="simulated_live_prediction")
+                self._upsert_encounter(patient, "simulation-relay")
+            wards = [p for p in self.patients.values() if p.replay_meta.get("public_demo_seed") and p.kind == "ward"]
+            if wards:
+                ward = wards[tick % len(wards)]
+                row = ward.raw.iloc[[-1]].copy()
+                previous_hour = int(row["_hour"].iloc[-1])
+                row["_hour"] = now_hour
+                for field, change in (("Resp", 1.0), ("HR", 2.0), ("SBP", -2.0), ("O2Sat", -0.5)):
+                    if field in row:
+                        row[field] = row[field].fillna(0) + phase * change
+                if now_hour > previous_hour:
+                    ward.raw = pd.concat([ward.raw.iloc[-23:], row], ignore_index=True)
+                else:
+                    ward.raw.iloc[-1] = row.iloc[0]
+                ward.revision += 1
+                self._score_news2(ward)
+                self._upsert_encounter(ward, "simulation-relay")
             self.records.insert(connector_events, {
                 "event_id": f"simulation-fhir-{uuid.uuid4().hex[:16]}", "connector": "fhir_r4",
-                "received_at": utc_now(), "status": "accepted", "received": 8, "accepted": 8,
+                "received_at": utc_now(), "status": "processed", "received": 8, "accepted": 8,
                 "quarantined": 0, "duplicates": 0, "max_source_time": datetime.now(timezone.utc).isoformat(),
                 "lag_seconds": 4.0, "processing_ms": round(time.perf_counter() % 40 + 12, 1),
                 "error": None, "idempotency_key": None, "actor": "simulation-relay", "backfill": 0,
@@ -1089,6 +1136,7 @@ class Engine:
             ):
                 previous = "watch"
         p.predictions.append(pred)
+        pred["scored_at"] = utc_now()
         self._log(audit_event, {
             "patient_id": p.patient_id,
             "encounter_id": p.encounter_id,

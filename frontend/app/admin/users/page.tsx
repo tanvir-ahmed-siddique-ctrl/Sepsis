@@ -137,6 +137,12 @@ export default function UsersPage() {
         <h1 className="font-display text-3xl">Site users</h1>
         <p className="mt-1 text-sm text-ink/60">Individual accounts, role and unit scope. Never create a shared ward account.</p>
       </div>
+      {users.data?.users.some((user) => user.user_id.startsWith("sim-")) && (
+        <p className="rounded-lg bg-accent/5 px-4 py-3 text-sm text-ink/70">
+          Public commissioning roster: these named simulation accounts show role and unit assignment. The role picker
+          signs reviewers in separately; a hospital provisions its own staff accounts or identity provider.
+        </p>
+      )}
       {users.error && <ApiError error={users.error} />}
       <Panel title="Create local user">
         <form className="grid gap-3 md:grid-cols-3" onSubmit={(event) => { event.preventDefault(); void create(); }}>

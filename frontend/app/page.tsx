@@ -12,7 +12,7 @@ import { minutesLabel } from "@/lib/pilot";
 import { useSession } from "@/lib/session";
 import { usePoll } from "@/lib/usePoll";
 
-const UNIT_KEY = "predictrx-unit";
+const UNIT_KEY = "predictrx-unit-v2";
 
 export default function OverviewPage() {
   const { t } = useLocale();
@@ -57,7 +57,7 @@ export default function OverviewPage() {
         <div>
           <h1 className="font-display text-3xl text-ink">ICU command centre</h1>
           <p className="mt-1 text-sm text-ink/65">
-            Live simulation relay · updates every 30 seconds · model {data?.model_version ?? "…"}
+            Simulated ICU feed · three beds rescored every 30 seconds · model {data?.model_version ?? "…"}
           </p>
           {units.data && units.data.units.length > 1 && (
             <label className="mt-2 flex items-center gap-2 text-sm">
@@ -115,7 +115,7 @@ export default function OverviewPage() {
                   <div>
                     <p className="font-medium">{p.display_name}</p>
                     <p className="text-xs text-ink/55">
-                      {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} · {p.source_mode === "api" ? "live feed" : "replay"}
+                      {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} · {p.source_mode === "api" ? "simulated feed" : "replay"}
                     </p>
                   </div>
                   <RiskBadge band={p.risk_band} />
@@ -162,6 +162,7 @@ export default function OverviewPage() {
                   </button>
                 )}
               </div>
+              {p.scored_at && <p className="mt-2 text-xs text-ink/50">Model processed {new Date(p.scored_at).toLocaleTimeString()}</p>}
             </article>
           ))}
         </section>

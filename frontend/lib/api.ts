@@ -66,6 +66,7 @@ export type PatientOverview = {
   probability: number | null;
   uncertainty: number | null;
   hour: number;
+  scored_at?: string | null;
   data_freshness_minutes: number | null;
   trust_state: TrustState;
   unresolved_alerts: number;

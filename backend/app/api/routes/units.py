@@ -81,6 +81,7 @@ def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL)):
                 probability=latest["probability"],
                 uncertainty=latest["uncertainty"],
                 hour=latest["hour"],
+                scored_at=latest.get("scored_at"),
                 data_freshness_minutes=latest["data_freshness_minutes"],
                 trust_state=latest["trustgate"]["state"],
                 unresolved_alerts=len(open_alerts),
