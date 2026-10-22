@@ -1,0 +1,35 @@
+{
+  "format": "predictrx-impact-kpi-baseline/1",
+  "dataset_b_holdout_high_risk": {
+    "sensitivity": 0.314,
+    "specificity": 0.957,
+    "ppv": 0.094,
+    "alerts_per_patient_day": 0.053,
+    "detected_before_onset_share": 0.357,
+    "median_warning_hours": 41.0,
+    "septic_patients": 1140
+  },
+  "trustgate_dataset_a_validation": {
+    "patients": 3050,
+    "eligible_hours": 117419,
+    "state_distribution_pct": {
+      "watch": 85.5,
+      "verify_data": 9.5,
+      "alert": 2.9,
+      "abstain": 2.1
+    },
+    "verify_or_abstain_share_pct": 11.6,
+    "raw_high_risk_alert_hours": 6097,
+    "suppressed_by_trustgate": 2968,
+    "kept_alert_hours": 3129,
+    "false_alert_benefit_established": false,
+    "note": "Paired CI for the false-alert difference crosses zero (model card); TrustGate is a data-quality/safety layer, not a proven false-alert reducer."
+  },
+  "pilot_targets_not_yet_achieved": {
+    "feed_coverage_pct": 95,
+    "quarantine_rate_pct": 2,
+    "median_alert_review_minutes": 30,
+    "reasoned_dismissals_pct": 100,
+    "subgroup_gap_trigger_pp": 10.0
+  }
+}

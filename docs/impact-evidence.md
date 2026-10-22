@@ -84,6 +84,16 @@ study*, never as marketing claims. TREWS' shorter survivor length of stay
 (median −11.6 h) and Kumar's hour-by-hour survival gradient define why these
 KPIs are worth collecting; they are not PredictRx results. [7][8]
 
+Measured starting baselines for this contract — computed by
+`infra/fairness_audit.py` from the frozen model's existing scored artefacts
+(`docs/evidence/impact-kpi-baseline.md`): on Dataset B the high-risk band
+detected 35.7% of septic patients before onset with a 41-hour median warning
+at 0.053 alerts per patient-day if it alerted directly; on Dataset A
+validation, TrustGate left only 2.9% of eligible hours in an alertable state
+and **declined to present a confident actionable score in 11.6% of eligible
+hours** (Verify data 9.5% + Abstain 2.1%) — abstention is a measured
+behaviour, not a slogan.
+
 **Economic relevance, stated carefully.** A published Dhaka private
 hospital rate chart lists an ICU bed at Tk 9,000–12,500/day before oxygen,
 ventilation, medicines and tests (Popular Hospitals; Millennium Specialized
@@ -93,7 +103,13 @@ beds per 100,000 people, an ICU bed-day occupied by a late-recognised,
 deteriorating patient is simultaneously a family-level financial shock and a
 bed denied to the next patient. PredictRx claims no savings; it claims the
 process KPIs above are the honest precursors any savings case must be built
-on, and they are measurable before a single outcome claim is made.
+on, and they are measurable before a single outcome claim is made. The full
+parametric sizing — roughly 20,000–73,000 sepsis ICU admissions and
+9,400–35,800 sepsis deaths per year nationally under stated throughput
+assumptions, with a per-20-bed-ICU breakdown and threshold analysis of what
+earlier recognition would be worth *if* a pilot proves it — is in
+`docs/economic-scenario-model.md`, with every assumption varied and
+labelled.
 
 ## 4. Bias and fairness: what is disclosed, what is monitored
 
@@ -110,7 +126,12 @@ High-risk-band sensitivity of the frozen model, by subgroup (full detail in
 Disclosed without softening: gaps above 10 percentage points exist (age
 18–44 vs 65–79 internally; 65–79 vs 80+ and SICU vs MICU on Dataset B);
 overall high-risk sensitivity is modest (0.314 on Dataset B); calibration
-slope is 0.80, so local recalibration is mandatory. The weakest group differs
+slope is 0.80, so local recalibration is mandatory. The machine-generated
+audit of the scored holdout artefacts — per-group sensitivity, specificity,
+AUROC and PPV with gap computation against the 10 pp governance trigger —
+is `docs/evidence/fairness-audit.md` (Dataset B: sex gap 2.6 pp; age gap
+12.3 pp, weakest 80+; ICU-type gap 12.0 pp, weakest MICU; missingness gap
+9.0 pp). The weakest group differs
 between datasets, consistent with small septic counts per cell — which is
 exactly why the product, not the paper, carries the mitigation:
 
@@ -155,7 +176,8 @@ compliant":
 | Inclusiveness & equity | Subgroup disclosure + local parity monitoring (§4); hospital-local deployment keeps data under the hospital's control | `/pilot`, `docs/model-card.md` |
 | Responsive & sustainable | Small CPU model (~5 ms/prediction, 1.9 MB) runs on a hospital server; no per-call cloud dependency; decommissioning returns/erases site data with a certificate | `docs/operator-guide.md` §9 |
 
-Data protection specifics: patient data never leaves the hospital server;
+Data protection specifics (full assessment: `docs/data-protection-impact-assessment.md`,
+a DPIA the hospital's data-protection owner signs at install): patient data never leaves the hospital server;
 the vendor receives only HMAC-signed, allowlisted metadata heartbeats (the
 fleet console rejects non-allowlisted fields); the metadata-only `operator`
 role is refused patient routes (machine-verified, 50/50 public checks);

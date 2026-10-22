@@ -287,6 +287,60 @@ export default function EvidencePage() {
             the dossier; alignment is claimed, certification is not.
           </p>
         </Panel>
+
+        <Panel title="Fairness, audited from the scored artefacts (Dataset B holdout)">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead className="text-ink/50">
+                <tr>
+                  <th className="py-2 pr-3">Dimension</th>
+                  <th className="py-2 pr-3">Subgroup sensitivities (high-risk band)</th>
+                  <th className="py-2 pr-3">Gap</th>
+                  <th className="py-2">Weakest group</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Sex", "Female 0.352 · Male 0.326", "2.6 pp", "Male"],
+                  ["Age", "18–44: 0.316 · 45–64: 0.330 · 65–79: 0.381 · 80+: 0.258", "12.3 pp", "80+"],
+                  ["ICU type", "MICU 0.264 · SICU 0.384 · Unknown 0.360", "12.0 pp", "MICU"],
+                  ["Missingness", "Low 0.371 · Medium 0.281 · High 0.295", "9.0 pp", "Medium"],
+                ].map(([dim, values, gap, weakest]) => (
+                  <tr key={dim} className="border-t border-ink/5 align-top">
+                    <td className="py-2 pr-3 font-medium">{dim}</td>
+                    <td className="py-2 pr-3 text-ink/65">{values}</td>
+                    <td className="py-2 pr-3 text-ink/85">{gap}</td>
+                    <td className="py-2 text-ink/85">{weakest}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-sm text-ink/70">
+            Pre-committed rule: in a local pilot, any subgroup more than 10 percentage points below overall keeps
+            interruptive alerting off for that pathway until the site&apos;s owners record a governance decision.
+            On Dataset A validation the system also declined to present a confident actionable score in 11.6% of
+            eligible hours (Verify data / Abstain) — abstention is measured behaviour, not a slogan. Full audit:
+            <code> docs/evidence/fairness-audit.md</code>.
+          </p>
+        </Panel>
+
+        <Panel title="What is at stake in one 20-bed Bangladeshi ICU (scenario, not a claim)">
+          <div className="space-y-3 text-sm text-ink/80">
+            <p>
+              Under stated planning assumptions (5-day mean stay, 85% occupancy, 30% sepsis share, 48%
+              mortality — bracketing the published Bangladeshi cohorts), one 20-bed ICU admits roughly{" "}
+              <strong>1,240 patients a year, of whom ≈370 have sepsis and ≈180 die</strong>. A 6-day private
+              sepsis stay at published all-in rates is roughly <strong>Tk 1.8–3.0 lakh</strong> out of pocket.
+            </p>
+            <p>
+              Threshold framing only: <em>if</em> a local pilot reproduced even a 1-percentage-point absolute
+              mortality reduction, that is ≈4 fewer deaths per ICU-year (≈400 nationally). If review times do
+              not move in the silent pilot, none of this is in play — the gates keep alerting off, and that
+              result gets published too. Model and sources: <code>docs/economic-scenario-model.md</code>.
+            </p>
+          </div>
+        </Panel>
       </section>
 
       <Panel title="Boundaries we will not cross">

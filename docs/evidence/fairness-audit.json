@@ -1,0 +1,175 @@
+{
+  "format": "predictrx-fairness-audit/1",
+  "source": "ml/artifacts/models/latest/eval_holdout.json (Dataset B holdout, scored once at freeze)",
+  "model_version": "v0.2.0-202609281906",
+  "model_sha256": "a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d",
+  "overall_high_risk": {
+    "sensitivity": 0.314,
+    "specificity": 0.957,
+    "ppv": 0.094
+  },
+  "governance_trigger_pp": 10.0,
+  "dimensions": [
+    {
+      "dimension": "sex",
+      "groups": [
+        {
+          "group": "female",
+          "rows": 322248,
+          "sensitivity": 0.352,
+          "specificity": 0.956,
+          "auroc": 0.817,
+          "ppv": 0.099,
+          "prevalence_pct": 1.3
+        },
+        {
+          "group": "male",
+          "rows": 379064,
+          "sensitivity": 0.326,
+          "specificity": 0.95,
+          "auroc": 0.802,
+          "ppv": 0.091,
+          "prevalence_pct": 1.5
+        }
+      ],
+      "sensitivity_gap_pp": 2.6,
+      "auroc_range": [
+        0.802,
+        0.817
+      ],
+      "weakest_group": "male",
+      "strongest_group": "female",
+      "exceeds_governance_trigger": false
+    },
+    {
+      "dimension": "age",
+      "groups": [
+        {
+          "group": "18-44",
+          "rows": 113466,
+          "sensitivity": 0.316,
+          "specificity": 0.953,
+          "auroc": 0.803,
+          "ppv": 0.093,
+          "prevalence_pct": 1.5
+        },
+        {
+          "group": "45-64",
+          "rows": 267188,
+          "sensitivity": 0.33,
+          "specificity": 0.953,
+          "auroc": 0.81,
+          "ppv": 0.09,
+          "prevalence_pct": 1.4
+        },
+        {
+          "group": "65-79",
+          "rows": 239196,
+          "sensitivity": 0.381,
+          "specificity": 0.948,
+          "auroc": 0.814,
+          "ppv": 0.097,
+          "prevalence_pct": 1.4
+        },
+        {
+          "group": "80+",
+          "rows": 81462,
+          "sensitivity": 0.258,
+          "specificity": 0.97,
+          "auroc": 0.795,
+          "ppv": 0.107,
+          "prevalence_pct": 1.4
+        }
+      ],
+      "sensitivity_gap_pp": 12.3,
+      "auroc_range": [
+        0.795,
+        0.814
+      ],
+      "weakest_group": "80+",
+      "strongest_group": "65-79",
+      "exceeds_governance_trigger": true
+    },
+    {
+      "dimension": "icu_type",
+      "groups": [
+        {
+          "group": "MICU",
+          "rows": 241137,
+          "sensitivity": 0.264,
+          "specificity": 0.96,
+          "auroc": 0.789,
+          "ppv": 0.083,
+          "prevalence_pct": 1.4
+        },
+        {
+          "group": "SICU",
+          "rows": 252966,
+          "sensitivity": 0.384,
+          "specificity": 0.943,
+          "auroc": 0.813,
+          "ppv": 0.094,
+          "prevalence_pct": 1.5
+        },
+        {
+          "group": "unknown",
+          "rows": 207209,
+          "sensitivity": 0.36,
+          "specificity": 0.958,
+          "auroc": 0.825,
+          "ppv": 0.107,
+          "prevalence_pct": 1.4
+        }
+      ],
+      "sensitivity_gap_pp": 12.0,
+      "auroc_range": [
+        0.789,
+        0.825
+      ],
+      "weakest_group": "MICU",
+      "strongest_group": "SICU",
+      "exceeds_governance_trigger": true
+    },
+    {
+      "dimension": "missingness",
+      "groups": [
+        {
+          "group": "high",
+          "rows": 116225,
+          "sensitivity": 0.295,
+          "specificity": 0.963,
+          "auroc": 0.792,
+          "ppv": 0.079,
+          "prevalence_pct": 1.1
+        },
+        {
+          "group": "low",
+          "rows": 316572,
+          "sensitivity": 0.371,
+          "specificity": 0.944,
+          "auroc": 0.814,
+          "ppv": 0.114,
+          "prevalence_pct": 1.9
+        },
+        {
+          "group": "medium",
+          "rows": 268515,
+          "sensitivity": 0.281,
+          "specificity": 0.96,
+          "auroc": 0.786,
+          "ppv": 0.067,
+          "prevalence_pct": 1.0
+        }
+      ],
+      "sensitivity_gap_pp": 9.0,
+      "auroc_range": [
+        0.786,
+        0.814
+      ],
+      "weakest_group": "medium",
+      "strongest_group": "low",
+      "exceeds_governance_trigger": false
+    }
+  ],
+  "reading": "Sensitivity is modest overall and uneven across groups on US public data. These numbers are disclosed, not spun: they are why the model is frozen, why alerting requires a local silent pilot with subgroup reporting, and why a >10 pp local gap is a governance event, not a footnote."
+}
