@@ -28,7 +28,10 @@ WORKDIR /app
 COPY ml /app/ml
 WORKDIR /app/backend
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade the base image's pip first: pip-audit flagged pip 25.0.1 itself
+# (docs/evidence/vulnerability-disposition.md). pip is build tooling, but the
+# shipped installer should not carry known advisories.
+RUN pip install --no-cache-dir --upgrade "pip>=26.2" && pip install --no-cache-dir -r requirements.txt
 COPY backend /app/backend
 COPY knowledge /app/knowledge
 COPY demo/cases /app/demo/cases

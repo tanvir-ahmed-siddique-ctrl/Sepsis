@@ -95,6 +95,34 @@ class StateStore:
                     {"key": "engine-v1", "payload": payload, "updated_at": now},
                 )
 
+    # ---------- per-entry engine state (incremental snapshots) ----------
+    def save_state_entry(self, key: str, payload: dict[str, Any]) -> None:
+        blob = json.dumps(payload, separators=(",", ":"), allow_nan=False)
+        now = datetime.now(timezone.utc).isoformat()
+        with self.engine.begin() as connection:
+            exists = connection.execute(
+                text("SELECT 1 FROM engine_state WHERE state_key = :key"), {"key": key}
+            ).first()
+            if exists:
+                connection.execute(
+                    text("UPDATE engine_state SET payload = :payload, updated_at = :updated_at WHERE state_key = :key"),
+                    {"key": key, "payload": blob, "updated_at": now},
+                )
+            else:
+                connection.execute(
+                    text("INSERT INTO engine_state (state_key, payload, updated_at) VALUES (:key, :payload, :updated_at)"),
+                    {"key": key, "payload": blob, "updated_at": now},
+                )
+
+    def load_state_entries(self) -> dict[str, Any]:
+        with self.engine.connect() as connection:
+            rows = connection.execute(text("SELECT state_key, payload FROM engine_state")).all()
+        return {row[0]: json.loads(row[1]) for row in rows}
+
+    def delete_state_entry(self, key: str) -> None:
+        with self.engine.begin() as connection:
+            connection.execute(text("DELETE FROM engine_state WHERE state_key = :key"), {"key": key})
+
     def load_audit(self) -> list[dict[str, Any]]:
         with self.engine.connect() as connection:
             rows = connection.execute(

@@ -127,6 +127,11 @@ class Engine:
         self.units: dict[str, dict] = {row["unit_id"]: row for row in self.records.select(care_units)}
         self._ensure_default_units()
         self._pending_records: list[dict] = []
+        self._snapshot_hashes: dict[str, str] = {}
+        self._snapshot_keys: set[str] = set()
+        self.snapshot_last_persist_ms: float | None = None
+        self.snapshot_writes_total = 0
+        self.snapshot_bytes_written_total = 0
         self._force_shadow = False
         self._stop = threading.Event()
         self._restore_state()
@@ -1541,11 +1546,32 @@ class Engine:
         return {"hours": hour_labels, "signals": signals, "window_hours": len(frame)}
 
     # ---------- persistence ----------
+    @staticmethod
+    def _snapshot_key(encounter_key: str) -> str:
+        return "patient:" + hashlib.sha256(encounter_key.encode()).hexdigest()[:40]
+
     def _restore_state(self) -> None:
-        state = self.store.load_state()
-        if not state:
-            return
-        for stored in state.get("patients", []):
+        entries = self.store.load_state_entries()
+        self._snapshot_keys = set(entries)
+        patient_payloads: list[dict] = []
+        alerts_payload: dict = {}
+        if any(key.startswith("patient:") or key == "alerts" for key in entries):
+            for key, payload in entries.items():
+                if key.startswith("patient:"):
+                    patient_payloads.append(payload)
+                    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+                    self._snapshot_hashes[key] = hashlib.sha256(blob.encode()).hexdigest()
+                elif key == "alerts":
+                    alerts_payload = payload or {}
+                    blob = json.dumps(alerts_payload, sort_keys=True, separators=(",", ":"), default=str)
+                    self._snapshot_hashes[key] = hashlib.sha256(blob.encode()).hexdigest()
+        else:
+            legacy = entries.get("engine-v1") or self.store.load_state()
+            if not legacy:
+                return
+            patient_payloads = legacy.get("patients", [])
+            alerts_payload = legacy.get("alerts", {})
+        for stored in patient_payloads:
             raw = pd.DataFrame(stored.get("raw", []))
             observation_meta = {}
             for key, value in stored.get("observation_meta", {}).items():
@@ -1577,57 +1603,85 @@ class Engine:
                 context=stored.get("context"),
             )
             self.patients[patient.encounter_key] = patient
-        self.alerts.update(state.get("alerts", {}))
+        self.alerts.update(alerts_payload)
+
+    def _write_snapshot_entry(self, key: str, payload: dict) -> None:
+        blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+        digest = hashlib.sha256(blob.encode()).hexdigest()
+        if self._snapshot_hashes.get(key) == digest:
+            return
+        self.store.save_state_entry(key, payload)
+        self._snapshot_hashes[key] = digest
+        self.snapshot_writes_total += 1
+        self.snapshot_bytes_written_total += len(blob)
 
     def _persist_state(self) -> None:
+        """Persist restart state incrementally: one row per encounter plus one alerts row.
+
+        Only entries whose content changed are rewritten, so an ingest batch for
+        one bed no longer rewrites every bed's snapshot. Durability is unchanged:
+        writes are synchronous and prediction/audit rows flush first.
+        """
         if settings.writer_lease_enabled and not self.records.renew_lease(LEASE_KEY, self.writer_id):
             self.read_only_reason = "writer_lease_lost"
             raise ReadOnlyError(self.read_only_reason)
+        started = time.perf_counter()
         if self._pending_records:
             self.records.insert_many_ignore(prediction_records, _json_safe(self._pending_records))
             self._pending_records = []
-        patients = []
         api_keys = set()
+        seen_keys: set[str] = set()
         for patient in self.patients.values():
             if patient.source_mode != "api":
                 continue
             api_keys.add(patient.encounter_key)
+            key = self._snapshot_key(patient.encounter_key)
+            seen_keys.add(key)
             raw_records = json.loads(patient.raw.to_json(orient="records"))
-            patients.append(
-                {
-                    "encounter_key": patient.encounter_key,
-                    "patient_id": patient.patient_id,
-                    "encounter_id": patient.encounter_id,
-                    "display_name": patient.display_name,
-                    "unit_id": patient.unit_id,
-                    "age": patient.age,
-                    "sex": patient.sex,
-                    "raw": raw_records,
-                    "predictions": patient.predictions,
-                    "static_values": patient.static_values,
-                    "observation_meta": {
-                        f"{hour}|{code}": metadata
-                        for (hour, code), metadata in patient.observation_meta.items()
-                    },
-                    "icu_start_hour": patient.icu_start_hour,
-                    "segment_start_hour": patient.segment_start_hour,
-                    "revision": patient.revision,
-                    "bed_id": patient.bed_id,
-                    "kind": patient.kind,
-                    "status": patient.status,
-                    "hypercapnic_scale2": patient.hypercapnic_scale2,
-                    "admitted_at": patient.admitted_at,
-                    "discharged_at": patient.discharged_at,
-                    "news2": patient.news2,
-                    "context": patient.context,
-                }
+            self._write_snapshot_entry(
+                key,
+                _json_safe(
+                    {
+                        "encounter_key": patient.encounter_key,
+                        "patient_id": patient.patient_id,
+                        "encounter_id": patient.encounter_id,
+                        "display_name": patient.display_name,
+                        "unit_id": patient.unit_id,
+                        "age": patient.age,
+                        "sex": patient.sex,
+                        "raw": raw_records,
+                        "predictions": patient.predictions,
+                        "static_values": patient.static_values,
+                        "observation_meta": {
+                            f"{hour}|{code}": metadata
+                            for (hour, code), metadata in patient.observation_meta.items()
+                        },
+                        "icu_start_hour": patient.icu_start_hour,
+                        "segment_start_hour": patient.segment_start_hour,
+                        "revision": patient.revision,
+                        "bed_id": patient.bed_id,
+                        "kind": patient.kind,
+                        "status": patient.status,
+                        "hypercapnic_scale2": patient.hypercapnic_scale2,
+                        "admitted_at": patient.admitted_at,
+                        "discharged_at": patient.discharged_at,
+                        "news2": patient.news2,
+                        "context": patient.context,
+                    }
+                ),
             )
         alerts = {
             alert_id: alert
             for alert_id, alert in self.alerts.items()
             if alert.get("encounter_key") in api_keys
         }
-        self.store.save_state(_json_safe({"patients": patients, "alerts": alerts}))
+        self._write_snapshot_entry("alerts", _json_safe(alerts))
+        seen_keys.add("alerts")
+        for stale_key in self._snapshot_keys - seen_keys:
+            self.store.delete_state_entry(stale_key)
+            self._snapshot_hashes.pop(stale_key, None)
+        self._snapshot_keys = seen_keys
+        self.snapshot_last_persist_ms = round((time.perf_counter() - started) * 1000, 2)
 
     def _log(self, event: str, detail: dict) -> str:
         recorded_at = datetime.now(timezone.utc).isoformat()

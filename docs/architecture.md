@@ -119,9 +119,12 @@ every readiness gate in [operations](operations.md#silent-pilot-readiness-gates)
 - Pseudonymous IDs only; exports use HMAC-SHA256 with a site salt
 - No raw PhysioNet files in Git or in container images
 - Row-level records for predictions, outcomes, feedback, ownership, connector
-  events and site configuration; restart snapshots for in-memory encounter state
-- One active writer, enforced by a database lease; others run read-only.
-  Horizontal API scaling is disabled.
+  events and site configuration; restart state is one snapshot row per
+  encounter (only changed encounters are rewritten)
+- One active writer per site, enforced by a database lease; others run
+  read-only. Horizontal API scaling inside a site is disabled; hospitals
+  scale out as isolated sites with a metadata-only vendor fleet console —
+  see [scalability](scalability.md)
 - Audit events form a SHA-256 previous-hash chain, verified on demand and
   exported as a Prometheus gauge
 - Alembic owns the schema (`0001` restart state and audit, `0002` pilot,

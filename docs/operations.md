@@ -31,14 +31,24 @@ health checks (`/health` for the API, `/` for the web app).
 
 ### Single active writer
 
-The engine keeps live encounter state in memory and persists it row by row.
-To keep that consistent, exactly one API process may write:
+The engine keeps live encounter state in memory and persists it as one
+snapshot row per encounter (only changed encounters are rewritten). To keep
+that consistent, exactly one API process may write:
 
 - Each process takes the `engine-writer` lease in the database and renews it.
 - A second process, or one that loses the lease, starts **read-only**: writes
   return `503`, reads keep working, and the UI shows a read-only banner.
-- The API runs with `--workers 1`. Horizontal scaling is disabled until all
-  state is fully row-level. `GET /v1/ops/status` reports the lease holder.
+- The API runs with `--workers 1`. Horizontal scaling inside a site is
+  disabled until all state is fully row-level; hospitals scale out as
+  isolated sites instead. `GET /v1/ops/status` reports the lease holder and a
+  `scale` block (encounter counts, snapshot persist time and bytes written).
+  See [scalability](scalability.md) for measured capacity and the roadmap.
+
+**Writer failover.** If the writer host dies, start the standby instance (it
+comes up read-only), wait until the lease expires
+(`WRITER_LEASE_SECONDS`, default 300 s), then restart the standby once — it
+acquires the lease and becomes the writer. Never run two writers against one
+database by disabling the lease on a hospital site.
 
 ## Authentication
 

@@ -13,13 +13,17 @@ export function AppNav() {
   if (pathname === "/presentation") return null;
   const links = [
     ...(isOperator
-      ? [{ href: "/operations", label: "Operations" }]
+      ? [
+          { href: "/operations", label: "Operations" },
+          { href: "/evidence", label: "Evidence" },
+        ]
       : [
           { href: "/", label: t.nav.overview },
           { href: "/chart", label: t.nav.chart },
           { href: "/ward", label: t.nav.ward },
           { href: "/alerts", label: t.nav.alerts },
           { href: "/handoff", label: t.nav.handoff },
+          { href: "/evidence", label: "Evidence" },
         ]),
     ...(isAdmin
       ? [

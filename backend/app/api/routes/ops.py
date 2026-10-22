@@ -103,6 +103,18 @@ def ops_status(_: Actor = Depends(OPERATIONS)):
             "horizontal_scaling": "disabled — single active writer until state is fully row-level",
         },
         "database": {"healthy": engine.store.healthy(), "dialect": engine.store.engine.dialect.name},
+        "scale": {
+            "model": "one active writer per hospital site; hospitals scale out as isolated sites, "
+                     "the vendor console receives metadata-only heartbeats",
+            "api_encounters": sum(1 for p in engine.patients.values() if p.source_mode == "api"),
+            "replay_encounters": sum(1 for p in engine.patients.values() if p.source_mode == "replay"),
+            "alerts": len(engine.alerts),
+            "audit_events": len(engine.audit),
+            "snapshot_entries": len(engine._snapshot_keys),
+            "snapshot_last_persist_ms": engine.snapshot_last_persist_ms,
+            "snapshot_writes_total": engine.snapshot_writes_total,
+            "snapshot_kb_written_total": round(engine.snapshot_bytes_written_total / 1024, 1),
+        },
         "audit": audit,
         "model": {"version": engine.model_version, "sha256": engine.model_hash, "frozen": engine.frozen},
         "site": engine.site.state.as_dict(),

@@ -12,6 +12,11 @@ const destinations = [
     detail: "The timed, evidence-led competition walkthrough of one held-out replay case.",
   },
   {
+    href: "/evidence",
+    title: "Evidence centre",
+    detail: "Every judging claim with its live proof, measured result, and the external evidence still honestly missing.",
+  },
+  {
     href: "/docs",
     title: "Technical dossier",
     detail: "Architecture, model governance, responsible-AI controls, implementation pathway and business case.",

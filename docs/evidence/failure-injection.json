@@ -1,0 +1,84 @@
+{
+  "format": "predictrx-failure-injection/1",
+  "load": "synthetic failure-injection beds on a throwaway SQLite database",
+  "scenarios": [
+    {
+      "scenario": "baseline_ingest",
+      "injected": "12 hourly full-vital sets for one bed",
+      "expected": "all accepted, HTTP 200",
+      "observed": "HTTP 200, accepted=72",
+      "passed": true
+    },
+    {
+      "scenario": "duplicate_with_idempotency_key",
+      "injected": "identical batch sent twice with Idempotency-Key: fi-batch-1",
+      "expected": "second delivery stores nothing new (audit log does not grow)",
+      "observed": "first accepted=6; second HTTP 200, accepted=6, duplicates=0; audit events 332 -> 332",
+      "passed": true
+    },
+    {
+      "scenario": "duplicate_without_key",
+      "injected": "baseline batch re-sent with no idempotency key",
+      "expected": "engine dedupes by encounter/code/timestamp; nothing double-counted",
+      "observed": "HTTP 200, accepted=0, duplicates=72",
+      "passed": true
+    },
+    {
+      "scenario": "late_out_of_order_result",
+      "injected": "Lactate timestamped hour 3 sent after hours 0-11 exist",
+      "expected": "accepted as history (or explicitly quarantined); board still serves the bed",
+      "observed": "HTTP 200, accepted=1, quarantined=0, bed visible=True",
+      "passed": true
+    },
+    {
+      "scenario": "unknown_unit_quarantined",
+      "injected": "HR 90 with unit 'furlongs/fortnight'",
+      "expected": "quarantined for human mapping review; not accepted into scoring",
+      "observed": "HTTP 200, accepted=0, quarantined=1",
+      "passed": true
+    },
+    {
+      "scenario": "implausible_value_quarantined",
+      "injected": "HR 9999 bpm",
+      "expected": "quarantined by plausibility checks; not accepted into scoring",
+      "observed": "HTTP 200, accepted=0, quarantined=1",
+      "passed": true
+    },
+    {
+      "scenario": "malformed_payload_rejected",
+      "injected": "wrong-typed observation and invalid JSON body",
+      "expected": "both rejected 4xx; /ready still 200 afterwards",
+      "observed": "wrong-type HTTP 422, garbage HTTP 422, /ready 200",
+      "passed": true
+    },
+    {
+      "scenario": "unauthorised_writer_refused",
+      "injected": "nurse role attempts to POST observations",
+      "expected": "403; ingestion is admin/integration-key only",
+      "observed": "HTTP 403",
+      "passed": true
+    },
+    {
+      "scenario": "stale_feed_not_alertable",
+      "injected": "full vitals hours 0-11, then one HR at hour 18 (6h gap)",
+      "expected": "freshness degrades, trust state is verify/abstain, never 'alert' on stale data",
+      "observed": "before trust=watch; after trust=verify_data, freshness_min=420, ingest HTTP 200",
+      "passed": true
+    },
+    {
+      "scenario": "db_unavailable_at_boot",
+      "injected": "API boot with database_url='sqlite:///C:/Users/TANVIR~1/AppData/Local/Temp/predictrx-failures-db77z3od/missing-dir/site.db'",
+      "expected": "boot refuses to serve: non-zero exit with a database error, no silent fallback",
+      "observed": "exit=1; last error line: (Background on this error at: https://sqlalche.me/e/21/e3q8)",
+      "passed": true
+    },
+    {
+      "scenario": "corrupt_db_at_boot",
+      "injected": "API boot with database_url='sqlite:///C:/Users/TANVIR~1/AppData/Local/Temp/predictrx-failures-db77z3od/corrupt.db'",
+      "expected": "boot refuses to serve: non-zero exit with a database error, no silent fallback",
+      "observed": "exit=1; last error line: (Background on this error at: https://sqlalche.me/e/21/4xp6)",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

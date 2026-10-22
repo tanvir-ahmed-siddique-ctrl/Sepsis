@@ -1,0 +1,243 @@
+{
+  "api": "http://127.0.0.1:8077",
+  "fleet": null,
+  "checks": 47,
+  "failures": [],
+  "results": [
+    {
+      "check": "health",
+      "ok": true,
+      "detail": "GET /health -> 200"
+    },
+    {
+      "check": "ready",
+      "ok": true,
+      "detail": "GET /ready -> 200"
+    },
+    {
+      "check": "nurse /v1/units",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "clinician /v1/units",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "admin /v1/units",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator refused /v1/units",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "nurse /v1/units/icu-demo-1/overview",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "clinician /v1/units/icu-demo-1/overview",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "admin /v1/units/icu-demo-1/overview",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator refused /v1/units/icu-demo-1/overview",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "nurse /v1/alerts",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "clinician /v1/alerts",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "admin /v1/alerts",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator refused /v1/alerts",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "nurse /v1/model",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "clinician /v1/model",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "admin /v1/model",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator /v1/model",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "admin /v1/site/readiness",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator /v1/site/readiness",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "nurse refused /v1/site/readiness",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "clinician refused /v1/site/readiness",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "admin /v1/integrations/status",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator /v1/integrations/status",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "nurse refused /v1/integrations/status",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "clinician refused /v1/integrations/status",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "admin /v1/integrations/mappings/unmapped",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator /v1/integrations/mappings/unmapped",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "nurse refused /v1/integrations/mappings/unmapped",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "clinician refused /v1/integrations/mappings/unmapped",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "admin /v1/ops/status",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator /v1/ops/status",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "nurse refused /v1/ops/status",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "clinician refused /v1/ops/status",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "admin /v1/ops/heartbeat",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "operator /v1/ops/heartbeat",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "nurse refused /v1/ops/heartbeat",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "clinician refused /v1/ops/heartbeat",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "admin /v1/auth/users",
+      "ok": true,
+      "detail": "expected 200, got 200"
+    },
+    {
+      "check": "nurse refused /v1/auth/users",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "clinician refused /v1/auth/users",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "operator refused /v1/auth/users",
+      "ok": true,
+      "detail": "expected 403, got 403"
+    },
+    {
+      "check": "frozen model hash",
+      "ok": true,
+      "detail": "model_hash=a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d"
+    },
+    {
+      "check": "model frozen flag",
+      "ok": true,
+      "detail": "frozen=True"
+    },
+    {
+      "check": "heartbeat carries no patient fields",
+      "ok": true,
+      "detail": "forbidden fields present: []"
+    },
+    {
+      "check": "heartbeat signed or explicitly unsigned",
+      "ok": true,
+      "detail": "algorithm=unsigned"
+    },
+    {
+      "check": "public demo mode locked (or audited change accepted)",
+      "ok": true,
+      "detail": "PUT /v1/site/mode -> 403"
+    }
+  ]
+}
