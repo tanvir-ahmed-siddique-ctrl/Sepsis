@@ -71,7 +71,7 @@ const CRITERIA: Array<{
     name: "Impact & ethical AI",
     claim: "A high-burden ICU problem, handled with abstention, human acknowledgement, subgroup disclosure and site-local data control.",
     proof: [["/pilot", "Silent-pilot evidence"], ["/model", "Subgroups & limitations"], ["/patient/BED-06", "Patient-level explanation"]],
-    measured: "Dataset B (geographically distinct, retrospective): AUROC 0.808, AUPRC 0.079, calibration slope 0.80 — local recalibration required. No outcome or lives-saved claim is made.",
+    measured: "Sourced burden (49.2% severe-sepsis mortality in 14 BD ICUs; 1.8 ICU beds/100k); Dataset B retrospective AUROC 0.808, AUPRC 0.079, calibration slope 0.80, subgroup gaps >10 pp disclosed; KPI contract defined with pilot targets labelled unachieved. No outcome or lives-saved claim is made.",
     status: "Measured",
     gap: "Bangladesh validation and locally measured workflow KPIs require a hospital partner.",
   },
@@ -211,6 +211,83 @@ export default function EvidencePage() {
           Generic archetypes for mechanism comparison — not claims about any named product.
         </p>
       </Panel>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl">Impact &amp; ethics — the sourced case</h2>
+        <div className="flex flex-wrap gap-3">
+          <Stat label="Sepsis cases / deaths, 2017 (global)" value="48.9M / 11.0M" />
+          <Stat label="Of all deaths worldwide" value="19.7%" />
+          <Stat label="Severe-sepsis mortality, 14 BD ICUs" value="49.2%" />
+          <Stat label="Critical-care beds per 100k (BD)" value="1.8" />
+          <Stat label="Survival lost per hour of antibiotic delay (shock)" value="≈7.6%" />
+        </div>
+        <p className="text-xs text-ink/50">
+          Sources: Rudd et al., The Lancet 2020 (GBD); Bangladesh Crit Care J 2013 (complete bundle compliance was zero);
+          Lancet Regional Health – Western Pacific 2023 and BCCJ 2022 (2,177 ICU beds; 38 of 64 districts have none);
+          Kumar et al., Critical Care Medicine 2006. Full dossier: <code>docs/impact-evidence.md</code>.
+        </p>
+
+        <Panel title="Why the field's own evidence shaped this design">
+          <div className="space-y-3 text-sm text-ink/80">
+            <p>
+              <strong>The failure mode.</strong> The proprietary Epic Sepsis Model, deployed in hundreds of US
+              hospitals, externally validated at AUROC 0.63: it alerted on 18% of hospitalizations, missed 67% of
+              sepsis cases, and had a positive predictive value of 12% (Wong et al., JAMA Internal Medicine 2021).
+              Clinicians override 49–96% of computerised safety alerts (van der Sijs 2006). Unvalidated,
+              unexplained alerting at scale is itself a patient-safety hazard.
+            </p>
+            <p>
+              <strong>The plausible benefit.</strong> In the prospective five-hospital TREWS study, alert
+              confirmation within 3 hours was associated with 3.34 percentage points lower adjusted mortality
+              and antibiotics 1.85 hours faster (Adams et al., Nature Medicine 2022 — observational, not an RCT).
+              PredictRx claims none of that effect: it is the reason the product measures review time first, and
+              why alerting stays off until a site has silently proven its own data and workflow.
+            </p>
+            <p>
+              <strong>Our measured position.</strong> On a geographically distinct public cohort scored once after
+              freezing: AUROC 0.808 with 2.05 false alerts per 100 patient-hours and hour-level specificity 0.839 —
+              reported with calibration slope 0.80 (local recalibration mandatory), subgroup sensitivity gaps
+              above 10 percentage points disclosed rather than hidden, and TrustGate&apos;s false-alert benefit
+              explicitly not established (paired confidence interval crosses zero).
+            </p>
+          </div>
+        </Panel>
+
+        <Panel title="The KPI contract — benefit must appear here before any outcome claim">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead className="text-ink/50">
+                <tr>
+                  <th className="py-2 pr-3">KPI</th>
+                  <th className="py-2 pr-3">Measured in the product</th>
+                  <th className="py-2">Pilot target (not yet achieved)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Feed coverage", "TrustGate freshness per bed", "≥95% of occupied beds fresh"],
+                  ["Quarantine rate", "Integration hub quarantine queue", "Falling trend to <2% of observations"],
+                  ["Alert burden", "Shadow alerts per 100 patient-hours", "No worse than replay baseline (2.05 false alerts)"],
+                  ["Review responsiveness", "Alert → acknowledged time in the audit chain", "Median ≤30 min (TREWS window: 3 h)"],
+                  ["Override discipline", "Dismissals require a recorded reason", "100% reasoned; rising overrides trigger gate review"],
+                  ["Subgroup parity", "Sensitivity by sex, age, unit, missingness", "No subgroup >10 pp below overall without a governance decision"],
+                ].map(([kpi, how, target]) => (
+                  <tr key={kpi} className="border-t border-ink/5 align-top">
+                    <td className="py-2 pr-3 font-medium">{kpi}</td>
+                    <td className="py-2 pr-3 text-ink/65">{how}</td>
+                    <td className="py-2 text-ink/85">{target}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-ink/50">
+            Mortality, length of stay and cost are recorded during a pilot as outcomes under study — never as
+            marketing claims. Safeguards are mapped to WHO&apos;s six AI-in-health ethics principles (2021) in
+            the dossier; alignment is claimed, certification is not.
+          </p>
+        </Panel>
+      </section>
 
       <Panel title="Boundaries we will not cross">
         <ul className="list-disc space-y-1 pl-5 text-sm text-ink/75">
