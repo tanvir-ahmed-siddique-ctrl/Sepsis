@@ -711,17 +711,43 @@ class Engine:
             self.patients[ward.encounter_key] = ward
             self._score_news2(ward)
             self._upsert_encounter(ward, "demo-seed")
-        # The integration board is driven by recorded commissioning relay events,
-        # rather than a decorative connected badge.
-        for connector, received in (("fhir_r4", 180), ("hl7v2_oru", 96), ("csv_lab", 42)):
-            self.records.insert(connector_events, {
-                "event_id": f"commissioning-{connector}-{now_hour}", "connector": connector,
-                "received_at": utc_now(), "status": "processed", "received": received,
-                "accepted": received, "quarantined": 0, "duplicates": 0,
-                "max_source_time": datetime.now(timezone.utc).isoformat(), "lag_seconds": 12.0,
-                "processing_ms": 38.0, "error": None, "idempotency_key": None,
-                "actor": "simulation-relay", "backfill": 0,
-            })
+        # Commissioning telemetry: one real native_json ingest so Integration Hub
+        # shows a genuine connector event (not a decorative badge).
+        try:
+            from app.auth import Actor
+            from app.integrations.service import get_integration_service
+            from app.schemas import ObservationBatch, ObservationIn
+            from app.services.clinical_contract import SPECS
+
+            sample = next(
+                (p for p in self.patients.values() if p.replay_meta.get("public_demo_seed") and p.kind == "icu"),
+                None,
+            )
+            if sample is not None and not sample.raw.empty:
+                last = sample.raw.iloc[-1]
+                stamp = datetime.now(timezone.utc)
+                rows = []
+                for code in ("HR", "SBP", "MAP", "O2Sat"):
+                    if code in sample.raw.columns and pd.notna(last[code]):
+                        rows.append(ObservationIn(
+                            patient_id=sample.patient_id,
+                            encounter_id=sample.encounter_id,
+                            timestamp=stamp,
+                            code=code,
+                            value=float(last[code]),
+                            unit=SPECS[code].canonical_unit,
+                            source="simulation-relay",
+                            unit_id=sample.unit_id,
+                        ))
+                if rows:
+                    get_integration_service(self).submit(
+                        "native_json",
+                        ObservationBatch(observations=rows).model_dump_json(),
+                        Actor(user_id="simulation-relay", role="integration", auth_mode="simulation"),
+                        idempotency_key=f"commissioning-seed-{now_hour}",
+                    )
+        except Exception as error:  # noqa: BLE001 — seed must not block demo boot
+            print(f"commissioning connector seed skipped: {error!r}", flush=True)
 
     def _seed_public_staff(self) -> None:
         """Create named, scoped commissioning accounts with unrevealed random secrets."""
@@ -756,57 +782,73 @@ class Engine:
             return {"advanced_patient_hours": advanced, "open_alerts": self.open_alert_count()}
 
     def advance_public_simulation(self) -> None:
-        """Revise synthetic observations and rescore a few beds each display tick."""
+        """Push synthetic SIM vitals through the real ingest/connector path each tick.
+
+        Values are still disclosed synthetic commissioning data — but lag,
+        quarantine, and Integration Hub telemetry come from the same
+        ``IntegrationService.submit`` path a hospital feed would use.
+        """
+        from app.auth import Actor
+        from app.integrations.service import get_integration_service
+        from app.schemas import ObservationBatch, ObservationIn
+        from app.services.clinical_contract import SPECS
+
         with self.lock:
             self._require_writable()
             candidates = [p for p in self.patients.values() if p.replay_meta.get("public_demo_seed") and p.kind == "icu"]
             if not candidates:
                 return
             tick = int(time.time() // max(10, settings.public_simulation_interval_seconds))
-            now_hour = int(time.time() // 3600)
             phase = tick % 5 - 2
             start = (tick * 3) % len(candidates)
+            actor = Actor(user_id="simulation-relay", role="integration", auth_mode="simulation")
+            stamp = datetime.now(timezone.utc)
+            batch: list[ObservationIn] = []
             for offset in range(min(3, len(candidates))):
                 patient = candidates[(start + offset) % len(candidates)]
-                row = patient.raw.iloc[[-1]].copy()
-                previous_hour = int(row["_hour"].iloc[-1])
-                row["_hour"] = now_hour
-                if now_hour > previous_hour and "ICULOS" in row and pd.notna(row["ICULOS"].iloc[-1]):
-                    row["ICULOS"] = row["ICULOS"] + (now_hour - previous_hour)
-                for field, change in (("HR", 3.0), ("SBP", -2.0), ("MAP", -1.4), ("Resp", 1.0), ("Temp", 0.08)):
-                    if field in row:
-                        row[field] = row[field].fillna(0) + phase * change
-                if now_hour > previous_hour:
-                    patient.raw = pd.concat([patient.raw.iloc[-23:], row], ignore_index=True)
-                else:
-                    patient.raw.iloc[-1] = row.iloc[0]
-                patient.revision += 1
-                self._score(patient, emit_alerts=True, audit_event="simulated_live_prediction")
-                self._upsert_encounter(patient, "simulation-relay")
+                last = patient.raw.iloc[-1]
+                for field, change in (("HR", 3.0), ("SBP", -2.0), ("MAP", -1.4), ("Resp", 1.0), ("Temp", 0.08), ("O2Sat", -0.3)):
+                    if field not in patient.raw.columns or field not in SPECS:
+                        continue
+                    base = float(last[field]) if pd.notna(last[field]) else float(SPECS[field].minimum + 10)
+                    batch.append(ObservationIn(
+                        patient_id=patient.patient_id,
+                        encounter_id=patient.encounter_id,
+                        timestamp=stamp,
+                        code=field,
+                        value=base + phase * change,
+                        unit=SPECS[field].canonical_unit,
+                        source="simulation-relay",
+                        unit_id=patient.unit_id,
+                    ))
             wards = [p for p in self.patients.values() if p.replay_meta.get("public_demo_seed") and p.kind == "ward"]
             if wards:
                 ward = wards[tick % len(wards)]
-                row = ward.raw.iloc[[-1]].copy()
-                previous_hour = int(row["_hour"].iloc[-1])
-                row["_hour"] = now_hour
+                last = ward.raw.iloc[-1]
                 for field, change in (("Resp", 1.0), ("HR", 2.0), ("SBP", -2.0), ("O2Sat", -0.5)):
-                    if field in row:
-                        row[field] = row[field].fillna(0) + phase * change
-                if now_hour > previous_hour:
-                    ward.raw = pd.concat([ward.raw.iloc[-23:], row], ignore_index=True)
-                else:
-                    ward.raw.iloc[-1] = row.iloc[0]
-                ward.revision += 1
-                self._score_news2(ward)
-                self._upsert_encounter(ward, "simulation-relay")
-            self.records.insert(connector_events, {
-                "event_id": f"simulation-fhir-{uuid.uuid4().hex[:16]}", "connector": "fhir_r4",
-                "received_at": utc_now(), "status": "processed", "received": 8, "accepted": 8,
-                "quarantined": 0, "duplicates": 0, "max_source_time": datetime.now(timezone.utc).isoformat(),
-                "lag_seconds": 4.0, "processing_ms": round(time.perf_counter() % 40 + 12, 1),
-                "error": None, "idempotency_key": None, "actor": "simulation-relay", "backfill": 0,
-            })
-            self._persist_state()
+                    if field not in ward.raw.columns or field not in SPECS:
+                        continue
+                    base = float(last[field]) if pd.notna(last[field]) else 90.0
+                    batch.append(ObservationIn(
+                        patient_id=ward.patient_id,
+                        encounter_id=ward.encounter_id,
+                        timestamp=stamp,
+                        code=field,
+                        value=base + phase * change,
+                        unit=SPECS[field].canonical_unit,
+                        source="simulation-relay",
+                        unit_id=ward.unit_id,
+                    ))
+            if not batch:
+                return
+            # Leave the engine lock before submit — submit re-enters via RLock on ingest.
+        service = get_integration_service(self)
+        service.submit(
+            "native_json",
+            ObservationBatch(observations=batch).model_dump_json(),
+            actor,
+            idempotency_key=f"sim-tick-{tick}",
+        )
 
     def _advance(self, p: Patient, emit_alerts: bool) -> None:
         row = p.source.iloc[[p.cursor]]
@@ -1389,12 +1431,26 @@ class Engine:
         reason: str | None,
         ts: datetime,
         role: str = "clinician",
+        *,
+        quiet_minutes: int | None = None,
     ) -> str:
         with self.lock:
             self._require_writable()
             alert = self.alerts[alert_id]
             alert["status"] = action
-            alert["actions"].append({"user_id": user_id, "role": role, "action": action, "reason": reason, "at": ts.isoformat()})
+            if action == "snoozed":
+                minutes = int(quiet_minutes or 60)
+                alert["snoozed_until"] = (ts + timedelta(minutes=minutes)).isoformat()
+            else:
+                alert.pop("snoozed_until", None)
+            alert["actions"].append({
+                "user_id": user_id,
+                "role": role,
+                "action": action,
+                "reason": reason,
+                "at": ts.isoformat(),
+                "quiet_minutes": quiet_minutes if action == "snoozed" else None,
+            })
             audit_id = self._log("alert_" + action, {
                 "alert_id": alert_id,
                 "patient_id": alert["patient_id"],
@@ -1404,18 +1460,29 @@ class Engine:
                 "actor": user_id,
                 "actor_role": role,
                 "reason": reason,
+                "quiet_minutes": quiet_minutes if action == "snoozed" else None,
                 "source_time": ts.isoformat(),
             })
             self._persist_state()
             return audit_id
 
     def open_alert_count(self, patient_identifier: str | None = None) -> int:
-        return sum(1 for a in self.alerts.values()
-                   if a["status"] == "open" and (
-                       patient_identifier is None
-                       or a["patient_id"] == patient_identifier
-                       or a.get("encounter_key") == patient_identifier
-                   ))
+        now = datetime.now(timezone.utc)
+        count = 0
+        for alert in self.alerts.values():
+            if patient_identifier is not None and patient_identifier not in {
+                alert["patient_id"], alert.get("encounter_key")
+            }:
+                continue
+            if alert["status"] == "open":
+                count += 1
+            elif alert["status"] == "snoozed":
+                until = alert.get("snoozed_until")
+                if until and datetime.fromisoformat(until) <= now:
+                    alert["status"] = "open"
+                    alert.pop("snoozed_until", None)
+                    count += 1
+        return count
 
     def resolve_patient(self, identifier: str) -> Patient | None:
         direct = self.patients.get(identifier)

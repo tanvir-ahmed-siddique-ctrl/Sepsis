@@ -15,6 +15,7 @@ class AlertAction(str, Enum):
     acknowledged = "acknowledged"
     dismissed = "dismissed"
     escalated = "escalated"
+    snoozed = "snoozed"
 
 
 class ObservationIn(BaseModel):
@@ -91,11 +92,19 @@ class AlertAckRequest(BaseModel):
     action: AlertAction
     reason: str | None = Field(default=None, max_length=500)
     timestamp: datetime | None = None
+    quiet_minutes: int | None = Field(
+        default=None,
+        ge=5,
+        le=240,
+        description="For snoozed: hide interruptive banner this many minutes (bedside can keep treating).",
+    )
 
     @model_validator(mode="after")
     def dismissal_requires_reason(self):
         if self.action == AlertAction.dismissed and not (self.reason or "").strip():
             raise ValueError("A dismissal reason is required.")
+        if self.action == AlertAction.snoozed and self.quiet_minutes is None:
+            self.quiet_minutes = 60
         return self
 
 
@@ -127,6 +136,7 @@ class PatientOverviewCard(BaseModel):
     data_freshness_minutes: int | None
     trust_state: str
     unresolved_alerts: int
+    open_alert_id: str | None = None
     trend: list[float | None]
     age: int | None = None
     sex: str | None = None

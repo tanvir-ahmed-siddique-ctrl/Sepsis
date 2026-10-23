@@ -27,6 +27,23 @@ export default function PilotPage() {
   const metrics = usePoll(() => api<PilotMetricsData>(`/v1/pilot/metrics?${query}`), 15000, [query.toString()]);
   const outcomes = usePoll(() => api<{ outcomes: Outcome[] }>("/v1/pilot/outcomes"), 15000);
   const exports = usePoll(() => api<{ exports: ExportLog[] }>("/v1/pilot/exports"), 30000);
+  const feedback = usePoll(
+    () =>
+      api<{
+        feedback: {
+          feedback_id: string;
+          encounter_key: string;
+          alert_id: string | null;
+          user_id: string;
+          role: string;
+          usefulness: string;
+          workflow: string[];
+          comment: string | null;
+          recorded_at: string;
+        }[];
+      }>("/v1/pilot/feedback"),
+    15000,
+  );
 
   if (readiness.error && isStatus(readiness.error, 403)) {
     return <ApiError error="The silent-pilot workspace is restricted to pilot administrators. Sign in with an admin role." />;
@@ -124,6 +141,28 @@ export default function PilotPage() {
             ))}
           </ul>
         </Panel>
+        <Panel title={`Clinician feedback inbox (${feedback.data?.feedback.length ?? 0})`}>
+          <p className="-mt-2 mb-2 text-xs text-ink/55">
+            Submitted from the patient bedside workflow (“Was this score useful?”). Stored in{" "}
+            <code>feedback_records</code>, counted in pilot metrics, and included in pseudonymised exports — used to
+            judge alert burden and usefulness before live mode.
+          </p>
+          {feedback.error && <ApiError error={feedback.error} />}
+          <ul className="max-h-72 space-y-1 overflow-auto text-xs">
+            {(feedback.data?.feedback.length ?? 0) === 0 && <li className="text-ink/55">No feedback yet — submit from a patient chart.</li>}
+            {feedback.data?.feedback.map((item) => (
+              <li key={item.feedback_id} className="border-b border-ink/5 pb-1">
+                {new Date(item.recorded_at).toLocaleString()} · {item.encounter_key} ·{" "}
+                <strong>{humanize(item.usefulness)}</strong>
+                {item.workflow?.length ? ` · ${item.workflow.join(", ")}` : ""} · {item.user_id} ({item.role})
+                {item.comment ? <span className="mt-0.5 block text-ink/60">{item.comment}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Export & retention">
           <p className="-mt-2 mb-2 text-xs text-ink/55">
             Exports are pseudonymised (HMAC with the site salt), exclude free-text notes and comments, and are logged with a

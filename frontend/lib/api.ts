@@ -70,6 +70,7 @@ export type PatientOverview = {
   data_freshness_minutes: number | null;
   trust_state: TrustState;
   unresolved_alerts: number;
+  open_alert_id?: string | null;
   trend: Array<number | null>;
   age: number | null;
   sex: string | null;

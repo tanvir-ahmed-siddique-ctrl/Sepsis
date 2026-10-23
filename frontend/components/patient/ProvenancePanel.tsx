@@ -56,8 +56,8 @@ export function ProvenancePanel({ patientId }: { patientId: string }) {
         {matrix.data && (
           <>
             <p className="-mt-2 mb-2 text-xs text-ink/55">
-              Filled = observed that hour. Gaps are shown as recorded — the model forward-fills within clinical limits,
-              TrustGate abstains when required vitals are too old.
+              Filled = observed that hour. Empty cells are real gaps (not model “guesses”). The scorer may
+              forward-fill within clinical limits; TrustGate still blocks interrupts when required vitals are too old.
             </p>
             <div className="overflow-x-auto">
               <table className="text-[10px]" aria-label="Observed signals by hour">
@@ -81,6 +81,39 @@ export function ProvenancePanel({ patientId }: { patientId: string }) {
                 </tbody>
               </table>
             </div>
+            {(() => {
+              const gaps = matrix.data.signals.filter((s) => s.required && s.observed_hours < (matrix.data?.window_hours ?? 24));
+              if (!gaps.length) {
+                return <p className="mt-3 text-xs text-ink/55">Required vitals look complete for this window — no action.</p>;
+              }
+              return (
+                <div className="mt-3 space-y-2 border-t border-ink/10 pt-3 text-sm">
+                  <p className="font-medium">What to do next</p>
+                  <ol className="list-decimal space-y-1 pl-5 text-ink/75">
+                    <li>
+                      <strong>Bedside now:</strong> chart the missing required signals (
+                      {gaps.map((g) => g.code).join(", ")}) in{" "}
+                      <a className="text-accent underline" href="/chart">
+                        Chart
+                      </a>{" "}
+                      or confirm the monitor/LIS is sending them.
+                    </li>
+                    <li>
+                      <strong>What the system does:</strong> TrustGate stays on Verify data / Abstain — no interruptive
+                      alert until freshness recovers. The probability may still show for research.
+                    </li>
+                    <li>
+                      <strong>IT / Integration Hub:</strong> if the same codes gap across many beds, open{" "}
+                      <a className="text-accent underline" href="/integration">
+                        Integration Hub
+                      </a>{" "}
+                      → quarantine / feed health → map codes or fix the connector (this is a paid data-quality service
+                      line in the commercial plan).
+                    </li>
+                  </ol>
+                </div>
+              );
+            })()}
           </>
         )}
       </Panel>

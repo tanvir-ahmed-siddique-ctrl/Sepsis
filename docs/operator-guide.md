@@ -27,7 +27,7 @@ milestone is evidence, not features.
 | `mcp-server/` | Read-only MCP tools for operators and AI assistants |
 | `infra/` | Dockerfiles, backup/restore scripts, Congress preflight, public-demo Caddyfile |
 | `knowledge/` | Evidence graph, guideline registry, FHIR mapping registry |
-| `demo/cases/` | 9 de-identified public PhysioNet 2019 Challenge records (CC BY 4.0) used for replay |
+| `demo/cases/` | 24 de-identified public PhysioNet 2019 Challenge records (CC BY 4.0) used for replay (regenerate with `python -m predict_rx.demo.export --typical 8 --stable 14`) |
 | `docs/` | Runbooks, model card, safety, business, submission answers |
 
 | Page | Who uses it | What it gives |

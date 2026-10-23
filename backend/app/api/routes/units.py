@@ -20,10 +20,21 @@ def _minutes_since(stamp: str | None) -> int | None:
 
 
 def _open_alerts(engine: Engine, patient: Patient) -> list[dict]:
-    return sorted(
-        (a for a in engine.alerts.values() if a.get("encounter_key") == patient.encounter_key and a["status"] == "open"),
-        key=lambda alert: alert.get("raised_at") or "",
-    )
+    now = datetime.now(timezone.utc)
+    open_rows: list[dict] = []
+    for alert in engine.alerts.values():
+        if alert.get("encounter_key") != patient.encounter_key:
+            continue
+        if alert["status"] == "open":
+            open_rows.append(alert)
+            continue
+        if alert["status"] == "snoozed":
+            until = alert.get("snoozed_until")
+            if until and datetime.fromisoformat(until) <= now:
+                alert["status"] = "open"
+                alert.pop("snoozed_until", None)
+                open_rows.append(alert)
+    return sorted(open_rows, key=lambda alert: alert.get("raised_at") or "")
 
 
 def _data_gaps(prediction: dict) -> list[str]:
@@ -85,6 +96,7 @@ def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL)):
                 data_freshness_minutes=latest["data_freshness_minutes"],
                 trust_state=latest["trustgate"]["state"],
                 unresolved_alerts=len(open_alerts),
+                open_alert_id=open_alerts[0]["alert_id"] if open_alerts else None,
                 trend=[pt["probability"] for pt in p.predictions[-12:]],
                 age=p.age,
                 sex=p.sex,

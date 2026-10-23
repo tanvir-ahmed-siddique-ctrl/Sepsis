@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ShiftStrip } from "@/components/ShiftStrip";
 import { useLocale } from "@/lib/locale";
 import { humanize } from "@/lib/pilot";
 import { useSession } from "@/lib/session";
@@ -33,6 +34,7 @@ export function AppNav() {
           { href: "/integration", label: t.nav.integration },
           { href: "/operations", label: "Operations" },
           { href: "/admin/setup", label: "Site setup" },
+          { href: "/admin/shift-roster", label: "Shift roster" },
           { href: "/admin/users", label: t.nav.users },
           { href: "/model", label: t.nav.model },
           { href: "/readiness", label: t.nav.readiness },
@@ -42,6 +44,7 @@ export function AppNav() {
   ];
   return (
     <header className="bg-white/90 shadow-sm">
+      {me && <ShiftStrip />}
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 sm:px-6" aria-label="Primary">
         <Link href="/" className="mr-auto font-display text-xl text-ink">
           PredictRx <span className="text-accent">Sentinel</span>

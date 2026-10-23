@@ -147,6 +147,38 @@ export default function OverviewPage() {
                   <Pill key={signal} tone="warning">{signal} missing/stale</Pill>
                 ))}
               </div>
+              {p.open_alert_id && me && (me.role === "clinician" || me.role === "admin") && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="border border-accent bg-accent px-2 py-1 text-xs text-white"
+                    onClick={() =>
+                      void api(`/v1/alerts/${p.open_alert_id}/acknowledge`, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "acknowledged", reason: "Seen from ICU board" }),
+                      }).then(() => refresh())
+                    }
+                  >
+                    Seen
+                  </button>
+                  <button
+                    type="button"
+                    className="border border-ink/20 px-2 py-1 text-xs"
+                    onClick={() =>
+                      void api(`/v1/alerts/${p.open_alert_id}/acknowledge`, {
+                        method: "POST",
+                        body: JSON.stringify({
+                          action: "snoozed",
+                          reason: "Quiet 1h — treating at bedside",
+                          quiet_minutes: 60,
+                        }),
+                      }).then(() => refresh())
+                    }
+                  >
+                    Quiet 1h
+                  </button>
+                </div>
+              )}
               <div className="mt-3 flex items-center justify-between text-xs text-ink/55">
                 <span>
                   Vitals age {p.data_freshness_minutes == null ? "—" : `${p.data_freshness_minutes} min`} · owner{" "}

@@ -102,6 +102,21 @@ Measure: deployment effort, mapping maintenance, incidents, restore success, acc
 - flowsheet, handoff, quality dashboard, monitoring, support, audit export, upgrades, and periodic data-quality review;
 - model scoring remains within the approved silent/research boundary unless a separate future authorization exists.
 
+### 3b. Data-quality / missing-signal remediation (service SKU)
+
+When the Missing-signal matrix or TrustGate `verify_data` shows recurring gaps, hospitals often need people-time, not
+more model accuracy. Sell this as a **fixed or hourly service** (can attach to SafeLaunch or run stand-alone):
+
+| Work package | What we do | Charge hypothesis |
+|---|---|---|
+| Feed triage | Read Integration Hub quarantine + matrix gaps; identify monitor vs LIS vs charting cause | Included in readiness, or BDT 25–75k one-off |
+| Mapping clinic | Run Mapping Copilot proposals; analyst signs registry SHA; re-test 10 examples | BDT 40–120k per source system |
+| Connector hardening | HL7/FHIR/CSV/Vendor Adapter fix with hospital IT; lag & stale SLA | BDT 75–250k or day-rate |
+| Habit / cadence coaching | Nursing charting cadence vs S6 fingerprint baseline | Bundled in SafeLaunch closeout |
+
+This is honest revenue: we charge for making required vitals *arrive*, which unblocks TrustGate interrupts later —
+not for claiming mortality reduction.
+
 ### 4. Hospital group deployment
 
 - standardized mappings and governance with site-specific validation;

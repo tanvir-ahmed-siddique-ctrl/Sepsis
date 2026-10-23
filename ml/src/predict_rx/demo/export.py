@@ -29,8 +29,8 @@ def main() -> None:
     parser.add_argument("--raw", type=Path, default=Path("data/raw/training_setA"))
     parser.add_argument("--model-dir", type=Path, default=Path("artifacts/models/latest"))
     parser.add_argument("--out", type=Path, default=Path("../demo/cases"))
-    parser.add_argument("--typical", type=int, default=3)
-    parser.add_argument("--stable", type=int, default=4)
+    parser.add_argument("--typical", type=int, default=8, help="Typical-detection septic beds (default 8 → denser ICU board)")
+    parser.add_argument("--stable", type=int, default=14, help="Stable non-septic beds (default 14; +missed +false_alert ≈ 24 total)")
     args = parser.parse_args()
 
     bundle = joblib.load(args.model_dir / "model.joblib")
@@ -96,7 +96,7 @@ def main() -> None:
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2))
     for c in cases:
         print(c)
-    print(f"Wrote {len(cases)} cases → {args.out}")
+    print(f"Wrote {len(cases)} cases -> {args.out}")
 
 
 if __name__ == "__main__":

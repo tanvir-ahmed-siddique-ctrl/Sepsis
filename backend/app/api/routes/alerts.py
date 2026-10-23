@@ -68,7 +68,15 @@ def acknowledge_alert(
     if alert["status"] != "open":
         raise HTTPException(status_code=409, detail="Alert already resolved or not interruptive")
     recorded = body.timestamp or datetime.now(timezone.utc)
-    audit_id = engine.act_on_alert(alert_id, actor.user_id, body.action.value, body.reason, recorded, actor.role)
+    audit_id = engine.act_on_alert(
+        alert_id,
+        actor.user_id,
+        body.action.value,
+        body.reason,
+        recorded,
+        actor.role,
+        quiet_minutes=body.quiet_minutes,
+    )
     return AlertAckResponse(alert_id=alert_id, action=body.action, recorded_at=recorded, audit_id=audit_id)
 
 

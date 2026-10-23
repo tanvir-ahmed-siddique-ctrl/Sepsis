@@ -73,12 +73,16 @@ export function MappingCopilot() {
 
   return (
     <Panel title="Mapping copilot (proposal only)">
-      <p className="-mt-2 mb-3 text-xs text-ink/55">
-        Enter field metadata from the hospital&apos;s lab or chart dictionary—never patient values or identifiers.
+      <p className="-mt-2 mb-3 text-sm text-ink/70">
+        <strong>What this is:</strong> a helper for IT when the hospital lab uses local codes (Bangla labels, vendor
+        names) that are not yet in our LOINC registry. You type the <em>field name/unit</em> → it suggests which
+        PredictRx signal (HR, Lactate, …) it might be. It never writes the registry by itself and never sees patient
+        values.
+      </p>
+      <p className="mb-3 text-xs text-ink/55">
         Hybrid retrieval (keyword, trigram and synonym matching, optionally fused with embeddings) ranks registry
         candidates; an optional model—on-premises by default, or an API the site approves—may choose among them or
-        answer &quot;none&quot;. It receives field names and units only. Nothing changes until an analyst edits the registry and
-        signs the new SHA.
+        answer &quot;none&quot;. Nothing changes until an analyst edits the registry and signs the new SHA.
       </p>
       {unmapped.data && unmapped.data.unmapped.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2 text-xs">

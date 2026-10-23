@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
 
-type Action = "acknowledged" | "dismissed" | "escalated";
+type Action = "acknowledged" | "dismissed" | "escalated" | "snoozed";
 
 export function AlertActions({
   alertId,
@@ -56,7 +56,29 @@ export function AlertActions({
       />
       <div className="flex flex-wrap gap-2">
         <ActionButton disabled={busy !== null} onClick={() => void submit("acknowledged")}>
-          {busy === "acknowledged" ? "Recording…" : "Acknowledge"}
+          {busy === "acknowledged" ? "Recording…" : "Seen (ack)"}
+        </ActionButton>
+        <ActionButton
+          disabled={busy !== null}
+          onClick={() => {
+            setBusy("snoozed");
+            void api(`/v1/alerts/${alertId}/acknowledge`, {
+              method: "POST",
+              body: JSON.stringify({
+                action: "snoozed",
+                reason: note || "Quiet while treating — bedside",
+                quiet_minutes: 60,
+              }),
+            })
+              .then(() => {
+                setError(null);
+                onDone?.("Alert quiet for 60 minutes.");
+              })
+              .catch((cause) => setError(cause instanceof Error ? cause.message : String(cause)))
+              .finally(() => setBusy(null));
+          }}
+        >
+          {busy === "snoozed" ? "Recording…" : "Quiet 1h"}
         </ActionButton>
         <ActionButton disabled={busy !== null} onClick={() => void submit("escalated")}>
           {busy === "escalated" ? "Recording…" : "Escalate"}
@@ -65,6 +87,10 @@ export function AlertActions({
           {busy === "dismissed" ? "Recording…" : "Dismiss"}
         </ActionButton>
       </div>
+      <p className="text-[11px] text-ink/50">
+        Emergency tip: use <strong>Seen</strong> or <strong>Quiet 1h</strong> from the ICU board without leaving the
+        patient — treat first, write the long note when you can. Voice control is a later add-on, not required.
+      </p>
       {error && <p role="alert" className="text-xs text-risk-high">{error}</p>}
     </div>
   );
