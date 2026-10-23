@@ -45,11 +45,11 @@ const CRITERIA: Array<{
 }> = [
   {
     name: "Innovation",
-    claim: "The system decides whether data and local evidence justify showing, withholding or escalating a risk score — and blocks clinical alerting until a hospital earns readiness.",
-    proof: [["/presentation", "Replay walkthrough"], ["/", "ICU board with TrustGate states"], ["/model", "Model transparency"]],
-    measured: "Alert / Watch / Verify / Abstain live; challengers rejected under preregistered gates; pathway matches published hospital deployments (Duke silent→2018 go-live, TREWS engagement, Epic cautionary) — docs/international-deployment-validation.md.",
+    claim: "Sepsis ML is missing from hospitals because of EHR lock-in and unsafe transfer — not missing math. PredictRx unlocks both: a Connection Ladder (paper→HL7/FHIR→SMART) that keeps our IP out of the EHR vendor, and a Transfer Shield that blocks alerts until local calibration and measurement habits clear.",
+    proof: [["/connection", "Connection & Transfer Shield"], ["/presentation", "Replay"], ["/", "TrustGate board"]],
+    measured: "L0–L3+U0 shipped with conformance; L4 adapter contract + U1/U2 SMART/CDS path specified; Transfer Shield S1–S8 named; international pathway timeline documented.",
     status: "Built",
-    gap: "Named clinical reviewer optional; pathway validation from international literature is already documented.",
+    gap: "Epic Showroom listing is commercial roadmap — not claimed live today.",
   },
   {
     name: "Technical execution",

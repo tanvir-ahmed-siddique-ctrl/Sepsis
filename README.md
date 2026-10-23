@@ -149,6 +149,8 @@ Details: [model card](docs/model-card.md) and
 - [Technical production evidence](docs/technical-production-evidence.md)
 - [Global corroboration (published alignment)](docs/global-corroboration.md)
 - [International deployment validation (timeline)](docs/international-deployment-validation.md)
+- [Innovation: adoption barriers (lock-in + transfer)](docs/innovation-adoption-barriers.md)
+- [Vendor Adapter contract v1](docs/adapters/vendor-adapter-contract.v1.json)
 - [Standards alignment](docs/standards-alignment.md)
 - [NRB / global builder pack](docs/nrb-global-builder-pack.md)
 - [Fleet enrolment & release rings](docs/fleet-enrolment-and-release-rings.md)

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://predictrx.example/adapters/vendor-adapter-contract.v1.json",
+  "title": "PredictRx Vendor Adapter Contract v1",
+  "description": "Minimal outbound contract for a local HIS/LIS that does not expose FHIR. The hospital or vendor implements an adapter that emits this shape (or the CSV equivalent). PredictRx never writes back to the HIS database. Synthetic and production feeds must set provenance.synthetic correctly.",
+  "type": "object",
+  "required": ["contract_version", "site_id", "emitted_at", "observations"],
+  "properties": {
+    "contract_version": { "const": "predictrx-vendor-adapter/1" },
+    "site_id": { "type": "string", "minLength": 1 },
+    "emitted_at": { "type": "string", "format": "date-time" },
+    "source_system": {
+      "type": "string",
+      "description": "Vendor product name, e.g. MySoft HIS, OpenMRS+, custom LIS"
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["patient_id", "encounter_id", "timestamp", "code", "value", "unit"],
+        "properties": {
+          "patient_id": { "type": "string", "description": "Stable MRN / hospital ID; not a display name" },
+          "encounter_id": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time", "description": "Source observation time, timezone-aware" },
+          "code": { "type": "string", "description": "Local or LOINC code; unknown codes are quarantined until mapped" },
+          "value": { "type": ["number", "string"] },
+          "unit": { "type": "string", "description": "UCUM preferred; unknown units quarantined" },
+          "unit_id": { "type": "string", "description": "ICU/ward id in PredictRx unit master" },
+          "code_system": { "type": "string", "default": "local" }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "synthetic": { "type": "boolean", "default": false },
+        "export_batch_id": { "type": "string" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "contract_version": "predictrx-vendor-adapter/1",
+      "site_id": "demo-dhaka-icu",
+      "emitted_at": "2026-10-23T12:00:00+06:00",
+      "source_system": "example-local-HIS",
+      "observations": [
+        {
+          "patient_id": "MRN-1001",
+          "encounter_id": "ENC-7781",
+          "timestamp": "2026-10-23T11:55:00+06:00",
+          "code": "HR",
+          "value": 118,
+          "unit": "bpm",
+          "unit_id": "icu-1"
+        }
+      ],
+      "provenance": { "synthetic": true, "export_batch_id": "commissioning-001" }
+    }
+  ]
+}

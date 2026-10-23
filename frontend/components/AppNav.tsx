@@ -15,6 +15,7 @@ export function AppNav() {
     ...(isOperator
       ? [
           { href: "/operations", label: "Operations" },
+          { href: "/connection", label: "Connection" },
           { href: "/evidence", label: "Evidence" },
         ]
       : [
@@ -23,6 +24,7 @@ export function AppNav() {
           { href: "/ward", label: t.nav.ward },
           { href: "/alerts", label: t.nav.alerts },
           { href: "/handoff", label: t.nav.handoff },
+          { href: "/connection", label: "Connection" },
           { href: "/evidence", label: "Evidence" },
         ]),
     ...(isAdmin

@@ -12,6 +12,11 @@ const destinations = [
     detail: "The timed, evidence-led competition walkthrough of one held-out replay case.",
   },
   {
+    href: "/connection",
+    title: "Connection & Transfer Shield",
+    detail: "Why sepsis ML is not everywhere — EHR lock-in unlock (ladder L0–U2) and local transfer controls. Main innovation attraction.",
+  },
+  {
     href: "/evidence",
     title: "Evidence centre",
     detail: "Every judging claim with its live proof, measured result, and the external evidence still honestly missing.",

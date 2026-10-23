@@ -28,12 +28,12 @@ const SECTIONS = [
 ] as const;
 
 const PIPELINE = [
-  ["Connect", "FHIR R4, HL7 v2 ORU/ADT, lab CSV, native API, MLLP edge relay, offline bedside charting"],
+  ["Connect", "Connection Ladder L0–U2: chart → CSV → HL7/edge → FHIR → Vendor Adapter → SMART/CDS (we keep the IP; Epic is a shell)"],
   ["Validate", "Versioned LOINC/unit registry, range checks, quarantine, idempotency, late-data revision"],
   ["Represent", "Past-only 24-hour trends, freshness, missingness, ratios and organ-context features"],
   ["Predict", "Frozen LightGBM Run 4, calibrated, hash-verified at start-up"],
   ["Explain", "TreeSHAP drivers in plain language; cited guideline context that refuses treatment queries"],
-  ["Govern", "TrustGate: Alert, Watch, Verify data or Abstain; site gates keep alerts off until evidence passes"],
+  ["Govern", "TrustGate + Transfer Shield (calibration & measurement-habit gates) before live alerts"],
 ];
 
 const AI_STACK = [
