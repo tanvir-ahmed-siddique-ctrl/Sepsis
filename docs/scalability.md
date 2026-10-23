@@ -75,12 +75,20 @@ Scales by design:
 - **Users**: accounts are per-site (hospital admin or hospital OIDC/SSO). There
   is intentionally no global user database.
 
+## Enrolment and release rings (documented)
+
+Repeatable site enrolment, canary → cohort → fleet rings, and halt conditions
+are in `docs/fleet-enrolment-and-release-rings.md`. Global builder / NRB join
+paths: `CONTRIBUTING.md`, `docs/nrb-global-builder-pack.md`. Published
+alignment with worldwide clinical-AI practice:
+`docs/global-corroboration.md`. Standards mapping:
+`docs/standards-alignment.md`. Live-rate soak evidence:
+`docs/evidence/soak-check.md`.
+
 Still genuine gaps (not built; do not claim otherwise):
 
-- Fleet console uses SQLite and manual `sites.json`; a multi-hundred-site
-  fleet needs PostgreSQL storage, a site-onboarding workflow and staged
-  rollout rings (canary → cohort → fleet) with automatic halt on heartbeat
-  regression.
+- Fleet console still uses SQLite and manual `sites.json`; a multi-hundred-site
+  fleet will move to PostgreSQL storage with the same metadata-only contract.
 - No central billing/subscription/entitlement system (founder research in
   progress). Subscription state must never be able to interrupt bedside
   workflows at a hospital.

@@ -1,0 +1,27 @@
+{
+  "format": "predictrx-soak-check/1",
+  "load": "20 beds x 30 live-rate ticks (6 vitals/bed/tick)",
+  "observations": 3600,
+  "errors": 0,
+  "wall_seconds": 97.63,
+  "tick_latency_seconds": {
+    "median": 3.225,
+    "p95": 3.435,
+    "max": 3.716
+  },
+  "throughput_obs_per_s": 36.9,
+  "scale": {
+    "model": "one active writer per hospital site; hospitals scale out as isolated sites, the vendor console receives metadata-only heartbeats",
+    "api_encounters": 33,
+    "replay_encounters": 0,
+    "alerts": 3,
+    "audit_events": 5609,
+    "snapshot_entries": 34,
+    "snapshot_last_persist_ms": 197.84,
+    "snapshot_writes_total": 634,
+    "snapshot_kb_written_total": 42491.3
+  },
+  "audit_chain_valid": true,
+  "ready": true,
+  "passed": true
+}

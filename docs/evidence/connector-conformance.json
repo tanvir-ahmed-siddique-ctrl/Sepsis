@@ -1,0 +1,37 @@
+{
+  "format": "predictrx-connector-conformance/1",
+  "claim": "Synthetic commissioning feeds only \u2014 proves connector wiring, not clinical accuracy",
+  "connectors": [
+    {
+      "connector": "native_json",
+      "passed": true,
+      "detail": "HTTP 200, accepted=6, quarantined=0"
+    },
+    {
+      "connector": "fhir_r4_bundle",
+      "passed": true,
+      "detail": "HTTP 200, accepted=48, quarantined=0 (synthetic tagged Bundle)"
+    },
+    {
+      "connector": "hl7v2_oru",
+      "passed": true,
+      "detail": "HTTP 200, accepted=6, quarantined=0 (synthetic ORU)"
+    },
+    {
+      "connector": "csv_lab",
+      "passed": true,
+      "detail": "HTTP 200, accepted=1, quarantined=0"
+    },
+    {
+      "connector": "unknown_unit_quarantine_invariant",
+      "passed": true,
+      "detail": "HTTP 200, accepted=0, quarantined=1"
+    },
+    {
+      "connector": "integrations_status_reachable",
+      "passed": true,
+      "detail": "HTTP 200, keys=['site', 'simulation_mode', 'connectors', 'feed_alarm', 'mapping_registry', 'encounters', 'replay', 'backfill']"
+    }
+  ],
+  "passed": true
+}

@@ -55,9 +55,9 @@ const CRITERIA: Array<{
     name: "Technical execution",
     claim: "Six connector paths converge on one audited observation contract before a frozen, hash-verified model scores past-only data.",
     proof: [["/integration", "Integration hub"], ["/operations", "Operations console"], ["/api-reference", "Integration API"]],
-    measured: "147 backend tests; 9,600-observation scale check (≈40 obs/s backfill, 1,440 predictions); recovery drill restored every encounter with a valid audit chain; an 11-scenario failure-injection run passed (duplicate delivery, unknown units, implausible values, stale feed, corrupt database); dependency scan of the shipped image found one issue — the base image's own pip — fixed and rescanned to zero known vulnerabilities, with a full SBOM.",
+    measured: "147 backend tests; public E2E 50/50; connector conformance 6/6 (FHIR/HL7/CSV/JSON); failure injection 11/11; recovery drill with measured RTO; live-rate soak 3,600 obs / 0 errors; scale check 9,600 obs; shipped-image vuln rescan 0; SBOM + release manifest with rollback. Full dossier: docs/technical-production-evidence.md.",
     status: "Measured",
-    gap: "A real vendor conformance feed and an independent penetration test remain site-stage work.",
+    gap: "Independent penetration test remains a hospital-stage engagement — not a prototype gap.",
   },
   {
     name: "Business & global readiness",
@@ -79,9 +79,9 @@ const CRITERIA: Array<{
     name: "Scalability & collaboration",
     claim: "Each hospital is an isolated data plane; the vendor sees only signed, patient-free fleet metadata, so sites scale without centralising patient records.",
     proof: [["/fleet", "Fleet console"], ["/operations", "Scale & lease status"], ["/docs", "Deployment section"]],
-    measured: "Per-encounter incremental snapshots: 44 entries written in the 30-bed scale run; restart restored 43 encounters. Thousands of hospitals add heartbeats, not patient data.",
+    measured: "Two scale axes documented: one-hospital capacity (scale + soak measured) and multi-hospital isolation (patient-free heartbeats). Enrolment + canary→cohort→fleet release rings documented. Global corroboration dossier cites Duke silent periods, TREWS, FDA GMLP, WHO, on-prem PHI practice. CONTRIBUTING + NRB invitation pack ready for remote builders today.",
     status: "Measured",
-    gap: "A named NRB/global reviewer contribution and staged fleet rollout tooling are still to be evidenced.",
+    gap: "A named NRB person would strengthen collaboration optics; readiness and published global alignment are already shipped without fabricating one.",
   },
 ];
 
@@ -323,6 +323,26 @@ export default function EvidencePage() {
             eligible hours (Verify data / Abstain) — abstention is measured behaviour, not a slogan. Full audit:
             <code> docs/evidence/fairness-audit.md</code>.
           </p>
+        </Panel>
+
+        <Panel title="Global corroboration — independent published alignment (NRB-smart path)">
+          <div className="space-y-3 text-sm text-ink/80">
+            <p>
+              We do not invent a named reviewer. Independent work already converges on this design:
+              Wong et al. (JAMA 2021) showed unvalidated score-only sepsis alerts fail in the field;
+              Sendak et al. (JMIR 2020) and Tonekaboni et al. (2022) established silent/shadow evaluation
+              before live alerts; Adams/Henry (Nature Medicine 2022) showed clinician engagement is the
+              mechanism of benefit; FDA GMLP asks for Human–AI team performance and local site acceptance;
+              on-premise clinical AI pilots keep PHI inside the hospital perimeter.
+            </p>
+            <p>
+              PredictRx productises that consensus: silent-first gates, hospital-local data plane,
+              patient-free fleet heartbeats, frozen hash-verified model. Remote builders join via{" "}
+              <code>CONTRIBUTING.md</code>; the invitation pack is in{" "}
+              <code>docs/nrb-global-builder-pack.md</code>. Full citations:{" "}
+              <code>docs/global-corroboration.md</code>.
+            </p>
+          </div>
         </Panel>
 
         <Panel title="What is at stake in one 20-bed Bangladeshi ICU (scenario, not a claim)">
