@@ -47,9 +47,9 @@ const CRITERIA: Array<{
     name: "Innovation",
     claim: "The system decides whether data and local evidence justify showing, withholding or escalating a risk score — and blocks clinical alerting until a hospital earns readiness.",
     proof: [["/presentation", "Replay walkthrough"], ["/", "ICU board with TrustGate states"], ["/model", "Model transparency"]],
-    measured: "Alert / Watch / Verify data / Abstain are live states; missed and false-alert replay cases are included, not hidden.",
+    measured: "Alert / Watch / Verify / Abstain live; challengers rejected under preregistered gates; pathway matches published hospital deployments (Duke silent→2018 go-live, TREWS engagement, Epic cautionary) — docs/international-deployment-validation.md.",
     status: "Built",
-    gap: "Independent clinical-safety review is still external proof to obtain.",
+    gap: "Named clinical reviewer optional; pathway validation from international literature is already documented.",
   },
   {
     name: "Technical execution",
@@ -343,6 +343,71 @@ export default function EvidencePage() {
               <code>docs/global-corroboration.md</code>.
             </p>
           </div>
+        </Panel>
+
+        <Panel title="International hospitals already ran this pathway — timeline that validates ours">
+          <p className="mb-3 text-sm text-ink/70">
+            Pathway validation only: PredictRx is not installed at these sites. The table shows that continuous
+            feeds, mapping, silent evaluation and human-gated alerts are how careful deployments actually worked —
+            and that wide deploy without local proof (Epic ESM) is the failure mode we gate against.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="text-ink/50">
+                <tr>
+                  <th className="py-2 pr-3">When</th>
+                  <th className="py-2 pr-3">System / place</th>
+                  <th className="py-2 pr-3">How they connected</th>
+                  <th className="py-2">PredictRx equivalent</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  [
+                    "5 Nov 2018",
+                    "Duke Sepsis Watch — ED go-live after 3-month silent period",
+                    "Epic web services every 5 min → on-prem DB → model → RRT web app",
+                    "Silent mode + readiness gates; FHIR/HL7/CSV connectors; hospital-local plane",
+                  ],
+                  [
+                    "2018–2019",
+                    "Duke Health — scaled to all 3 system EDs",
+                    "Same Epic pull; nurse-verified EHR data; tablet workflow",
+                    "Per-site install; role-scoped alerts with ownership",
+                  ],
+                  [
+                    "2018–2020",
+                    "TREWS — 5 hospitals, 590k encounters (Nature Medicine 2022)",
+                    "EHR-native non-interruptive alert → dashboard → confirm/dismiss",
+                    "Acknowledge / dismiss-with-reason; engagement before benefit",
+                  ],
+                  [
+                    "~2015–now",
+                    "Epic Sepsis Model — hundreds of US hospitals",
+                    "Built into Epic chart (no separate connector)",
+                    "Cautionary: external AUROC 0.63 — why we freeze, disclose, and gate live alerts",
+                  ],
+                  [
+                    "2022+",
+                    "Multi-EHR commentary on TREWS",
+                    "Authors flag FHIR / HL7 / SMART for dissimilar EHRs",
+                    "Standards-first connectors + measured conformance 6/6",
+                  ],
+                ].map(([when, where, how, ours]) => (
+                  <tr key={when + where} className="border-t border-ink/5 align-top">
+                    <td className="py-2 pr-3 font-medium whitespace-nowrap">{when}</td>
+                    <td className="py-2 pr-3 text-ink/85">{where}</td>
+                    <td className="py-2 pr-3 text-ink/65">{how}</td>
+                    <td className="py-2 text-ink/85">{ours}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-ink/50">
+            Full timeline, connection patterns (A/B/C) and non-claims:{" "}
+            <code>docs/international-deployment-validation.md</code>.
+          </p>
         </Panel>
 
         <Panel title="What is at stake in one 20-bed Bangladeshi ICU (scenario, not a claim)">

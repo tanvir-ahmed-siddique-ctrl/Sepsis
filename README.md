@@ -148,6 +148,7 @@ Details: [model card](docs/model-card.md) and
 - [Judge evidence matrix](docs/judge-evidence-matrix.md)
 - [Technical production evidence](docs/technical-production-evidence.md)
 - [Global corroboration (published alignment)](docs/global-corroboration.md)
+- [International deployment validation (timeline)](docs/international-deployment-validation.md)
 - [Standards alignment](docs/standards-alignment.md)
 - [NRB / global builder pack](docs/nrb-global-builder-pack.md)
 - [Fleet enrolment & release rings](docs/fleet-enrolment-and-release-rings.md)

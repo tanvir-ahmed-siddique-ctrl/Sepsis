@@ -8,6 +8,10 @@ evidence-gated alerting, human-in-the-loop, transparency. Citation is not
 endorsement of PredictRx; it is evidence that our trade-offs match the
 emerging global consensus for clinical AI safety.
 
+For a dated go-live timeline (Duke 5 Nov 2018, TREWS multi-site, Epic
+hundreds of hospitals) and a connector-pattern map (EHR web-service pull vs
+EHR-native vs FHIR/HL7), see `docs/international-deployment-validation.md`.
+
 ## 1. Unvalidated score-only alerting fails in the field
 
 Wong et al. (*JAMA Internal Medicine* 2021) externally validated the
