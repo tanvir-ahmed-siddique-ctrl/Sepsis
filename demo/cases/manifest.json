@@ -1,0 +1,224 @@
+{
+  "model_version": "v0.2.0-202609281906",
+  "source_split": "Dataset A internal test (never used for training, calibration or thresholds)",
+  "selection_rule": "Select replay cases for the ICU dashboard from Dataset A's internal *test* split.\n\nSelection is rule-based and recorded in the manifest so the demo is not cherry-picked:\n  - typical detections: septic patients whose high-risk warning time is closest to the median\n  - one missed septic patient (no alert before onset)\n  - one non-septic patient with a false alert\n  - stable non-septic patients with no alert\nRaw PSV files are copied under pseudonymous bed IDs; the output folder is gitignored.",
+  "median_warning_hours_test": 3.0,
+  "cases": [
+    {
+      "bed_id": "BED-01",
+      "kind": "typical_detection",
+      "source_patient": "p000346",
+      "hours": 64,
+      "labelled_onset_hour": 61,
+      "first_high_risk_hour": 58,
+      "replay_start_hour": 52
+    },
+    {
+      "bed_id": "BED-02",
+      "kind": "typical_detection",
+      "source_patient": "p005677",
+      "hours": 28,
+      "labelled_onset_hour": 24,
+      "first_high_risk_hour": 21,
+      "replay_start_hour": 15
+    },
+    {
+      "bed_id": "BED-03",
+      "kind": "typical_detection",
+      "source_patient": "p010888",
+      "hours": 65,
+      "labelled_onset_hour": 61,
+      "first_high_risk_hour": 58,
+      "replay_start_hour": 52
+    },
+    {
+      "bed_id": "BED-04",
+      "kind": "typical_detection",
+      "source_patient": "p013054",
+      "hours": 39,
+      "labelled_onset_hour": 35,
+      "first_high_risk_hour": 32,
+      "replay_start_hour": 26
+    },
+    {
+      "bed_id": "BED-05",
+      "kind": "typical_detection",
+      "source_patient": "p005765",
+      "hours": 71,
+      "labelled_onset_hour": 67,
+      "first_high_risk_hour": 65,
+      "replay_start_hour": 59
+    },
+    {
+      "bed_id": "BED-06",
+      "kind": "typical_detection",
+      "source_patient": "p009914",
+      "hours": 64,
+      "labelled_onset_hour": 61,
+      "first_high_risk_hour": 59,
+      "replay_start_hour": 52
+    },
+    {
+      "bed_id": "BED-07",
+      "kind": "typical_detection",
+      "source_patient": "p002546",
+      "hours": 54,
+      "labelled_onset_hour": 50,
+      "first_high_risk_hour": 48,
+      "replay_start_hour": 42
+    },
+    {
+      "bed_id": "BED-08",
+      "kind": "typical_detection",
+      "source_patient": "p000379",
+      "hours": 58,
+      "labelled_onset_hour": 55,
+      "first_high_risk_hour": 53,
+      "replay_start_hour": 46
+    },
+    {
+      "bed_id": "BED-09",
+      "kind": "missed_detection",
+      "source_patient": "p018799",
+      "hours": 38,
+      "labelled_onset_hour": 35,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 26
+    },
+    {
+      "bed_id": "BED-10",
+      "kind": "false_alert",
+      "source_patient": "p011930",
+      "hours": 54,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": 47,
+      "replay_start_hour": 41
+    },
+    {
+      "bed_id": "BED-11",
+      "kind": "stable",
+      "source_patient": "p006127",
+      "hours": 54,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-12",
+      "kind": "stable",
+      "source_patient": "p014018",
+      "hours": 25,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-13",
+      "kind": "stable",
+      "source_patient": "p010277",
+      "hours": 33,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-14",
+      "kind": "stable",
+      "source_patient": "p015686",
+      "hours": 33,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-15",
+      "kind": "stable",
+      "source_patient": "p001327",
+      "hours": 37,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-16",
+      "kind": "stable",
+      "source_patient": "p017049",
+      "hours": 34,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-17",
+      "kind": "stable",
+      "source_patient": "p000200",
+      "hours": 43,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-18",
+      "kind": "stable",
+      "source_patient": "p017871",
+      "hours": 44,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-19",
+      "kind": "stable",
+      "source_patient": "p011992",
+      "hours": 44,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-20",
+      "kind": "stable",
+      "source_patient": "p005829",
+      "hours": 42,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-21",
+      "kind": "stable",
+      "source_patient": "p004488",
+      "hours": 51,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-22",
+      "kind": "stable",
+      "source_patient": "p016802",
+      "hours": 44,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-23",
+      "kind": "stable",
+      "source_patient": "p018675",
+      "hours": 36,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    },
+    {
+      "bed_id": "BED-24",
+      "kind": "stable",
+      "source_patient": "p018308",
+      "hours": 41,
+      "labelled_onset_hour": null,
+      "first_high_risk_hour": null,
+      "replay_start_hour": 6
+    }
+  ]
+}

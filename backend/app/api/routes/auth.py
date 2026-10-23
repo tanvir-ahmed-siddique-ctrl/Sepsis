@@ -2,10 +2,12 @@ import json
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 
 from app.accounts import AccountStore
 from app.auth import CLINICAL_ROLES, ROLES, Actor, create_access_token, require_roles
 from app.core.config import settings
+from app.records import utc_now
 from app.schemas import (
     AdminPasswordResetRequest,
     LocalLoginRequest,
@@ -25,6 +27,20 @@ CLINICAL = require_roles(*CLINICAL_ROLES)
 HUMAN = require_roles(*HUMAN_ROLES)
 PASSWORD_CHANGE = require_roles(*HUMAN_ROLES, allow_temporary_password=True)
 ADMIN = require_roles("admin")
+
+
+class StaffProfileUpdate(BaseModel):
+    alert_notifications: bool = True
+    sound: bool = False
+    quiet_when_off_shift: bool = True
+    escalation_minutes: int = Field(default=15, ge=5, le=120)
+
+
+class BrowserDeviceRequest(BaseModel):
+    device_id: str = Field(min_length=8, max_length=128)
+    label: str = Field(min_length=1, max_length=100)
+    user_agent: str | None = Field(default=None, max_length=500)
+    notification_permission: str = Field(pattern="^(default|granted|denied|unsupported)$")
 
 
 def _accounts() -> AccountStore:
@@ -149,6 +165,111 @@ def whoami(actor: Actor = Depends(AUTHENTICATED)):
         "must_change_password": actor.must_change_password,
         "totp_enabled": actor.totp_enabled,
     }
+
+
+def _profile_key(user_id: str) -> str:
+    return f"staff:{user_id.lower()}"[:64]
+
+
+def _staff_profile(actor: Actor) -> dict:
+    engine = get_engine()
+    stored = engine.records.load_config(_profile_key(actor.user_id)) or {}
+    defaults = {
+        "user_id": actor.user_id,
+        "display_name": actor.display_name or actor.user_id,
+        "role": actor.role,
+        "units": list(actor.units) if actor.units is not None else None,
+        "preferences": {
+            "alert_notifications": True,
+            "sound": False,
+            "quiet_when_off_shift": True,
+            "escalation_minutes": settings.alert_review_sla_minutes,
+        },
+        "devices": [],
+    }
+    defaults.update(stored)
+    from app import shift_roster
+
+    roster = shift_roster.load(engine)
+    defaults["current_shift"] = shift_roster.current_staff(roster)
+    defaults["delivery_history"] = [
+        {
+            "event": event["event"],
+            "alert_id": event.get("alert_id"),
+            "patient_id": event.get("patient_id"),
+            "at": event.get("at") or event.get("source_time"),
+            "reason": event.get("reason"),
+        }
+        for event in reversed(engine.audit)
+        if event.get("actor") == actor.user_id
+        and event.get("event") in {"alert_acknowledged", "alert_escalated", "alert_dismissed", "alert_snoozed"}
+    ][:50]
+    defaults["delivery_capability"] = {
+        "installed_pwa": "client-reported",
+        "browser_notifications": True,
+        "closed_app_web_push": False,
+        "note": (
+            "Browser notifications are delivered while the PWA is running/backgrounded. "
+            "Closed-app Web Push needs a hospital-approved VAPID push gateway and is not claimed in this build."
+        ),
+    }
+    return defaults
+
+
+@router.get("/profile")
+def staff_profile(actor: Actor = Depends(HUMAN)):
+    return _staff_profile(actor)
+
+
+@router.put("/profile/preferences")
+def update_staff_preferences(body: StaffProfileUpdate, actor: Actor = Depends(HUMAN)):
+    engine = get_engine()
+    profile = _staff_profile(actor)
+    profile["preferences"] = body.model_dump()
+    # Derived fields are rebuilt on read and are not persisted.
+    for key in ("current_shift", "delivery_history", "delivery_capability"):
+        profile.pop(key, None)
+    engine.records.save_config(_profile_key(actor.user_id), profile, actor.user_id)
+    engine._log("staff_alert_preferences_updated", {"actor": actor.user_id, "actor_role": actor.role})
+    return _staff_profile(actor)
+
+
+@router.post("/profile/devices")
+def enroll_browser_device(body: BrowserDeviceRequest, actor: Actor = Depends(HUMAN)):
+    engine = get_engine()
+    profile = _staff_profile(actor)
+    devices = list(profile.get("devices") or [])
+    row = {
+        **body.model_dump(),
+        "enrolled_at": utc_now(),
+        "last_seen_at": utc_now(),
+        "kind": "pwa-browser",
+    }
+    devices = [device for device in devices if device.get("device_id") != body.device_id]
+    devices.append(row)
+    profile["devices"] = devices[-10:]
+    for key in ("current_shift", "delivery_history", "delivery_capability"):
+        profile.pop(key, None)
+    engine.records.save_config(_profile_key(actor.user_id), profile, actor.user_id)
+    engine._log("staff_device_enrolled", {
+        "actor": actor.user_id,
+        "actor_role": actor.role,
+        "device_id": body.device_id,
+        "notification_permission": body.notification_permission,
+    })
+    return _staff_profile(actor)
+
+
+@router.delete("/profile/devices/{device_id}")
+def remove_browser_device(device_id: str, actor: Actor = Depends(HUMAN)):
+    engine = get_engine()
+    profile = _staff_profile(actor)
+    profile["devices"] = [device for device in profile.get("devices") or [] if device.get("device_id") != device_id]
+    for key in ("current_shift", "delivery_history", "delivery_capability"):
+        profile.pop(key, None)
+    engine.records.save_config(_profile_key(actor.user_id), profile, actor.user_id)
+    engine._log("staff_device_removed", {"actor": actor.user_id, "actor_role": actor.role, "device_id": device_id})
+    return _staff_profile(actor)
 
 
 @router.post("/password")

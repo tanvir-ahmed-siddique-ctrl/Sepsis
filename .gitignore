@@ -11,6 +11,10 @@ __pycache__/
 ml/data/raw/
 ml/data/processed/
 demo/cases/
+!demo/cases/
+!demo/cases/manifest.json
+!demo/cases/*.psv
+!demo/cases/README.md
 *.parquet
 *.pkl
 

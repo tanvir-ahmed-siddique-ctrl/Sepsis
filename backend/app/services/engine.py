@@ -595,7 +595,12 @@ class Engine:
                 self.patients[p.patient_id] = p
                 for _ in range(case["replay_start_hour"]):
                     self._advance(p, emit_alerts=False)
-            self._seed_demo_care_workflow()
+            # The public competition build defaults to the real, de-identified
+            # PhysioNet replay cohort only. Synthetic commissioning beds are an
+            # explicit opt-in for connector drills, never mixed into the primary
+            # clinical experience.
+            if settings.public_simulation_enabled:
+                self._seed_demo_care_workflow()
             self._log(
                 "replay_reset",
                 {"cases": sum(patient.source_mode == "replay" for patient in self.patients.values())},

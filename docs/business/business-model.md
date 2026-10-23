@@ -117,6 +117,32 @@ more model accuracy. Sell this as a **fixed or hourly service** (can attach to S
 This is honest revenue: we charge for making required vitals *arrive*, which unblocks TrustGate interrupts later —
 not for claiming mortality reduction.
 
+### 3c. Hospital app & managed alert operations
+
+The software is sellable only if it removes work. The installable PWA therefore
+ships as part of the subscription, not as a vanity mobile app:
+
+- personal alert preferences and current-shift context;
+- one-tap **Seen** / **Quiet 1h** from the ICU board;
+- bedside QR/deep-link access and offline handoff shell;
+- enrolled hospital browser/device inventory;
+- acknowledgement/escalation history for governance;
+- current-shift roster with CSV/manual administration.
+
+Commercial packaging hypothesis:
+
+| Offer | Included | Charge hypothesis |
+|---|---|---|
+| Hospital PWA | Installable app, staff profiles, on-shift roster, in-app/background browser notifications | Included in workflow subscription |
+| Managed alert setup | Hospital device policy, notification test, escalation matrix, shift import | BDT 50–150k implementation |
+| Closed-app Web Push gateway | Hospital-approved VAPID keys, delivery monitoring, rotation and incident support | Enterprise add-on after security approval |
+| Device & delivery review | Monthly failed-delivery / acknowledgement SLA review | Higher support tier |
+
+Current product boundary: browser notifications work while the installed PWA
+is running or backgrounded. A closed/killed-app guarantee needs a hospital-owned
+or approved Web Push gateway plus measured delivery and escalation; do not sell
+that guarantee before it is configured and validated.
+
 ### 4. Hospital group deployment
 
 - standardized mappings and governance with site-specific validation;

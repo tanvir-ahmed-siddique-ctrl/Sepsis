@@ -21,10 +21,12 @@ export function AppNav() {
         ]
       : [
           { href: "/", label: t.nav.overview },
+          { href: "/staff", label: "On shift" },
           { href: "/chart", label: t.nav.chart },
           { href: "/ward", label: t.nav.ward },
           { href: "/alerts", label: t.nav.alerts },
           { href: "/handoff", label: t.nav.handoff },
+          { href: "/workflows", label: "How it works" },
           { href: "/connection", label: "Connection" },
           { href: "/evidence", label: "Evidence" },
         ]),
@@ -34,7 +36,6 @@ export function AppNav() {
           { href: "/integration", label: t.nav.integration },
           { href: "/operations", label: "Operations" },
           { href: "/admin/setup", label: "Site setup" },
-          { href: "/admin/shift-roster", label: "Shift roster" },
           { href: "/admin/users", label: t.nav.users },
           { href: "/model", label: t.nav.model },
           { href: "/readiness", label: t.nav.readiness },
@@ -69,6 +70,7 @@ export function AppNav() {
               {humanize(me.site_mode)} · {me.role}
           </span>
         )}
+        {me && <Link href="/profile" className="text-sm font-medium text-accent">My app</Link>}
         <Link
           href="/login"
           aria-current={pathname === "/login" ? "page" : undefined}

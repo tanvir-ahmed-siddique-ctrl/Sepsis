@@ -25,6 +25,15 @@ DEFAULT_SHIFTS = [
 
 CSV_HEADERS = ("user_id", "display_name", "role", "shift_id", "unit_id", "active")
 
+DEFAULT_ASSIGNMENTS = [
+    {"id": "demo-morning-doctor", "user_id": "sim-clinician-01", "display_name": "Dr Samira Khan", "role": "clinician", "shift_id": "morning", "unit_id": "icu-api", "active": True},
+    {"id": "demo-morning-nurse", "user_id": "sim-nurse-01", "display_name": "Nusrat RN", "role": "nurse", "shift_id": "morning", "unit_id": "icu-api", "active": True},
+    {"id": "demo-evening-doctor", "user_id": "sim-clinician-02", "display_name": "Dr Arif Rahman", "role": "clinician", "shift_id": "evening", "unit_id": "icu-api", "active": True},
+    {"id": "demo-evening-nurse", "user_id": "sim-nurse-01", "display_name": "Nusrat RN", "role": "nurse", "shift_id": "evening", "unit_id": "icu-api", "active": True},
+    {"id": "demo-night-doctor", "user_id": "sim-clinician-01", "display_name": "Dr Samira Khan", "role": "clinician", "shift_id": "night", "unit_id": "icu-api", "active": True},
+    {"id": "demo-night-nurse", "user_id": "sim-nurse-02", "display_name": "Farhana RN", "role": "nurse", "shift_id": "night", "unit_id": "icu-api", "active": True},
+]
+
 
 def _parse_hhmm(value: str) -> time:
     hour, minute = value.strip().split(":")
@@ -38,12 +47,12 @@ def _in_window(now: time, start: time, end: time) -> bool:
     return now >= start or now < end
 
 
-def default_document() -> dict[str, Any]:
+def default_document(*, demo: bool = False) -> dict[str, Any]:
     return {
         "version": 1,
         "timezone": "Asia/Dhaka",
         "shifts": list(DEFAULT_SHIFTS),
-        "assignments": [],
+        "assignments": list(DEFAULT_ASSIGNMENTS) if demo else [],
         "updated_at": None,
         "updated_by": None,
         "note": (
@@ -56,7 +65,9 @@ def default_document() -> dict[str, Any]:
 def load(engine: Any) -> dict[str, Any]:
     stored = engine.records.load_config(CONFIG_KEY)
     if not stored:
-        return default_document()
+        from app.core.config import settings
+
+        return default_document(demo=settings.demo_mode)
     body = default_document()
     body.update({k: v for k, v in stored.items() if k in body or k in {"version", "timezone", "shifts", "assignments", "updated_at", "updated_by", "note"}})
     if not body.get("shifts"):

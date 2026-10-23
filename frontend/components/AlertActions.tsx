@@ -66,7 +66,7 @@ export function AlertActions({
               method: "POST",
               body: JSON.stringify({
                 action: "snoozed",
-                reason: note || "Quiet while treating — bedside",
+                reason: reason.trim() || "Quiet while treating — bedside",
                 quiet_minutes: 60,
               }),
             })

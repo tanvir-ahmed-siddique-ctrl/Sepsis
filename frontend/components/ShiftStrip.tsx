@@ -26,7 +26,7 @@ export function ShiftStrip() {
         {data.staff.length === 0 ? (
           <span className="text-ink/50">
             No roster for this shift —{" "}
-            <Link href="/admin/shift-roster" className="text-accent underline">
+            <Link href="/staff" className="text-accent underline">
               set who is on
             </Link>
           </span>
@@ -35,8 +35,8 @@ export function ShiftStrip() {
             {data.staff.map((p) => p.display_name).join(" · ")}
           </span>
         )}
-        <Link href="/admin/shift-roster" className="ml-auto text-accent underline">
-          Edit roster
+        <Link href="/staff" className="ml-auto text-accent underline">
+          View team
         </Link>
       </div>
     </div>

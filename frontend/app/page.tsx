@@ -57,7 +57,9 @@ export default function OverviewPage() {
         <div>
           <h1 className="font-display text-3xl text-ink">ICU command centre</h1>
           <p className="mt-1 text-sm text-ink/65">
-            Simulated ICU feed · three beds rescored every 30 seconds · model {data?.model_version ?? "…"}
+            {data?.site_mode === "demo"
+              ? `24 de-identified PhysioNet test encounters · replay controls below · model ${data?.model_version ?? "…"}`
+              : `Hospital-local live feed · model ${data?.model_version ?? "…"}`}
           </p>
           {units.data && units.data.units.length > 1 && (
             <label className="mt-2 flex items-center gap-2 text-sm">
@@ -115,7 +117,8 @@ export default function OverviewPage() {
                   <div>
                     <p className="font-medium">{p.display_name}</p>
                     <p className="text-xs text-ink/55">
-                      {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} · {p.source_mode === "api" ? "simulated feed" : "replay"}
+                      {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} ·{" "}
+                      {p.source_mode === "api" ? "hospital connector" : "de-identified PhysioNet replay"}
                     </p>
                   </div>
                   <RiskBadge band={p.risk_band} />

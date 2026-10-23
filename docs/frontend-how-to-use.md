@@ -30,7 +30,16 @@ Full dismiss with reason remains on patient / `/alerts`. Voice is optional later
 
 ## Shift roster
 
-Nav strip shows who is on the *current* shift. Edit: `/admin/shift-roster` (CSV or manual). Not payroll attendance.
+Nav → **On shift** (`/staff`) shows who is on the current shift. Every signed-in
+clinical user can view it. Admins see add/edit/delete and CSV import on the same
+page. The old `/admin/shift-roster` URL redirects here. Not payroll attendance.
+
+## My hospital app
+
+Nav → **My app** (`/profile`) contains alert preferences, install-PWA action,
+browser-device enrolment, current shift, and the user’s alert action history.
+Browser notifications work while the PWA is running/backgrounded. Closed-app
+Web Push requires a hospital-approved push gateway and is labelled honestly.
 
 ## Mapping copilot
 
@@ -39,3 +48,10 @@ Integration Hub bottom panel — suggests LOINC/target for local lab codes. Prop
 ## Hospital database connection
 
 PredictRx does **not** write into the HIS DB. Hospital connects *out* to us via CSV drop, HL7, FHIR, or Vendor Adapter JSON on the hospital LAN (on-prem install). Soft-landing = we are the ICU UI; HIS keeps billing/ADT.
+
+## Demo data boundary
+
+The primary public experience uses 24 real, de-identified PhysioNet 2019 test
+encounters. They were never used to train/calibrate/select thresholds. They are
+replayable and do not “run out.” Synthetic commissioning beds are disabled by
+default and only opt in when `PUBLIC_SIMULATION_ENABLED=true`.

@@ -27,3 +27,35 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(request).then((cached) => cached || caches.match("/chart"))),
   );
 });
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type !== "SHOW_ALERT") return;
+  const { title, body, url, alertId } = event.data;
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/app-icon.svg",
+      badge: "/app-icon.svg",
+      tag: alertId,
+      renotify: false,
+      requireInteraction: true,
+      data: { url: url || "/alerts" },
+      actions: [{ action: "open", title: "Open alert queue" }],
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/alerts";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => "focus" in client);
+      if (existing) {
+        existing.navigate(url);
+        return existing.focus();
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});

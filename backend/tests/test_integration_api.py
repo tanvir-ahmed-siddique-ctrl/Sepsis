@@ -457,3 +457,57 @@ def test_cds_hooks_and_smart_sandbox(client):
     assert ehr["legal"]["epic_showroom"] is False
     soft = client.put("/v1/site/soft-landing", json={"enabled": True, "reason": "test soft landing"})
     assert soft.status_code == 200 and soft.json()["soft_landing"] is True
+
+
+def test_shift_roster_visible_to_clinician_and_admin_can_manage(client):
+    clinician = {**CLINICIAN}
+    visible = client.get("/v1/site/shift-roster", headers=clinician)
+    assert visible.status_code == 200, visible.text
+    assert visible.json()["current"]["shift_id"] in {"morning", "evening", "night"}
+    assert visible.json()["assignments"], "demo roster should make the frontend visibly useful"
+
+    created = client.put(
+        "/v1/site/shift-roster/assignments",
+        json={
+            "user_id": "dr-roster-test",
+            "display_name": "Dr Roster Test",
+            "role": "clinician",
+            "shift_id": "morning",
+            "unit_id": "icu-api",
+            "active": True,
+        },
+    )
+    assert created.status_code == 200, created.text
+    assignment_id = created.json()["assignment"]["id"]
+    forbidden = client.delete(f"/v1/site/shift-roster/assignments/{assignment_id}", headers=clinician)
+    assert forbidden.status_code == 403
+    assert client.delete(f"/v1/site/shift-roster/assignments/{assignment_id}").status_code == 200
+
+
+def test_staff_profile_preferences_and_device_enrolment(client):
+    profile = client.get("/v1/auth/profile", headers=CLINICIAN)
+    assert profile.status_code == 200, profile.text
+    assert "current_shift" in profile.json() and "delivery_capability" in profile.json()
+    prefs = client.put(
+        "/v1/auth/profile/preferences",
+        headers=CLINICIAN,
+        json={
+            "alert_notifications": True,
+            "sound": False,
+            "quiet_when_off_shift": True,
+            "escalation_minutes": 20,
+        },
+    )
+    assert prefs.status_code == 200 and prefs.json()["preferences"]["escalation_minutes"] == 20
+    device = client.post(
+        "/v1/auth/profile/devices",
+        headers=CLINICIAN,
+        json={
+            "device_id": "browser-test-device",
+            "label": "Test ward browser",
+            "user_agent": "pytest",
+            "notification_permission": "granted",
+        },
+    )
+    assert device.status_code == 200, device.text
+    assert any(row["device_id"] == "browser-test-device" for row in device.json()["devices"])
