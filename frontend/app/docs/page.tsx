@@ -47,7 +47,7 @@ const AI_STACK = [
 ];
 
 const SAFEGUARDS = [
-  "Interruptive alerts disabled until nine readiness gates pass",
+  "Interruptive alerts disabled until ten readiness gates pass",
   "Silent mode blinds bedside users to scores during local evaluation",
   "Abstain and Verify-data states instead of forcing a number",
   "Frozen model and thresholds; no tuning on site data",

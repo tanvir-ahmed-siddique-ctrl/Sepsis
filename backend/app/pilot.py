@@ -20,6 +20,7 @@ import yaml
 
 from app.auth import production_security_ready
 from app.core.config import settings
+from app.habit_fingerprint import assess as assess_habit
 from app.records import (
     RETENTION_TABLES,
     connector_events,
@@ -402,6 +403,8 @@ def evaluate_gates(engine: Any, connector_health: list[dict[str, Any]]) -> list[
     feeds_ok = bool(connected) and all(item["state"] in {"healthy", "degraded"} for item in connected)
     adjudicated = detection["adjudicated_sepsis"] + detection["adjudicated_no_sepsis"]
     sensitivity = detection["sensitivity"]
+    habit = assess_habit(engine)
+    habit_ok = bool(habit["gate_ready"])
     return [
         _gate("local_retrospective_validation", local_evidence, local_evidence, True,
               "A local retrospective validation must be recorded in the site passport evidence."),
@@ -419,6 +422,8 @@ def evaluate_gates(engine: Any, connector_health: list[dict[str, Any]]) -> list[
               burden, settings.pilot_max_alerts_per_100h, "Shadow alerts per 100 patient-hours."),
         _gate("feeds_healthy", feeds_ok, [f"{c['connector']}:{c['state']}" for c in connected], "healthy",
               "Every connected feed is healthy or degraded, none stale or circuit-open."),
+        _gate("measurement_habit_stable", habit_ok, habit["comparison"].get("reason"), "within_tolerance",
+              habit["comparison"].get("detail") or "S6 habit fingerprint vs commissioning baseline."),
         _gate("governance_signoff", engine.site.state.governance_signoff is not None,
               engine.site.state.governance_signoff, "recorded", "Clinical governance / ethics approval recorded."),
         _gate("production_security", production_security_ready(), production_security_ready(), True,

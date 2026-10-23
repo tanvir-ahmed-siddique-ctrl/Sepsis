@@ -24,6 +24,7 @@ class SiteState:
     site_id: str
     requested_mode: str
     live_authorized: bool = False
+    soft_landing: bool = False
     gates_at_request: list[dict[str, Any]] = field(default_factory=list)
     governance_signoff: dict[str, Any] | None = None
     guideline_approval: dict[str, Any] | None = None

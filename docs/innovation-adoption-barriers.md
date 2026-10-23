@@ -72,10 +72,11 @@ work; higher floors are nicer UX, not a requirement to score.
 | **U1** | SMART on FHIR app | Epic/Oracle wants in-chart launch | OAuth launch → FHIR read → our scorer | US/EU — **our** Showroom listing |
 | **U2** | CDS Hooks + Launch Card | Want interrupt/card without leaving EHR | Hook → our service → card → opens U1 app | US — still **our** IP |
 
-**Already shipped today:** L0–L3, edge MLLP, quarantine, mapping copilot,
-conformance evidence. **Invented / specified now:** L4 Vendor Adapter Pack,
-L5 Soft-landing positioning, U1/U2 business+architecture path (implementation
-roadmap; not claimed as live Epic certification).
+**Already shipped today:** L0–L5, U0–U2 (sandbox), edge MLLP, quarantine, mapping
+copilot, S6 habit fingerprint gate, conformance evidence. L4 Vendor Adapter Pack
+ingest, L5 soft-landing site flag, U1 SMART sandbox, and U2 CDS Hooks cards are
+in the product. **Not claimed:** live Epic Showroom / Vendor Services listing —
+that remains a hospital commercial step.
 
 ### Vendor Adapter Pack (L4) — how we get data when “they have no FHIR”
 
@@ -142,7 +143,7 @@ hear one innovation):
 | **S3 Freshness / Abstain** | Stale or missing required signals → Verify data / Abstain | Shipped |
 | **S4 Silent local mirror** | Score for weeks without interrupting; compare to chart review | Shipped (`/pilot`) |
 | **S5 Local calibration gate** | Before live: require site calibration report (slope/intercept or isotonic on silent labels); threshold simulation only — never silent re-fit of the forest | Protocol shipped in readiness/pilot; live alerting blocked until gates pass |
-| **S6 Habit fingerprint** *(invented monitoring)* | During silent pilot, track per-unit median hours-between measurements for required vitals; flag >2× shift vs commissioning baseline as a readiness failure (“measurement habit drift”) before live | Specified on `/connection`; uses existing freshness signals; gate wording added to readiness narrative |
+| **S6 Habit fingerprint** *(invented monitoring)* | During silent pilot, track per-unit median minutes-between measurements for required vitals; flag >2× shift vs commissioning baseline as a readiness failure (“measurement habit drift”) before live | **Shipped** — `/v1/integrations/habit-fingerprint`, readiness gate `measurement_habit_stable`, Integration Hub + `/connection` |
 | **S7 Subgroup stop rule** | >10 pp sensitivity gap vs overall → keep pathway off until governance decides | Shipped (`docs/evidence/fairness-audit.md`) |
 | **S8 Context policy** | Pregnancy, comfort care, etc. modulate alerts without editing probability | Shipped |
 
@@ -164,6 +165,6 @@ shipping Epic-style scores everywhere with one global calibration.
 ## Non-claims
 
 - No live Epic Showroom listing or CDS Hooks production certification is
-  claimed today — U1/U2 are the designed commercial path.
+  claimed today — U1/U2 sandbox/standards path is shipped; gallery listing is commercial.
 - No contract with MySoft, EMSL, Epic, or Oracle is claimed.
 - Transfer Shield does not claim Bangladesh outcome validation.

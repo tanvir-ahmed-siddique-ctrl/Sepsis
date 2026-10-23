@@ -113,9 +113,13 @@ def test_gates_fail_closed_until_evidence_exists(fake_engine):
     assert set(gates) == {
         "local_retrospective_validation", "silent_pilot_duration", "silent_pilot_encounters",
         "adjudicated_outcomes", "sensitivity_floor", "alert_burden_budget", "feeds_healthy",
-        "governance_signoff", "production_security",
+        "measurement_habit_stable", "governance_signoff", "production_security",
     }
-    assert not any(gate["passed"] for name, gate in gates.items() if name != "alert_burden_budget")
+    assert not any(
+        gate["passed"]
+        for name, gate in gates.items()
+        if name not in {"alert_burden_budget"}
+    )
     assert gates["sensitivity_floor"]["value"] == 1.0
     fake_engine.site.state.governance_signoff = {"committee": "IRB"}
     gates = {gate["gate"]: gate for gate in evaluate_gates(fake_engine, [{"connector": "fhir_r4", "state": "healthy"}])}

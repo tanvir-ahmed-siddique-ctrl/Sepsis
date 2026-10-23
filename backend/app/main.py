@@ -17,6 +17,7 @@ from app.api.routes import (
     auth,
     care,
     demo,
+    ehr_bridge,
     evidence,
     health,
     integrations,
@@ -139,5 +140,19 @@ async def mode_handler(_: Request, error: ModeError):
 
 app.include_router(health.router)
 app.include_router(ops.router)
-for module in (auth, care, observations, integrations, patients, alerts, units, model, demo, evidence, site, pilot):
+for module in (
+    auth,
+    care,
+    observations,
+    integrations,
+    ehr_bridge,
+    patients,
+    alerts,
+    units,
+    model,
+    demo,
+    evidence,
+    site,
+    pilot,
+):
     app.include_router(module.router, prefix="/v1")

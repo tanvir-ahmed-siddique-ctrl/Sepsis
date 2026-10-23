@@ -8,6 +8,14 @@ PredictRx Sentinel is a **retrospective research prototype**, is **not approved 
 
 Bangladesh is the target learning market. Product classification, registration, licensing, data, research, and other DGDA or local regulatory obligations require advice from qualified Bangladesh legal/regulatory professionals and, where appropriate, relevant authorities. This document does not make a definitive regulatory determination.
 
+## EHR / HIS commercial & legal path
+
+How we sit beside Epic/Cerner/OpenMRS/local HIS without giving away IP —
+Connection Ladder L0–U2, Vendor Adapter fees, SMART/CDS Hooks as standards
+(not claimed partnerships), soft-landing sidecar language — is documented in
+[`ehr-partnership-and-commercial-strategy.md`](./ehr-partnership-and-commercial-strategy.md).
+That playbook is part of the business system of record, not a side note.
+
 ## Product wedge
 
 The initial product is not “AI that treats sepsis.” It is an ICU workflow and research operations layer:

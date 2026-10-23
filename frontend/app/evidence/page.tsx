@@ -434,7 +434,7 @@ export default function EvidencePage() {
           <li>No Bangladesh clinical validation, outcome improvement or lives-saved claim exists today.</li>
           <li>Public demo data is de-identified public replay plus disclosed synthetic commissioning data — never presented as a live hospital feed.</li>
           <li>The platform operator role cannot open patient pages; the vendor fleet console receives allowlisted, signed metadata only.</li>
-          <li>Interruptive alerts stay off until all nine readiness gates pass at a real site.</li>
+          <li>Interruptive alerts stay off until all ten readiness gates pass at a real site.</li>
           {!me && <li>Sign in (Session) as Hospital admin or Platform operator to see live operations counters on this page.</li>}
         </ul>
       </Panel>

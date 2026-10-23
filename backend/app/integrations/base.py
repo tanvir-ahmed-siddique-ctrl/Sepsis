@@ -76,4 +76,11 @@ CONNECTORS: dict[str, dict[str, str]] = {
         "scope": "ingest:json",
         "endpoint": "POST /v1/integrations/csv/lab",
     },
+    "vendor_adapter": {
+        "label": "Vendor Adapter Pack (L4)",
+        "standard": "predictrx-vendor-adapter/1 — HIS/LIS outbound JSON (docs/adapters)",
+        "status": "supported — hospital/vendor implements outbound contract; we never write their DB",
+        "scope": "ingest:json",
+        "endpoint": "POST /v1/integrations/vendor-adapter",
+    },
 }

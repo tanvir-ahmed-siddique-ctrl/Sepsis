@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 
 from app.auth import Actor, ensure_scope, ensure_unit, require_roles
 from app.core.config import settings
+from app.habit_fingerprint import assess as assess_habit
+from app.habit_fingerprint import compute_fingerprint, save_baseline
 from app.integrations import copilot
 from app.integrations.base import PayloadError
 from app.integrations.hl7v2 import parse_adt
@@ -30,6 +32,56 @@ async def _body(request: Request) -> str:
         return raw.decode("utf-8")
     except UnicodeDecodeError as error:
         raise HTTPException(status_code=422, detail="Payload must be UTF-8") from error
+
+
+def _habit_summary(engine) -> dict:
+    return assess_habit(engine)
+
+
+def _connection_ladder(engine, service, health: list[dict]) -> dict:
+    """Live tier status for Integration Hub and /connection (evidence, not marketing)."""
+    by_name = {item["connector"]: item for item in health}
+    def tier(connector: str, shipped: bool, detail: str) -> dict:
+        state = (by_name.get(connector) or {}).get("state", "never_connected")
+        return {
+            "shipped": shipped,
+            "feed_state": state,
+            "detail": detail,
+        }
+
+    soft = bool(getattr(engine.site.state, "soft_landing", False))
+    return {
+        "L0": {"shipped": True, "detail": "Bedside chart UI — /chart", "href": "/chart"},
+        "L1": {
+            **tier("csv_lab", True, "CSV lab import + Vendor Adapter JSON"),
+            "also": "vendor_adapter",
+            "href": "/integration",
+        },
+        "L2": {**tier("hl7v2_oru", True, "HL7 v2 ORU + ADT commission"), "href": "/integration"},
+        "L3": {**tier("fhir_r4", True, "FHIR R4 Bundle / NDJSON"), "href": "/integration"},
+        "L4": {**tier("vendor_adapter", True, "POST /v1/integrations/vendor-adapter"), "href": "/integration"},
+        "L5": {
+            "shipped": True,
+            "enabled": soft,
+            "detail": "Soft-landing sidecar flag — HIS unchanged; PredictRx is ICU UI",
+            "href": "/integration",
+        },
+        "U0": {**tier("fhir_r4", True, "Interface-engine push to on-prem API"), "href": "/integration"},
+        "U1": {
+            "shipped": True,
+            "status": "sandbox",
+            "detail": "SMART sandbox launch — production needs hospital Vendor Services",
+            "href": "/v1/ehr/smart/metadata",
+        },
+        "U2": {
+            "shipped": True,
+            "status": "cds_hooks",
+            "detail": "CDS Hooks patient-view cards (no orders)",
+            "href": "/v1/ehr/cds-services",
+        },
+        "mapping_registry_version": service.registry.version,
+        "soft_landing": soft,
+    }
 
 
 def _submit(connector: str, payload: str, actor: Actor, idempotency_key: str | None, backfill: bool) -> JSONResponse:
@@ -159,6 +211,18 @@ async def ingest_lab_csv(
     return _submit("csv_lab", await _body(request), actor, idempotency_key, backfill)
 
 
+@router.post("/vendor-adapter")
+async def ingest_vendor_adapter(
+    request: Request,
+    backfill: bool = Query(False, description="Retrospective import: scored, alerts recorded as shadow only"),
+    idempotency_key: str | None = Header(default=None, max_length=200),
+    actor: Actor = Depends(INGEST),
+):
+    """L4 Vendor Adapter Pack — predictrx-vendor-adapter/1 JSON from HIS/LIS outbound jobs."""
+    ensure_scope(actor, "ingest:json")
+    return _submit("vendor_adapter", await _body(request), actor, idempotency_key, backfill)
+
+
 @router.get("/status")
 def integration_status(_: Actor = Depends(OPERATIONS)):
     engine = get_engine()
@@ -198,11 +262,55 @@ def integration_status(_: Actor = Depends(OPERATIONS)):
                             "model": settings.copilot_llm_model if settings.copilot_llm_url else None},
         },
         "roadmap": {
-            "smart_on_fhir": "SMART App Launch 2.2 (EHR launch) — planned EHR-embedded patient view.",
-            "cds_hooks": "CDS Hooks 2.0 patient-view card — planned; returns links to this cockpit, never orders.",
+            "smart_on_fhir": "SMART App Launch 2.2 sandbox shipped (GET /v1/ehr/smart/*). Production Epic/Cerner needs hospital Vendor Services registration — we keep the app IP.",
+            "cds_hooks": "CDS Hooks 2.0 patient-view shipped (GET/POST /v1/ehr/cds-services*). Cards link to this cockpit; never orders.",
+            "vendor_adapter": "L4 Vendor Adapter Pack shipped — POST /v1/integrations/vendor-adapter (contract docs/adapters/).",
+            "soft_landing": "L5 soft-landing flag on site config — HIS keeps registration/billing; PredictRx is the ICU UI.",
             "bulk_data": "FHIR Bulk Data 3.0 $export NDJSON → POST /v1/integrations/fhir/ndjson for retrospective validation.",
         },
+        "connection_ladder": _connection_ladder(engine, service, health),
+        "habit_fingerprint": _habit_summary(engine),
     }
+
+
+@router.get("/habit-fingerprint")
+def habit_fingerprint_status(_: Actor = Depends(OPERATIONS)):
+    """S6 Transfer Shield — current vs commissioning measurement cadence."""
+    return assess_habit(get_engine())
+
+
+@router.post("/habit-fingerprint/baseline")
+def habit_fingerprint_baseline(actor: Actor = Depends(ADMIN)):
+    """Record commissioning habit fingerprint used by the live-mode readiness gate."""
+    engine = get_engine()
+    fingerprint = compute_fingerprint(engine)
+    insufficient = [
+        signal
+        for signal, body in fingerprint["signals"].items()
+        if body.get("status") != "ok"
+    ]
+    if insufficient:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Not enough observation intervals to baseline signals: "
+                + ", ".join(insufficient)
+                + ". Ingest a commissioning window with regular vitals first."
+            ),
+        )
+    baseline = save_baseline(engine, fingerprint, actor.user_id)
+    engine.record_site_config_change("habit_fingerprint_baseline_recorded", actor, {
+        "encounters_sampled": baseline.get("encounters_sampled"),
+        "signals": {k: v.get("median_interval_minutes") for k, v in baseline.get("signals", {}).items()},
+    })
+    return assess_habit(engine)
+
+
+@router.get("/connection-ladder")
+def connection_ladder(_: Actor = Depends(OPERATIONS)):
+    engine = get_engine()
+    service = get_integration_service(engine)
+    return _connection_ladder(engine, service, service.connector_health())
 
 
 @router.get("/mappings")

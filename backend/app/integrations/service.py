@@ -21,6 +21,7 @@ from app.integrations.csv_lab import parse_csv_lab
 from app.integrations.fhir import map_bundle, map_resources, parse_ndjson
 from app.integrations.hl7v2 import parse_oru
 from app.integrations.mapping import MappingRegistry
+from app.integrations.vendor_adapter import parse_vendor_adapter
 from app.observability import METRICS
 from app.records import connector_events, connector_spool, ingest_requests, utc_now
 from app.schemas import ObservationBatch
@@ -68,6 +69,8 @@ def _parse(connector: str, payload: str, registry: MappingRegistry) -> MappingRe
         return parse_oru(payload, registry)
     if connector == "csv_lab":
         return parse_csv_lab(payload, registry)
+    if connector == "vendor_adapter":
+        return parse_vendor_adapter(payload, registry)
     raise PayloadError(f"Unknown connector {connector}")
 
 

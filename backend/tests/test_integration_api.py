@@ -376,3 +376,84 @@ def test_security_configuration_rejects_unsafe_production(monkeypatch):
     monkeypatch.setattr(settings, "site_mode", "silent")
     monkeypatch.setattr(settings, "export_salt", "site-specific-salt")
     validate_security_configuration()
+
+
+def test_vendor_adapter_ingest_and_connection_ladder(client):
+    now = datetime.now(timezone.utc)
+    payload = {
+        "contract_version": "predictrx-vendor-adapter/1",
+        "site_id": "demo-dhaka-icu",
+        "emitted_at": now.isoformat(),
+        "source_system": "test-HIS",
+        "observations": [
+            {
+                "patient_id": "va-a",
+                "encounter_id": "va-a-enc",
+                "timestamp": (now - timedelta(minutes=5)).isoformat(),
+                "code": "HR",
+                "value": 110,
+                "unit": "bpm",
+                "unit_id": "icu-va",
+            },
+            {
+                "patient_id": "va-a",
+                "encounter_id": "va-a-enc",
+                "timestamp": (now - timedelta(minutes=4)).isoformat(),
+                "code": "SBP",
+                "value": 95,
+                "unit": "mmHg",
+                "unit_id": "icu-va",
+            },
+            {
+                "patient_id": "va-a",
+                "encounter_id": "va-a-enc",
+                "timestamp": (now - timedelta(minutes=3)).isoformat(),
+                "code": "MAP",
+                "value": 70,
+                "unit": "mmHg",
+                "unit_id": "icu-va",
+            },
+            {
+                "patient_id": "va-a",
+                "encounter_id": "va-a-enc",
+                "timestamp": (now - timedelta(minutes=2)).isoformat(),
+                "code": "O2Sat",
+                "value": 94,
+                "unit": "%",
+                "unit_id": "icu-va",
+            },
+        ],
+        "provenance": {"synthetic": True, "export_batch_id": "test-001"},
+    }
+    response = client.post("/v1/integrations/vendor-adapter", content=json.dumps(payload))
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["accepted"] >= 4
+    status = client.get("/v1/integrations/status").json()
+    connectors = {item["connector"]: item for item in status["connectors"]}
+    assert "vendor_adapter" in connectors
+    assert status["connection_ladder"]["L4"]["shipped"] is True
+    assert status["habit_fingerprint"]["comparison"]["reason"]
+    ladder = client.get("/v1/integrations/connection-ladder").json()
+    assert ladder["U1"]["shipped"] is True and ladder["U2"]["shipped"] is True
+
+
+def test_cds_hooks_and_smart_sandbox(client):
+    meta = client.get("/v1/ehr/smart/metadata").json()
+    assert meta["smart_version"] == "2.2" and meta["status"] == "sandbox"
+    discovery = client.get("/v1/ehr/cds-services").json()
+    assert discovery["services"][0]["id"] == "predictrx-patient-view"
+    # Seed a FHIR encounter so launch/CDS have a target
+    client.post("/v1/integrations/fhir/bundle", content=_bundle("smart-a", hours=4))
+    launch = client.get("/v1/ehr/smart/launch").json()
+    assert launch["status"] == "sandbox_launched" and launch["access_token"]
+    cards = client.post(
+        "/v1/ehr/cds-services/predictrx-patient-view",
+        json={"hook": "patient-view", "hookInstance": "test-1", "context": {"patientId": "smart-a"}},
+    ).json()
+    assert cards["cards"] and "PredictRx" in cards["cards"][0]["summary"]
+    assert "links" in cards["cards"][0]
+    ehr = client.get("/v1/ehr/connection-status").json()
+    assert ehr["legal"]["epic_showroom"] is False
+    soft = client.put("/v1/site/soft-landing", json={"enabled": True, "reason": "test soft landing"})
+    assert soft.status_code == 200 and soft.json()["soft_landing"] is True

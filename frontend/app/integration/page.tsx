@@ -8,7 +8,7 @@ import { connectorTone, humanize, minutesLabel } from "@/lib/pilot";
 import { usePoll } from "@/lib/usePoll";
 
 type IntegrationStatus = {
-  site: { effective_mode: SiteMode };
+  site: { effective_mode: SiteMode; soft_landing?: boolean };
   simulation_mode: boolean;
   connectors: ConnectorHealth[];
   feed_alarm: boolean;
@@ -19,6 +19,12 @@ type IntegrationStatus = {
   quarantined_last_24h: number;
   operation: { read_only: boolean; read_only_reason: string | null; external_network_required: boolean; offline_note: string };
   roadmap: Record<string, string>;
+  connection_ladder?: Record<string, { shipped?: boolean; enabled?: boolean; feed_state?: string; detail?: string }>;
+  habit_fingerprint?: {
+    gate_ready: boolean;
+    comparison: { detail: string; reason: string };
+    baseline: Record<string, unknown> | null;
+  };
 };
 
 type ConnectorEvent = {
@@ -45,6 +51,8 @@ export default function IntegrationPage() {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvBackfill, setCsvBackfill] = useState(false);
   const [adtFile, setAdtFile] = useState<File | null>(null);
+  const [vendorFile, setVendorFile] = useState<File | null>(null);
+  const [vendorBackfill, setVendorBackfill] = useState(false);
   const [mappingApproval, setMappingApproval] = useState({
     source_system: "", approver_name: "", approver_role: "", examples_verified: "10", notes: "",
   });
@@ -92,6 +100,53 @@ export default function IntegrationPage() {
         `ADT ${body.event}${body.duplicate ? " replay" : ""}: ${body.encounter.display_name} · ${body.encounter.unit_id}` +
         `${body.encounter.bed_id ? ` / ${body.encounter.bed_id}` : ""} · ${body.encounter.status}.`,
       );
+      await status.refresh();
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : String(cause));
+    }
+  }
+
+  async function uploadVendorAdapter() {
+    if (!vendorFile) return;
+    try {
+      const body = await api<Record<string, unknown>>(`/v1/integrations/vendor-adapter?backfill=${vendorBackfill}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Idempotency-Key": `va-${vendorFile.name}-${vendorFile.size}-${vendorFile.lastModified}`,
+        },
+        body: await vendorFile.text(),
+      });
+      setMessage(`Vendor adapter: ${body.accepted} accepted; ${(body.quarantined as unknown[])?.length ?? 0} quarantined.`);
+      await Promise.all([status.refresh(), events.refresh(), quarantine.refresh()]);
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : String(cause));
+    }
+  }
+
+  async function recordHabitBaseline() {
+    try {
+      const body = await api<{ gate_ready: boolean; comparison: { detail: string } }>(
+        "/v1/integrations/habit-fingerprint/baseline",
+        { method: "POST" },
+      );
+      setMessage(`Habit baseline recorded. Gate: ${body.gate_ready ? "ready" : "not yet"} — ${body.comparison.detail}`);
+      await status.refresh();
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : String(cause));
+    }
+  }
+
+  async function toggleSoftLanding(enabled: boolean) {
+    try {
+      await api("/v1/site/soft-landing", {
+        method: "PUT",
+        body: JSON.stringify({
+          enabled,
+          reason: enabled ? "Enable L5 soft-landing sidecar mode" : "Disable L5 soft-landing sidecar mode",
+        }),
+      });
+      setMessage(enabled ? "Soft-landing (L5) enabled — HIS keeps registration/billing." : "Soft-landing disabled.");
       await status.refresh();
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : String(cause));
@@ -228,6 +283,25 @@ export default function IntegrationPage() {
         </div>
       </Panel>
 
+      {data?.connection_ladder && (
+        <Panel title="Connection Ladder (live)">
+          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+            {Object.entries(data.connection_ladder)
+              .filter(([key]) => /^[LU]\d$/.test(key))
+              .map(([tier, info]) => (
+                <div key={tier} className="border border-ink/10 px-3 py-2 text-sm">
+                  <p className="font-mono text-xs text-ink/50">{tier}</p>
+                  <Pill tone={info.shipped ? "success" : "info"}>{info.shipped ? "Shipped" : "—"}</Pill>
+                  {info.feed_state && <p className="mt-1 text-xs text-ink/55">{info.feed_state}</p>}
+                  {tier === "L5" && (
+                    <p className="mt-1 text-xs">{info.enabled ? "Soft-landing on" : "Soft-landing off"}</p>
+                  )}
+                </div>
+              ))}
+          </div>
+        </Panel>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Import hospital lab CSV">
           <p className="mb-3 text-sm text-ink/60">
@@ -256,6 +330,56 @@ export default function IntegrationPage() {
               Validate and apply ADT
             </button>
           </div>
+        </Panel>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel title="L4 Vendor Adapter JSON">
+          <p className="mb-3 text-sm text-ink/60">
+            Hospital or HIS vendor emits <code className="text-xs">predictrx-vendor-adapter/1</code> JSON
+            (see <code className="text-xs">docs/adapters/</code>). We never write back to their database.
+            Unknown codes quarantine until mapped.
+          </p>
+          <div className="space-y-3 text-sm">
+            <input type="file" accept=".json,application/json" onChange={(event) => setVendorFile(event.target.files?.[0] ?? null)} />
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={vendorBackfill} onChange={(event) => setVendorBackfill(event.target.checked)} />
+              Retrospective backfill (shadow alerts only)
+            </label>
+            <button type="button" disabled={!vendorFile} onClick={() => void uploadVendorAdapter()} className="border border-ink/20 px-3 py-1.5 disabled:opacity-40">
+              Validate and import adapter batch
+            </button>
+          </div>
+        </Panel>
+        <Panel title="Transfer Shield S6 + Soft-landing L5">
+          <p className="mb-3 text-sm text-ink/60">
+            Record a commissioning measurement-habit fingerprint before live alerts. A &gt;2× cadence shift fails the
+            readiness gate. Soft-landing marks this install as an ICU sidecar beside an unchanged HIS.
+          </p>
+          {data?.habit_fingerprint && (
+            <p className="mb-3 text-sm">
+              Habit gate:{" "}
+              <Pill tone={data.habit_fingerprint.gate_ready ? "success" : "warning"}>
+                {data.habit_fingerprint.gate_ready ? "stable" : data.habit_fingerprint.comparison.reason}
+              </Pill>
+              <span className="mt-1 block text-xs text-ink/55">{data.habit_fingerprint.comparison.detail}</span>
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2 text-sm">
+            <button type="button" className="border border-ink/20 px-3 py-1.5" onClick={() => void recordHabitBaseline()}>
+              Record habit baseline
+            </button>
+            <button
+              type="button"
+              className="border border-accent bg-accent px-3 py-1.5 text-white"
+              onClick={() => void toggleSoftLanding(!(data?.site.soft_landing))}
+            >
+              {data?.site.soft_landing ? "Disable soft-landing" : "Enable soft-landing (L5)"}
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-ink/55">
+            SMART sandbox: <code>/v1/ehr/smart/metadata</code> · CDS Hooks: <code>/v1/ehr/cds-services</code>
+          </p>
         </Panel>
       </div>
 

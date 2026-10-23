@@ -161,6 +161,11 @@ class SiteModeRequest(BaseModel):
     reason: str = Field(min_length=3, max_length=500)
 
 
+class SoftLandingRequest(BaseModel):
+    enabled: bool
+    reason: str = Field(min_length=3, max_length=500)
+
+
 class GovernanceSignoffRequest(BaseModel):
     committee: str = Field(min_length=2, max_length=200)
     reference: str = Field(min_length=2, max_length=200)

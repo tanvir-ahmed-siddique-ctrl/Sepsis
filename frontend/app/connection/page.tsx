@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Panel, Pill, Stat } from "@/components/ui";
+import { ApiError, Panel, Pill, Stat } from "@/components/ui";
+import { api } from "@/lib/api";
+import { usePoll } from "@/lib/usePoll";
 
 const LADDER: Array<{
   tier: string;
@@ -15,11 +17,11 @@ const LADDER: Array<{
   { tier: "L1", name: "Controlled file drop", region: "BD / LMIC HIS without APIs", how: "Shift/nightly CSV or Vendor Adapter JSON → lab/native ingest. Schema in docs/adapters/.", status: "Shipped", href: "/integration" },
   { tier: "L2", name: "HL7 v2 (ADT/ORU) + edge MLLP", region: "BD analyzers & US interface engines", how: "LIS/monitors already speak HL7 more often than FHIR. Edge relay on the LAN.", status: "Shipped", href: "/integration" },
   { tier: "L3", name: "FHIR R4 Bundle / NDJSON", region: "OpenMRS+, national HIE, modern HIS", how: "Standards path; unknown codes quarantined until human-signed mapping.", status: "Shipped", href: "/integration" },
-  { tier: "L4", name: "Vendor Adapter Pack", region: "Proprietary HIS/LIS", how: "Hospital/vendor implements our minimal outbound contract — we never write their DB.", status: "Specified" },
-  { tier: "L5", name: "Soft-landing sidecar", region: "HIS will not change", how: "PredictRx = ICU intelligence UI; HIS keeps registration/billing. Feed via L1–L3.", status: "Specified" },
+  { tier: "L4", name: "Vendor Adapter Pack", region: "Proprietary HIS/LIS", how: "Hospital/vendor implements our minimal outbound contract — we never write their DB.", status: "Shipped", href: "/integration" },
+  { tier: "L5", name: "Soft-landing sidecar", region: "HIS will not change", how: "PredictRx = ICU intelligence UI; HIS keeps registration/billing. Feed via L1–L3.", status: "Shipped", href: "/integration" },
   { tier: "U0", name: "Interface-engine pull", region: "US Epic/Cerner sites", how: "Duke-style: engine pushes HL7/FHIR to our on-prem API. Model stays ours.", status: "Shipped", href: "/integration" },
-  { tier: "U1", name: "SMART on FHIR app", region: "Epic / Oracle Health", how: "In-chart launch via OAuth; we read FHIR, score locally. Listed as OUR app — not Epic’s model.", status: "Specified" },
-  { tier: "U2", name: "CDS Hooks + Launch Card", region: "Epic ecosystem", how: "Event card in the EHR opens our SMART app. Epic is the shell; PredictRx keeps IP & revenue.", status: "Specified" },
+  { tier: "U1", name: "SMART on FHIR app", region: "Epic / Oracle Health", how: "Sandbox SMART launch shipped; production needs hospital Vendor Services — we keep IP.", status: "Shipped", href: "/integration" },
+  { tier: "U2", name: "CDS Hooks + Launch Card", region: "Epic ecosystem", how: "CDS Hooks patient-view card opens our cockpit. Never proposes orders.", status: "Shipped", href: "/integration" },
 ];
 
 const SHIELD: Array<[string, string, string]> = [
@@ -28,7 +30,7 @@ const SHIELD: Array<[string, string, string]> = [
   ["S3 Abstain", "Stale/missing required signals → Verify data or Abstain", "Shipped"],
   ["S4 Silent mirror", "Weeks of local scores + chart review before any interrupt", "Shipped"],
   ["S5 Calibration gate", "Local slope/threshold simulation required before live mode", "Shipped"],
-  ["S6 Habit fingerprint", "Flag >2× shift in vital measurement cadence vs commissioning baseline", "Specified"],
+  ["S6 Habit fingerprint", "Flag >2× shift in vital measurement cadence vs commissioning baseline", "Shipped"],
   ["S7 Subgroup stop", ">10 pp sensitivity gap keeps that pathway off", "Shipped"],
   ["S8 Context policy", "Pregnancy/comfort care modulate alerts; never edit probability", "Shipped"],
 ];
@@ -39,10 +41,27 @@ const LAYERS = [
   ["3. Validate", "Map codes & units, quarantine unknowns, idempotent late corrections"],
   ["4. Score", "Frozen Run 4 on hospital server only — past-only features"],
   ["5. Shield", "TrustGate + Transfer Shield (calibration & habit checks)"],
-  ["6. Act", "Silent → nine readiness gates → human acknowledge/dismiss — then alert"],
+  ["6. Act", "Silent → ten readiness gates → human acknowledge/dismiss — then alert"],
 ];
 
+type LadderLive = Record<string, { shipped?: boolean; enabled?: boolean; feed_state?: string; status?: string; detail?: string }>;
+
 export default function ConnectionPage() {
+  const ladder = usePoll(() => api<{ soft_landing?: boolean } & LadderLive>("/v1/integrations/connection-ladder"), 15000);
+  const habit = usePoll(() => api<{ gate_ready: boolean; comparison: { detail: string; reason: string } }>("/v1/integrations/habit-fingerprint"), 15000);
+  const ehr = usePoll(
+    () =>
+      api<{
+        smart: { status: string };
+        cds_hooks: { status: string };
+        soft_landing: { enabled: boolean };
+        legal: { epic_showroom: boolean; note: string };
+      }>("/v1/ehr/connection-status"),
+    30000,
+  );
+
+  const softOn = ladder.data?.L5?.enabled ?? ehr.data?.soft_landing.enabled ?? false;
+
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <header className="space-y-3">
@@ -57,10 +76,44 @@ export default function ConnectionPage() {
 
       <div className="flex flex-wrap gap-3">
         <Stat label="Ladder tiers" value="L0–L5 + U0–U2" />
-        <Stat label="Connectors shipped" value="L0–L3, U0" />
+        <Stat label="Connectors shipped" value="L0–L5, U0–U2" />
         <Stat label="Transfer Shield layers" value="8" />
         <Stat label="Live alerts until gates" value="Blocked" />
       </div>
+
+      {(ladder.data || habit.data || ehr.data) && (
+        <Panel title="Live site status (this instance)">
+          <div className="grid gap-3 text-sm sm:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-ink/45">Soft-landing (L5)</p>
+              <Pill tone={softOn ? "success" : "info"}>{softOn ? "Enabled" : "Off"}</Pill>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-ink/45">S6 habit fingerprint</p>
+              {habit.data ? (
+                <Pill tone={habit.data.gate_ready ? "success" : "warning"}>
+                  {habit.data.gate_ready ? "Stable" : habit.data.comparison.reason}
+                </Pill>
+              ) : (
+                <span className="text-ink/50">Sign in to load</span>
+              )}
+              {habit.data && <p className="mt-1 text-xs text-ink/55">{habit.data.comparison.detail}</p>}
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-ink/45">SMART / CDS</p>
+              {ehr.data ? (
+                <p className="text-ink/80">
+                  U1 {ehr.data.smart.status} · U2 {ehr.data.cds_hooks.status}
+                </p>
+              ) : (
+                <span className="text-ink/50">Sign in to load</span>
+              )}
+              {ehr.data && <p className="mt-1 text-xs text-ink/55">{ehr.data.legal.note}</p>}
+            </div>
+          </div>
+          {ladder.error && <ApiError error={ladder.error} />}
+        </Panel>
+      )}
 
       <Panel title="Presentation spine — six layers from hospital data to governed alert">
         <ol className="space-y-2 text-sm">
@@ -96,25 +149,34 @@ export default function ConnectionPage() {
               </tr>
             </thead>
             <tbody>
-              {LADDER.map((row) => (
-                <tr key={row.tier} className="border-t border-ink/5 align-top">
-                  <td className="py-2 pr-3 font-mono text-xs">{row.tier}</td>
-                  <td className="py-2 pr-3 font-medium">
-                    {row.href ? (
-                      <Link href={row.href} className="text-accent underline">
-                        {row.name}
-                      </Link>
-                    ) : (
-                      row.name
-                    )}
-                  </td>
-                  <td className="py-2 pr-3 text-ink/65">{row.region}</td>
-                  <td className="py-2 pr-3 text-ink/80">{row.how}</td>
-                  <td className="py-2">
-                    <Pill tone={row.status === "Shipped" ? "success" : "info"}>{row.status}</Pill>
-                  </td>
-                </tr>
-              ))}
+              {LADDER.map((row) => {
+                const live = ladder.data?.[row.tier];
+                const feed = live?.feed_state;
+                return (
+                  <tr key={row.tier} className="border-t border-ink/5 align-top">
+                    <td className="py-2 pr-3 font-mono text-xs">{row.tier}</td>
+                    <td className="py-2 pr-3 font-medium">
+                      {row.href ? (
+                        <Link href={row.href} className="text-accent underline">
+                          {row.name}
+                        </Link>
+                      ) : (
+                        row.name
+                      )}
+                    </td>
+                    <td className="py-2 pr-3 text-ink/65">{row.region}</td>
+                    <td className="py-2 pr-3 text-ink/80">
+                      {row.how}
+                      {feed && feed !== "never_connected" && (
+                        <span className="mt-1 block text-xs text-ink/50">Feed: {feed}</span>
+                      )}
+                    </td>
+                    <td className="py-2">
+                      <Pill tone={row.status === "Shipped" ? "success" : "info"}>{row.status}</Pill>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -157,6 +219,8 @@ export default function ConnectionPage() {
           <Link href="/model" className="text-accent underline">Model card / subgroups</Link>
           {" · "}
           <Link href="/evidence" className="text-accent underline">Evidence centre</Link>
+          {" · "}
+          <Link href="/integration" className="text-accent underline">Integration hub</Link>
         </p>
       </section>
 
@@ -169,6 +233,8 @@ export default function ConnectionPage() {
         </p>
         <p className="mt-2 text-xs text-ink/50">
           Full write-up: <code>docs/innovation-adoption-barriers.md</code>
+          {" · "}
+          Commercial/legal path: <code>docs/business/ehr-partnership-and-commercial-strategy.md</code>
         </p>
       </Panel>
     </div>

@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.integrations.service import get_integration_service
 from app.pilot import evaluate_gates
 from app.records import utc_now
-from app.schemas import GovernanceSignoffRequest, SiteModeRequest
+from app.schemas import GovernanceSignoffRequest, SiteModeRequest, SoftLandingRequest
 from app.services.engine import get_engine
 
 router = APIRouter(tags=["site"], prefix="/site")
@@ -62,3 +62,19 @@ def governance_signoff(body: GovernanceSignoffRequest, actor: Actor = Depends(AD
     engine.site.state.governance_signoff = signoff
     engine.record_site_config_change("governance_signoff_recorded", actor, signoff)
     return signoff
+
+
+@router.put("/soft-landing")
+def set_soft_landing(body: SoftLandingRequest, actor: Actor = Depends(ADMIN)):
+    """L5 — treat PredictRx as ICU intelligence UI; HIS keeps registration/billing."""
+    if settings.public_demo_lockdown:
+        raise HTTPException(
+            status_code=403,
+            detail="Public judge demo cannot change soft-landing; hospital installs retain this flag.",
+        )
+    engine = get_engine()
+    engine.site.state.soft_landing = bool(body.enabled)
+    engine.site.save(actor.user_id)
+    payload = {"enabled": body.enabled, "reason": body.reason}
+    engine.record_site_config_change("soft_landing_updated", actor, payload)
+    return {"soft_landing": engine.site.state.soft_landing, **payload}
