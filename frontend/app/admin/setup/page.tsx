@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GatesPanel, type Readiness } from "@/components/pilot/PilotGovernance";
+import { SourceInventoryPanel } from "@/components/SourceInventoryPanel";
 import { ApiError, Panel, Pill, Stat } from "@/components/ui";
 import { api, type CareUnit, type LocalUser } from "@/lib/api";
 import { usePoll } from "@/lib/usePoll";
@@ -87,6 +88,8 @@ export default function SiteSetupPage() {
           <Link className="underline" href="/pilot">Review silent-pilot gates</Link>
         </div>
       </Panel>
+
+      <SourceInventoryPanel />
 
       <div className="grid gap-4 lg:grid-cols-2">
         {STEPS.map(([title, detail]) => (

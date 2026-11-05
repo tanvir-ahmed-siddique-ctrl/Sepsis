@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 
 from app.core.config import settings
-from app.pilot import compute_metrics, evaluate_gates, latest_predictions
+from app.pilot import compute_metrics, evaluate_gates, latest_predictions, monitoring_findings
 from app.records import RecordStore, outcome_records, prediction_records, utc_now
 from app.site import SiteState
 
@@ -108,6 +108,30 @@ def test_pilot_only_excludes_demo_rows_and_calibration_needs_labels(fake_engine)
     assert metrics["detection"]["sensitivity"] is None
 
 
+def test_monitoring_flags_burden_missing_vitals_and_low_sensitivity():
+    metrics = {
+        "generated_at": utc_now(), "site_mode": "silent",
+        "volume": {"patient_hours": 120},
+        "alert_burden": {"alerts_per_100_patient_hours": settings.pilot_max_alerts_per_100h + 0.5},
+        "missingness": {signal: {"missing_rate": 0.25 if signal == "MAP" else 0.0,
+                                 "stale_over_2h_rate": 0.0} for signal in ("HR", "SBP", "MAP", "O2Sat")},
+        "detection": {"adjudicated_sepsis": 10, "sensitivity": settings.pilot_min_sensitivity - 0.1},
+        "calibration": {"status": "computed"},
+        "review": {"open_past_sla": 0},
+    }
+    result = monitoring_findings(metrics)
+    codes = {item["code"] for item in result["findings"]}
+    assert result["status"] == "action_required"
+    assert {"alert_burden_over_budget", "vital_unavailable_map", "sensitivity_below_review_floor"} <= codes
+
+    metrics["volume"]["patient_hours"] = 0
+    metrics["calibration"]["status"] = "insufficient_labels"
+    metrics["detection"]["adjudicated_sepsis"] = 0
+    empty = monitoring_findings(metrics)
+    assert empty["status"] == "insufficient_evidence"
+    assert all(item["severity"] == "info" for item in empty["findings"])
+
+
 def test_gates_fail_closed_until_evidence_exists(fake_engine):
     gates = {gate["gate"]: gate for gate in evaluate_gates(fake_engine, [])}
     assert set(gates) == {
@@ -159,6 +183,10 @@ def client():
 @needs_model
 def test_pilot_metrics_are_admin_only_and_scoped(client):
     assert client.get("/v1/pilot/metrics", headers=CLINICIAN).status_code == 403
+    assert client.get("/v1/pilot/monitoring", headers=CLINICIAN).status_code == 403
+    monitoring = client.get("/v1/pilot/monitoring")
+    assert monitoring.status_code == 200 and monitoring.json()["patient_hours"] == 20
+    assert monitoring.json()["status"] == "insufficient_evidence"
     metrics = client.get("/v1/pilot/metrics?unit_id=icu-pilot&pilot_only=true").json()
     assert metrics["site_mode"] == "silent" and metrics["volume"]["encounters"] == 2
     assert metrics["volume"]["patient_hours"] == 20

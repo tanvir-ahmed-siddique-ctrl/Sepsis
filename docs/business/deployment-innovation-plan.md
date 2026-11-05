@@ -21,6 +21,19 @@ The supplied competition PDF text describes a five-part 20-point final rubric, w
 
 The [external validation of a widely deployed sepsis model](https://pubmed.ncbi.nlm.nih.gov/34152373/) reported AUROC 0.63 and substantial missed cases and alert burden at one health system. That demonstrates why transfer and workload must be tested; it does **not** prove this product is superior. [ONC SAFER guidance](https://healthit.gov/clinical-quality-and-safety/safer-guides/) likewise treats patient identification, CDS monitoring and clinician communication as safety work, not just interface features.
 
+### Founder a–h delivery ledger
+
+| Request | Working product now | Proof still required |
+|---|---|---|
+| a. False alarms and fatigue | Threshold-crossing alert creation, active-alert deduplication, TrustGate, silent burden metrics, local monitoring action queue. | Site-specific adjudication and measured staff burden; no claim of fewer false alarms yet. |
+| b. Doctor/nurse trust | Explanation, freshness, provenance, bedside feedback and audited ownership. | Observed usability sessions, training completion and independent clinical review. |
+| c. Sparse data and readiness | Required-vital freshness and abstention, measurement-habit check, new hospital source inventory with hourly cadence gaps. Labs remain event-driven. | Actual site source inventory, approved data profile and local missingness analysis. |
+| d. Integration support, training and drift | Connector health, mapping registry, audit, local pilot metrics/action queue and patient-free fleet operational findings. | A staffed support process, hospital training record, outcome labels and prespecified drift/recalibration protocol. Fleet cannot infer clinical performance. |
+| e. SWOT, demographics, revenue, roadmap | This plan and the business model define hypotheses and stop gates. | Buyer interviews, paid procurement evidence and real unit costs. |
+| f. Easier integration | One canonical observation contract, Connection Ladder and source-inventory next actions. | Timed deployment at independent hospitals; vendor-tested mappings. |
+| g. Legal path | Intended-use boundary, access/audit/retention controls and jurisdictional checklist in the runbooks. | Qualified counsel, institutional approvals, executed agreements and any required regulator decision. |
+| h. Different or legacy HIS | FHIR, HL7, CSV, native JSON, vendor adapter and manual chart paths; unrecognized data quarantines. | Conformance tests against each actual vendor/interface and identity correction workflow. |
+
 ## The integration offer, end to end
 
 1. **No-patient-data readiness check:** identify ICU clinical owner, IT/source owner, LIS, HIS, monitor gateway, export rights, recording cadence, IDs, timestamps, staff escalation, network/hosting and governance route. Produce a red/amber/green source inventory and a fixed-scope quote.

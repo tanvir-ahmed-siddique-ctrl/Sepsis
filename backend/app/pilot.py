@@ -388,6 +388,65 @@ def compute_metrics(
     }
 
 
+def monitoring_findings(metrics: dict[str, Any]) -> dict[str, Any]:
+    """Operational review queue from real-time pilot rows, never clinical approval.
+
+    Missingness over 20% is an investigation trigger, not a clinical threshold.
+    The alert budget and sensitivity floor reuse the site's existing pilot
+    review settings; no model threshold is changed here.
+    """
+    volume = metrics["volume"]
+    hours = volume["patient_hours"]
+    findings: list[dict[str, Any]] = []
+
+    def add(code: str, severity: str, observed: Any, action: str) -> None:
+        findings.append({"code": code, "severity": severity, "observed": observed, "action": action})
+
+    if hours < 100:
+        add("insufficient_pilot_hours", "info", hours,
+            "Collect at least 100 real-time pilot patient-hours before interpreting operational rates.")
+    else:
+        burden = metrics["alert_burden"]["alerts_per_100_patient_hours"]
+        if burden is not None and burden > settings.pilot_max_alerts_per_100h:
+            add("alert_burden_over_budget", "critical", burden,
+                "Review shadow-alert episodes with the ICU lead; keep interruptive alerts disabled.")
+        for signal in REQUIRED_SIGNALS:
+            values = metrics["missingness"][signal]
+            missing_or_stale = (values["missing_rate"] or 0) + (values["stale_over_2h_rate"] or 0)
+            if missing_or_stale > 0.2:
+                add(f"vital_unavailable_{signal.lower()}", "warning", round(missing_or_stale, 4),
+                    f"Investigate {signal} source cadence, timestamps and mapping; 20% is an operational review trigger.")
+        sensitivity = metrics["detection"]["sensitivity"]
+        sepsis_cases = metrics["detection"]["adjudicated_sepsis"]
+        if sepsis_cases >= 10 and sensitivity is not None and sensitivity < settings.pilot_min_sensitivity:
+            add("sensitivity_below_review_floor", "critical", sensitivity,
+                "Clinical and statistical review required; do not alter the frozen threshold during this protocol.")
+    if metrics["detection"]["adjudicated_sepsis"] < 10:
+        add("insufficient_adjudicated_sepsis", "info", metrics["detection"]["adjudicated_sepsis"],
+            "Obtain blinded, prespecified outcome adjudication before interpreting sensitivity.")
+    if metrics["calibration"]["status"] != "computed":
+        add("calibration_unavailable", "info", metrics["calibration"]["status"],
+            "Calibration needs enough adjudicated positive and negative hours; no drift conclusion is available.")
+    if metrics["review"]["open_past_sla"] > 0:
+        add("review_overdue", "warning", metrics["review"]["open_past_sla"],
+            "Assign the open alerts to the on-shift clinical owner for review.")
+
+    return {
+        "generated_at": metrics["generated_at"],
+        "site_mode": metrics["site_mode"],
+        "patient_hours": hours,
+        "status": (
+            "action_required" if any(item["severity"] == "critical" for item in findings) else
+            "review" if any(item["severity"] == "warning" for item in findings) else
+            "insufficient_evidence" if hours < 100 or metrics["calibration"]["status"] != "computed"
+            or metrics["detection"]["adjudicated_sepsis"] < 10 else
+            "no_operational_flags"
+        ),
+        "findings": findings,
+        "scope": "Real-time pilot rows only; demo/backfill excluded. Operational triggers, not clinical validation or a model change.",
+    }
+
+
 def _gate(gate: str, passed: bool, value: Any, target: Any, detail: str) -> dict[str, Any]:
     return {"gate": gate, "passed": bool(passed), "value": value, "target": target, "detail": detail}
 

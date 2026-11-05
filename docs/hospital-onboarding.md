@@ -20,6 +20,17 @@ Keep identifiers, logs and backups in the hospital-controlled environment.
 
 ## 2. Choose the smallest reliable source
 
+Hospital admin can record a bounded, patient-free source inventory in
+**Hospital setup** (`GET/PUT /v1/integrations/source-inventory`). For each
+HIS/LIS/monitor/manual source, record its route, supported signals, expected
+observation interval, timestamp meaning, owner role, export confirmation,
+test-message or chart dry-run evidence, and correction-path check. The system
+reports missing required vitals, expected cadence gaps, the highest declared
+Connection Ladder tier, and observed connector activity separately. A form
+declaration is never treated as proof that a hospital feed works or as live
+alert authorization. Changes are saved locally and audited; the inventory is
+not sent in fleet heartbeats.
+
 | Need | Preferred source | Alternative | PredictRx entry point |
 |---|---|---|---|
 | Admission, transfer, discharge | EHR/HIS HL7 ADT or FHIR Encounter | Bedside ADT form | HL7 ADT endpoint / Care API / Chart page |
@@ -92,6 +103,13 @@ Create a signed source-to-target sheet for every field:
 ## 7. Daily operations
 
 - Integration Hub: feed silence, lag, quarantine, duplicates and retry spool.
+- Silent Pilot: `GET /v1/pilot/monitoring` derives a local action queue from
+  real-time pilot rows only. It flags alert burden above the configured pilot
+  budget, required-vital gaps over the 20% operational investigation trigger,
+  sensitivity below the existing review floor when enough adjudicated sepsis
+  cases exist, and overdue review. Empty demo/backfill data returns
+  insufficient evidence. These are review prompts, not proof of model drift or
+  clinical approval, and no patient-level metrics leave the hospital.
 - Bedside chart: due observations, offline queue and 8-hour completeness.
 - Ward board: complete NEWS2 inputs and overdue observations.
 - Pilot page: adjudication, shadow-alert burden and readiness evidence.

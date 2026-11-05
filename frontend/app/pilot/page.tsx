@@ -10,6 +10,7 @@ import { usePoll } from "@/lib/usePoll";
 
 type Outcome = { outcome_id: string; encounter_key: string; adjudication: string; onset_time: string | null; criteria: string; adjudicator: string; recorded_at: string };
 type ExportLog = { export_id: string; created_at: string; created_by: string; sha256: string; counts: Record<string, number>; reason: string };
+type Monitoring = { status: string; patient_hours: number; scope: string; findings: Array<{ code: string; severity: string; observed: string | number; action: string }> };
 
 export default function PilotPage() {
   const [unit, setUnit] = useState("");
@@ -25,6 +26,7 @@ export default function PilotPage() {
   if (pilotOnly) query.set("pilot_only", "true");
   if (thresholds.trim()) query.set("thresholds", thresholds.trim());
   const metrics = usePoll(() => api<PilotMetricsData>(`/v1/pilot/metrics?${query}`), 15000, [query.toString()]);
+  const monitoring = usePoll(() => api<Monitoring>("/v1/pilot/monitoring"), 15000);
   const outcomes = usePoll(() => api<{ outcomes: Outcome[] }>("/v1/pilot/outcomes"), 15000);
   const exports = usePoll(() => api<{ exports: ExportLog[] }>("/v1/pilot/exports"), 30000);
   const feedback = usePoll(
@@ -125,6 +127,26 @@ export default function PilotPage() {
         </div>
       </Panel>
       {metrics.error && <ApiError error={metrics.error} />}
+      {monitoring.error && <ApiError error={monitoring.error} />}
+      {monitoring.data && (
+        <Panel title="Local monitoring actions">
+          <p className="mb-2 text-xs text-ink/55">{monitoring.data.scope}</p>
+          <p className="mb-2 text-sm font-medium">{humanize(monitoring.data.status)} · {monitoring.data.patient_hours} real-time pilot patient-hours</p>
+          {monitoring.data.findings.length === 0 ? (
+            <p className="text-sm text-ink/60">No operational trigger crossed. This is not a clinical validation result.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {monitoring.data.findings.map((item) => (
+                <li key={item.code} className="border-t border-ink/10 pt-2">
+                  <strong className={item.severity === "critical" ? "text-risk-high" : "text-ink"}>{humanize(item.code)}</strong>
+                  <span className="ml-2 text-ink/55">Observed: {item.observed}</span>
+                  <p className="text-ink/70">{item.action}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      )}
       {metrics.data && <PilotMetrics metrics={metrics.data} />}
 
       <div className="grid gap-4 lg:grid-cols-2">

@@ -12,6 +12,7 @@ from app.integrations import copilot
 from app.integrations.base import PayloadError
 from app.integrations.hl7v2 import parse_adt
 from app.integrations.service import get_integration_service
+from app.integrations import source_inventory
 from app.integrations.synthetic import synthetic_bundle, synthetic_oru
 from app.records import connector_spool
 from app.schemas import MappingSignoffRequest, MappingSuggestRequest
@@ -271,6 +272,30 @@ def integration_status(_: Actor = Depends(OPERATIONS)):
         "connection_ladder": _connection_ladder(engine, service, health),
         "habit_fingerprint": _habit_summary(engine),
     }
+
+
+@router.get("/source-inventory")
+def get_source_inventory(_: Actor = Depends(OPERATIONS)):
+    engine = get_engine()
+    document = source_inventory.load(engine)
+    return _source_inventory_snapshot(engine, document)
+
+
+@router.put("/source-inventory")
+def put_source_inventory(body: source_inventory.SourceInventoryRequest, actor: Actor = Depends(ADMIN)):
+    engine = get_engine()
+    document = source_inventory.save(engine, body, actor)
+    return _source_inventory_snapshot(engine, document)
+
+
+def _source_inventory_snapshot(engine, document: dict) -> dict:
+    service = get_integration_service(engine)
+    signoff = engine.site.state.mapping_signoff
+    mapping_ready = bool(signoff and signoff.get("registry_sha256") == service.registry.sha256)
+    return {**document,
+            "assessment": source_inventory.assess(document, service.connector_health(), mapping_ready=mapping_ready,
+                                                   simulation_mode=settings.public_demo_lockdown),
+            "simulation_mode": settings.public_demo_lockdown}
 
 
 @router.get("/habit-fingerprint")

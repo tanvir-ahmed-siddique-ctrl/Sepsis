@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.api.deps import patient_for
 from app.auth import CLINICAL_ROLES, PHYSICIAN_ROLES, Actor, require_roles
-from app.pilot import apply_retention, build_export, compute_metrics
+from app.pilot import apply_retention, build_export, compute_metrics, monitoring_findings
 from app.records import export_log, feedback_records, outcome_records, utc_now
 from app.schemas import FeedbackRequest, OutcomeRequest
 from app.services.engine import get_engine
@@ -32,6 +32,12 @@ def pilot_metrics(
         if any(not 0 < value < 1 for value in grid) or len(grid) > 20:
             raise HTTPException(status_code=422, detail="Up to 20 thresholds strictly between 0 and 1")
     return compute_metrics(get_engine(), unit_id=unit_id, thresholds=grid, pilot_only=pilot_only)
+
+
+@router.get("/monitoring")
+def pilot_monitoring(_: Actor = Depends(ADMIN)):
+    """Local operational findings; demo and backfill rows cannot become clinical evidence."""
+    return monitoring_findings(compute_metrics(get_engine(), pilot_only=True))
 
 
 @router.post("/feedback")
