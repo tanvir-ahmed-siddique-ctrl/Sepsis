@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { ShiftStrip } from "@/components/ShiftStrip";
 import { useLocale } from "@/lib/locale";
 import { humanize } from "@/lib/pilot";
@@ -9,6 +10,23 @@ import { useSession } from "@/lib/session";
 
 export function AppNav() {
   const pathname = usePathname();
+  const [hidden, setHidden] = useState(false);
+  const previousY = useRef(0);
+  useEffect(() => {
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        if (currentY < 32 || currentY < previousY.current - 6) setHidden(false);
+        else if (currentY > previousY.current + 6) setHidden(true);
+        previousY.current = currentY;
+        frame = 0;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); if (frame) window.cancelAnimationFrame(frame); };
+  }, []);
   const { locale, setLocale, t } = useLocale();
   const { me, isAdmin, isOperator } = useSession();
   if (pathname === "/presentation") return null;
@@ -44,7 +62,7 @@ export function AppNav() {
       : []),
   ];
   return (
-    <header className="bg-white/90 shadow-sm">
+    <header className={`sticky top-0 z-40 bg-white/95 shadow-sm backdrop-blur transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       {me && <ShiftStrip />}
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 sm:px-6" aria-label="Primary">
         <Link href="/" className="mr-auto font-display text-xl text-ink">
@@ -66,8 +84,8 @@ export function AppNav() {
           );
         })}
         {me && (
-            <span className="rounded-full bg-mist px-2.5 py-1 text-xs text-ink/60" title={`Auth: ${me.auth_mode}`}>
-              {humanize(me.site_mode)} · {me.role}
+            <span className="rounded-full bg-mist px-2.5 py-1 text-xs text-ink/60" title={`Signed in · ${humanize(me.auth_mode)}`}>
+              {humanize(me.role)}
           </span>
         )}
         {me && <Link href="/profile" className="text-sm font-medium text-accent">My app</Link>}

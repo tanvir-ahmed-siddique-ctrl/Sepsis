@@ -8,6 +8,7 @@ import { usePoll } from "@/lib/usePoll";
 type Profile = {
   user_id: string;
   display_name: string;
+  avatar_data_url?: string | null;
   role: string;
   units: string[] | null;
   preferences: {
@@ -50,6 +51,37 @@ export default function ProfilePage() {
     if (!prefs) return;
     await api("/v1/auth/profile/preferences", { method: "PUT", body: JSON.stringify(prefs) });
     setMessage("Alert preferences saved.");
+    await profile.refresh();
+  }
+
+  async function uploadAvatar(file: File | undefined) {
+    if (!file) return;
+    if (!new Set(["image/png", "image/jpeg", "image/webp"]).has(file.type)) {
+      setMessage("Choose a PNG, JPEG or WebP image.");
+      return;
+    }
+    if (file.size > 256 * 1024) {
+      setMessage("Profile photos must be 256 KB or smaller.");
+      return;
+    }
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read that image."));
+      reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Invalid image."));
+      reader.readAsDataURL(file);
+    });
+    try {
+      await api("/v1/auth/profile/avatar", { method: "PUT", body: JSON.stringify({ data_url: dataUrl }) });
+      setMessage("Profile photo saved.");
+      await profile.refresh();
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : String(cause));
+    }
+  }
+
+  async function removeAvatar() {
+    await api("/v1/auth/profile/avatar", { method: "DELETE" });
+    setMessage("Profile photo removed.");
     await profile.refresh();
   }
 
@@ -104,6 +136,13 @@ export default function ProfilePage() {
       {profile.data && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Panel title="Identity & shift">
+            <div className="mb-4 flex items-center gap-3">
+              {profile.data.avatar_data_url
+                ? <div role="img" aria-label={`${profile.data.display_name} profile photo`} style={{ backgroundImage: `url(${profile.data.avatar_data_url})` }} className="h-14 w-14 rounded-full bg-cover bg-center" />
+                : <div aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full bg-mist text-lg font-semibold text-accent">{profile.data.display_name.slice(0, 1).toUpperCase()}</div>}
+              <div><label className="block text-xs font-medium text-ink/60">Profile photo · PNG/JPEG/WebP · max 256 KB<input className="mt-1 block max-w-full text-xs" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void uploadAvatar(event.target.files?.[0])} /></label>
+                {profile.data.avatar_data_url && <button type="button" className="mt-1 text-xs text-risk-high underline" onClick={() => void removeAvatar()}>Remove photo</button>}</div>
+            </div>
             <p className="text-sm"><strong>{profile.data.user_id}</strong> · {profile.data.role}</p>
             <p className="mt-1 text-sm text-ink/60">Units: {profile.data.units?.join(", ") ?? "all assigned units"}</p>
             <p className="mt-3 text-sm">

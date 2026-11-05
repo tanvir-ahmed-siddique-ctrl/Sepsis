@@ -439,27 +439,34 @@ def sample_hl7(_: Actor = Depends(ADMIN)):
 
 
 @router.post("/samples/load")
-def load_synthetic_samples(actor: Actor = Depends(ADMIN)):
-    """Demo only: push three Synthea-style encounters through the FHIR connector."""
+def load_synthetic_samples(
+    count: int = Query(3, ge=1, le=30),
+    hours: int = Query(12, ge=4, le=48),
+    actor: Actor = Depends(ADMIN),
+):
+    """Demo-only commissioning load through the same FHIR ingest path as a connector."""
     engine = get_engine()
     if engine.site.state.effective_mode != "demo":
         raise HTTPException(status_code=409, detail="Synthetic samples can only be loaded in demo mode")
-    start = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0) - timedelta(hours=12)
+    start = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0) - timedelta(hours=hours)
     service = get_integration_service(engine)
     results = []
-    for index, deteriorating in enumerate((True, True, False), start=1):
+    for index in range(1, count + 1):
+        deteriorating = index % 3 != 0
         bundle = synthetic_bundle(
             patient_id=f"synthetic-{index:03d}",
             encounter_id=f"synthetic-enc-{index:03d}",
             unit_id=settings.api_unit_id,
             start=start,
-            hours=12,
+            hours=hours,
             deteriorating=deteriorating,
-            age_years=55 + 9 * index,
-            gender="female" if index == 2 else "male",
+            age_years=35 + (index * 7) % 50,
+            gender=("female", "male", "unknown")[index % 3],
         )
         result = service.submit("fhir_r4", json.dumps(bundle), actor)
         results.append({"patient_id": f"synthetic-{index:03d}", "status_code": result.status_code,
                         "accepted": result.body.get("accepted"), "quarantined": len(result.body.get("quarantined", []))})
-    return {"unit_id": settings.api_unit_id, "loaded": results,
-            "note": "Synthetic integration-test encounters — not model evidence."}
+    return {"unit_id": settings.api_unit_id, "requested": count, "hours_per_encounter": hours,
+            "loaded": results, "accepted_total": sum(item["accepted"] or 0 for item in results),
+            "quarantined_total": sum(item["quarantined"] for item in results),
+            "note": "Synthetic integration-test encounters — not hospital data, clinical validation, or model evidence."}

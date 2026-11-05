@@ -1,4 +1,6 @@
 import json
+import base64
+import binascii
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -41,6 +43,29 @@ class BrowserDeviceRequest(BaseModel):
     label: str = Field(min_length=1, max_length=100)
     user_agent: str | None = Field(default=None, max_length=500)
     notification_permission: str = Field(pattern="^(default|granted|denied|unsupported)$")
+
+
+class ProfileAvatarRequest(BaseModel):
+    data_url: str = Field(min_length=32, max_length=350_000)
+
+
+def _validate_avatar(data_url: str) -> str:
+    try:
+        header, encoded = data_url.split(",", 1)
+        mime = header.removeprefix("data:").removesuffix(";base64")
+        raw = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise HTTPException(status_code=422, detail="Avatar must be a valid base64 image") from error
+    signatures = {
+        "image/png": raw.startswith(b"\x89PNG\r\n\x1a\n"),
+        "image/jpeg": raw.startswith(b"\xff\xd8\xff"),
+        "image/webp": len(raw) >= 12 and raw[:4] == b"RIFF" and raw[8:12] == b"WEBP",
+    }
+    if mime not in signatures or not signatures[mime]:
+        raise HTTPException(status_code=422, detail="Use a valid PNG, JPEG or WebP image")
+    if len(raw) > 256 * 1024:
+        raise HTTPException(status_code=413, detail="Avatar must be 256 KB or smaller")
+    return f"data:{mime};base64,{base64.b64encode(raw).decode('ascii')}"
 
 
 def _accounts() -> AccountStore:
@@ -218,6 +243,30 @@ def _staff_profile(actor: Actor) -> dict:
 
 @router.get("/profile")
 def staff_profile(actor: Actor = Depends(HUMAN)):
+    return _staff_profile(actor)
+
+
+@router.put("/profile/avatar")
+def update_profile_avatar(body: ProfileAvatarRequest, actor: Actor = Depends(HUMAN)):
+    engine = get_engine()
+    profile = _staff_profile(actor)
+    profile["avatar_data_url"] = _validate_avatar(body.data_url)
+    for key in ("current_shift", "delivery_history", "delivery_capability"):
+        profile.pop(key, None)
+    engine.records.save_config(_profile_key(actor.user_id), profile, actor.user_id)
+    engine._log("staff_profile_avatar_updated", {"actor": actor.user_id, "actor_role": actor.role})
+    return _staff_profile(actor)
+
+
+@router.delete("/profile/avatar")
+def delete_profile_avatar(actor: Actor = Depends(HUMAN)):
+    engine = get_engine()
+    profile = _staff_profile(actor)
+    profile.pop("avatar_data_url", None)
+    for key in ("current_shift", "delivery_history", "delivery_capability"):
+        profile.pop(key, None)
+    engine.records.save_config(_profile_key(actor.user_id), profile, actor.user_id)
+    engine._log("staff_profile_avatar_removed", {"actor": actor.user_id, "actor_role": actor.role})
     return _staff_profile(actor)
 
 

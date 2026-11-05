@@ -104,8 +104,8 @@ export default function LoginPage() {
           </Panel>
         </div>
       )}
-      <details open={Boolean(me?.demo_mode)} className="border border-ink/10 bg-white p-4">
-        <summary className="cursor-pointer text-sm font-medium">Demo and hospital IdP options</summary>
+      <details className="border-t border-ink/10 pt-4">
+        <summary className="cursor-pointer text-sm font-medium text-ink/65">Judge access · simulated roles</summary>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
         <Panel title="Demo sign-in">
           <form
@@ -118,13 +118,18 @@ export default function LoginPage() {
             <Field label="User ID">
               <input value={userId} onChange={(e) => setUserId(e.target.value)} required maxLength={128} className={INPUT} />
             </Field>
-            <Field label="Role">
-              <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className={INPUT}>
+            <fieldset>
+              <legend className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">Choose a judge walkthrough</legend>
+              <div className="grid grid-cols-2 gap-2">
                 {(Object.keys(ROLE_LABELS) as UserRole[]).map((value) => (
-                  <option key={value} value={value}>{ROLE_LABELS[value]}</option>
+                  <button key={value} type="button" role="radio" aria-checked={role === value} onClick={() => setRole(value)}
+                    className={`min-h-11 px-3 py-2 text-left text-sm transition ${role === value ? "bg-accent text-white" : "bg-mist text-ink hover:bg-accent/10"}`}>
+                    {ROLE_LABELS[value]}
+                  </button>
                 ))}
-              </select>
-            </Field>
+              </div>
+            </fieldset>
+            <p className="text-xs text-ink/55">Simulated role walkthrough only. Hospital users sign in above with their assigned account.</p>
             <Field label="Unit scope (optional, comma-separated)">
               <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="icu-demo-1" className={INPUT} />
             </Field>

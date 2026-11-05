@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import base64
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -511,3 +512,25 @@ def test_staff_profile_preferences_and_device_enrolment(client):
     )
     assert device.status_code == 200, device.text
     assert any(row["device_id"] == "browser-test-device" for row in device.json()["devices"])
+
+
+def test_staff_avatar_upload_is_bounded_and_validated(client):
+    # A minimal PNG signature is sufficient for the API's content-type gate.
+    png = base64.b64encode(b"\x89PNG\r\n\x1a\nsynthetic-avatar").decode()
+    uploaded = client.put(
+        "/v1/auth/profile/avatar", headers=CLINICIAN,
+        json={"data_url": f"data:image/png;base64,{png}"},
+    )
+    assert uploaded.status_code == 200, uploaded.text
+    assert uploaded.json()["avatar_data_url"].startswith("data:image/png;base64,")
+    assert client.delete("/v1/auth/profile/avatar", headers=CLINICIAN).status_code == 200
+    invalid = client.put(
+        "/v1/auth/profile/avatar", headers=CLINICIAN,
+        json={"data_url": "data:image/png;base64," + base64.b64encode(b"not-an-image").decode()},
+    )
+    assert invalid.status_code == 422
+    oversized = client.put(
+        "/v1/auth/profile/avatar", headers=CLINICIAN,
+        json={"data_url": "data:image/png;base64," + base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"x" * (256 * 1024)).decode()},
+    )
+    assert oversized.status_code == 413

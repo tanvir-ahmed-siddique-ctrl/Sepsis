@@ -92,7 +92,7 @@ export default function ChartPage() {
   }
 
   async function admitPatient() {
-    await api("/v1/care/encounters", {
+    const admitted = await api<CensusEncounter>("/v1/care/encounters", {
       method: "POST",
       body: JSON.stringify({
         ...admit,
@@ -103,6 +103,10 @@ export default function ChartPage() {
       }),
     });
     setAdmit({ patient_id: "", encounter_id: "", display_name: "", bed_id: "", age: "", sex: "", hypercapnic_scale2: false });
+    setSelected(admitted.encounter_key);
+    setMessage(bn
+      ? "রোগী ভর্তি হয়েছে। প্রথম পর্যবেক্ষণগুলো দিন; পর্যাপ্ত ICU data থাকলে এরপর score তৈরি হবে।"
+      : "Patient admitted. Enter the first observations; the ICU score is calculated when enough valid data is available.");
     await census.refresh();
   }
 
