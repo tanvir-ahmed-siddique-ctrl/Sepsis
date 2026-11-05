@@ -26,3 +26,9 @@ FLEET_URL=https://fleet.example.com python push_heartbeat.py
 ```
 
 Tests: `backend/tests/test_fleet.py`.
+
+The console validates every nested heartbeat field before storage. `GET /v1/sites`
+includes `attention` findings for overdue heartbeats, database or writer failures,
+audit-chain failure, expected-model hash mismatch, and open connector circuits.
+These are operational signals. The fleet cannot infer local clinical sensitivity,
+calibration or outcome improvement from its patient-free heartbeat.

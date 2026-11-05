@@ -135,6 +135,7 @@ Details: [model card](docs/model-card.md) and
 
 - [Founder operator guide: map, deploy, live link, install, security, offboarding](docs/operator-guide.md)
 - [Strategic plan: research, commercial and public-interest tracks, finance, GTM](docs/business/strategic-plan.md)
+- [Deployment innovation plan: adoption barriers, integration, monitoring, business and 10-year gates](docs/business/deployment-innovation-plan.md)
 - [Locked decisions](docs/DECISIONS.md)
 - [Product brief](docs/product-brief.md)
 - [Production operating model](docs/product-operating-model.md)

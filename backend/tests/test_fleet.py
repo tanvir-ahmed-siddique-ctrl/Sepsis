@@ -99,6 +99,31 @@ def test_console_rejects_tampering_and_extra_fields(site, console):
     resigned = {"payload": smuggled, "signature": sign(smuggled, KEY)}
     assert console.post("/v1/heartbeats", json=resigned).status_code == 422
 
+    nested = copy.deepcopy(body["payload"])
+    nested["activity"]["patient_id"] = "forbidden"
+    assert console.post("/v1/heartbeats", json={"payload": nested, "signature": sign(nested, KEY)}).status_code == 422
+
+    free_text = copy.deepcopy(body["payload"])
+    free_text["connectors"][0]["connector"] = "Patient Name"
+    assert console.post("/v1/heartbeats", json={"payload": free_text, "signature": sign(free_text, KEY)}).status_code == 422
+
     unknown = copy.deepcopy(body["payload"])
     unknown["site_id"] = "unknown-hospital"
     assert console.post("/v1/heartbeats", json={"payload": unknown, "signature": sign(unknown, KEY)}).status_code == 403
+
+
+def test_console_flags_operational_failures_without_patient_data(site, console):
+    from app.fleet import sign
+
+    body = site.get("/v1/ops/heartbeat").json()
+    payload = copy.deepcopy(body["payload"])
+    payload["runtime"]["database_healthy"] = False
+    payload["runtime"]["read_only"] = True
+    payload["audit"]["chain_valid"] = False
+    payload["connectors"][0]["circuit"] = "open"
+    signed = {"payload": payload, "signature": sign(payload, KEY)}
+    assert console.post("/v1/heartbeats", json=signed).status_code == 200
+    row = console.get("/v1/sites", headers={"Authorization": "Bearer console-secret"}).json()["sites"][0]
+    codes = {finding["code"] for finding in row["attention"]}
+    assert {"database_unhealthy", "read_only", "audit_chain_invalid", "connector_circuit_open"} <= codes
+    assert "patient_id" not in json.dumps(row)

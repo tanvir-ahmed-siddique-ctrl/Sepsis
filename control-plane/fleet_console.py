@@ -13,7 +13,9 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import math
 import os
+import re
 import sqlite3
 import threading
 from datetime import datetime, timedelta, timezone
@@ -29,6 +31,96 @@ ALLOWED_KEYS = frozenset({
     "audit", "readiness", "connectors", "activity",
 })
 MAX_CLOCK_SKEW = timedelta(minutes=10)
+NESTED_KEYS = {
+    "site": {"effective_mode", "interruptive_alerts_enabled", "demo_auth_enabled"},
+    "model": {"version", "sha256", "frozen"},
+    "runtime": {"read_only", "database_healthy"},
+    "audit": {"chain_valid", "events"},
+    "readiness": {"passed", "total", "failed_gates"},
+    "activity": {"active_live_encounters", "open_alerts", "shadow_alerts", "predictions_24h", "quarantined_24h"},
+    "connector": {"connector", "circuit", "minutes_since_success", "quarantine_rate", "pending_spool"},
+}
+SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$")
+GATE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+CONNECTOR_NAMES = {"native_json", "fhir_r4", "hl7v2_oru", "csv_lab", "vendor_adapter"}
+
+
+def _valid_payload(payload: dict) -> bool:
+    """Reject nested extras and unbounded/free-text values before storing a heartbeat."""
+    if set(payload) != ALLOWED_KEYS or payload.get("schema") != SCHEMA:
+        return False
+    if not isinstance(payload.get("site_id"), str) or not SLUG.fullmatch(payload["site_id"]):
+        return False
+    if not isinstance(payload.get("release_version"), str) or not SLUG.fullmatch(payload["release_version"]):
+        return False
+    try:
+        generated = datetime.fromisoformat(payload["generated_at"])
+        if generated.utcoffset() is None:
+            return False
+    except (TypeError, ValueError):
+        return False
+    for section in ("site", "model", "runtime", "audit", "readiness", "activity"):
+        if not isinstance(payload.get(section), dict) or set(payload[section]) != NESTED_KEYS[section]:
+            return False
+    if not isinstance(payload.get("connectors"), list) or len(payload["connectors"]) > 32:
+        return False
+    for item in payload["connectors"]:
+        if not isinstance(item, dict) or set(item) != NESTED_KEYS["connector"]:
+            return False
+        if not isinstance(item["connector"], str) or item["connector"] not in CONNECTOR_NAMES:
+            return False
+        if item["circuit"] not in ("open", "closed", "half_open"):
+            return False
+        for key in ("minutes_since_success", "quarantine_rate"):
+            value = item[key]
+            if value is not None and (type(value) not in (int, float) or not math.isfinite(value) or not 0 <= value <= (1 if key == "quarantine_rate" else 1_000_000)):
+                return False
+        if type(item["pending_spool"]) is not int or not 0 <= item["pending_spool"] <= 1_000_000:
+            return False
+    for section, keys in (("site", ("interruptive_alerts_enabled", "demo_auth_enabled")),
+                          ("model", ("frozen",)), ("runtime", ("read_only", "database_healthy")),
+                          ("audit", ("chain_valid",))):
+        if any(type(payload[section][key]) is not bool for key in keys):
+            return False
+    if not isinstance(payload["site"]["effective_mode"], str) or not SLUG.fullmatch(payload["site"]["effective_mode"]):
+        return False
+    if not isinstance(payload["model"]["version"], str) or not SLUG.fullmatch(payload["model"]["version"]):
+        return False
+    if not isinstance(payload["model"]["sha256"], str) or not re.fullmatch(r"[a-f0-9]{64}", payload["model"]["sha256"]):
+        return False
+    for section, keys in (("audit", ("events",)), ("readiness", ("passed", "total")),
+                          ("activity", NESTED_KEYS["activity"])):
+        if any(type(payload[section][key]) is not int or not 0 <= payload[section][key] <= 1_000_000_000 for key in keys):
+            return False
+    readiness = payload["readiness"]
+    if readiness["passed"] > readiness["total"] or readiness["total"] > 64:
+        return False
+    if not isinstance(readiness["failed_gates"], list) or len(readiness["failed_gates"]) > 64:
+        return False
+    return all(isinstance(gate, str) and GATE.fullmatch(gate) for gate in readiness["failed_gates"])
+
+
+def _attention(row: dict) -> list[dict[str, str]]:
+    """Operational exceptions only; these are not claims about clinical model performance."""
+    findings = []
+    def add(code: str, severity: str, message: str) -> None:
+        findings.append({"code": code, "severity": severity, "message": message})
+    if row["status"] == "never_reported":
+        add("no_heartbeat", "warning", "Site has never reported")
+        return findings
+    if row["status"] == "stale":
+        add("stale_heartbeat", "critical", "Site heartbeat is overdue")
+    if row["database_healthy"] is False:
+        add("database_unhealthy", "critical", "Site database reports unhealthy")
+    if row["read_only"] is True:
+        add("read_only", "critical", "Site cannot accept writes")
+    if row["audit_chain_valid"] is False:
+        add("audit_chain_invalid", "critical", "Audit-chain verification failed")
+    if row["model_matches_release"] is False:
+        add("model_mismatch", "critical", "Model hash differs from site expectation")
+    if row["connectors_open_circuit"]:
+        add("connector_circuit_open", "warning", "One or more configured connectors have an open circuit")
+    return findings
 
 
 class Heartbeat(BaseModel):
@@ -54,6 +146,7 @@ def create_app(
         "CREATE TABLE IF NOT EXISTS heartbeats ("
         "site_id TEXT NOT NULL, received_at TEXT NOT NULL, generated_at TEXT NOT NULL, payload TEXT NOT NULL)"
     )
+    db.execute("CREATE INDEX IF NOT EXISTS heartbeats_site_time ON heartbeats (site_id, generated_at DESC)")
     lock = threading.Lock()
 
     def require_console(authorization: str | None = Header(default=None)) -> None:
@@ -72,9 +165,8 @@ def create_app(
         expected = hmac.new(site["key"].encode(), _canonical(payload), hashlib.sha256).hexdigest()
         if not body.signature or not hmac.compare_digest(body.signature, expected):
             raise HTTPException(status_code=401, detail="Invalid heartbeat signature")
-        extra = set(payload) - ALLOWED_KEYS
-        if extra or payload.get("schema") != SCHEMA:
-            raise HTTPException(status_code=422, detail=f"Heartbeat outside allowlist: {sorted(extra) or payload.get('schema')}")
+        if not _valid_payload(payload):
+            raise HTTPException(status_code=422, detail="Heartbeat outside metadata schema")
         generated = datetime.fromisoformat(payload["generated_at"])
         now = datetime.now(timezone.utc)
         if abs(now - generated) > MAX_CLOCK_SKEW:
@@ -103,12 +195,14 @@ def create_app(
                     (site_id,),
                 ).fetchone()
                 if found is None:
-                    rows.append({"site_id": site_id, "name": site.get("name", site_id), "status": "never_reported"})
+                    row = {"site_id": site_id, "name": site.get("name", site_id), "status": "never_reported"}
+                    row["attention"] = _attention(row)
+                    rows.append(row)
                     continue
                 payload = json.loads(found[0])
                 minutes = int((now - datetime.fromisoformat(found[1])).total_seconds() // 60)
                 expected_hash = site.get("expected_model_sha256")
-                rows.append({
+                row = {
                     "site_id": site_id,
                     "name": site.get("name", site_id),
                     "status": "online" if minutes <= stale_minutes else "stale",
@@ -118,10 +212,14 @@ def create_app(
                     "model_version": payload["model"]["version"],
                     "model_matches_release": None if not expected_hash else payload["model"]["sha256"] == expected_hash,
                     "audit_chain_valid": payload["audit"]["chain_valid"],
+                    "database_healthy": payload["runtime"]["database_healthy"],
+                    "read_only": payload["runtime"]["read_only"],
                     "readiness": f"{payload['readiness']['passed']}/{payload['readiness']['total']}",
                     "connectors_open_circuit": [c["connector"] for c in payload["connectors"] if c.get("circuit") == "open"],
                     "activity": payload["activity"],
-                })
+                }
+                row["attention"] = _attention(row)
+                rows.append(row)
         return {"sites": rows, "patient_data": "none — heartbeats are allowlisted metadata", "public_read": public_read}
 
     @app.get("/", response_class=HTMLResponse)
@@ -139,7 +237,7 @@ td,th{border-bottom:1px solid #ddd;padding:.4rem;text-align:left;font-size:.9rem
 <p>Metadata only. No patient, encounter or user data is ever sent to this console.</p>
 <p id="note"></p>
 <table><thead><tr><th>Site</th><th>Status</th><th>Release</th><th>Mode</th><th>Model</th><th>Audit chain</th>
-<th>Readiness</th><th>Open circuits</th><th>Predictions 24h</th></tr></thead><tbody id="rows"></tbody></table>
+<th>Readiness</th><th>Open circuits</th><th>Predictions 24h</th><th>Attention</th></tr></thead><tbody id="rows"></tbody></table>
 <script>
 const base = location.pathname.replace(/\\/$/, "");
 const esc = (v) => String(v ?? "—").replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
@@ -154,7 +252,7 @@ async function fetchSites(){
 }
 async function load(){
   const r = await fetchSites();
-  if(!r.ok){document.getElementById("rows").innerHTML="<tr><td colspan=9>Unauthorised</td></tr>";return;}
+  if(!r.ok){document.getElementById("rows").innerHTML="<tr><td colspan=10>Unauthorised</td></tr>";return;}
   const {sites, public_read} = await r.json();
   document.getElementById("note").innerHTML = public_read
     ? 'Public demo console: read-only. Each hospital pushes a signed heartbeat every minute; nothing else leaves the hospital. <a href="/">Open the demo hospital app</a>.' : "";
@@ -163,7 +261,8 @@ async function load(){
   <td>${esc(s.release_version)}</td><td>${esc(s.mode)}</td>
   <td>${esc(s.model_version)}${s.model_matches_release===false?" ⚠ hash mismatch":""}</td>
   <td>${s.audit_chain_valid==null?"—":s.audit_chain_valid?"valid":"BROKEN"}</td><td>${esc(s.readiness)}</td>
-  <td>${esc((s.connectors_open_circuit||[]).join(", ")||"none")}</td><td>${esc(s.activity?.predictions_24h)}</td></tr>`).join("");
+  <td>${esc((s.connectors_open_circuit||[]).join(", ")||"none")}</td><td>${esc(s.activity?.predictions_24h)}</td>
+  <td>${(s.attention||[]).length ? s.attention.map(a => esc(a.message)).join("; ") : "Clear"}</td></tr>`).join("");
 }
 load(); setInterval(load, 30000);
 </script></body></html>"""
