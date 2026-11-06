@@ -25,7 +25,7 @@ export default function LoginPage() {
     try {
       const destination = await action();
       setError(null);
-      router.push(destination || "/");
+      router.push(destination || "/icu");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
@@ -34,7 +34,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5">
+    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(280px,.8fr)_minmax(0,1.2fr)]">
+      <aside className="bg-[#080C14] p-8 text-slate-50 lg:min-h-[650px] lg:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[.22em] text-cyan-400">PredictRx / Hospital edge</p>
+        <h2 className="mt-10 font-display text-4xl leading-tight">Clinical intelligence stays close to the bedside.</h2>
+        <p className="mt-5 text-sm leading-7 text-slate-300">The hospital owns its identity, observation feeds and clinical decisions. The vendor receives a signed, patient-free operational heartbeat when configured.</p>
+        <div className="mt-12 space-y-5 border-t border-slate-700 pt-6 text-sm">
+          <p><span className="font-mono text-cyan-400">01</span> · Local scoring and data-quality checks</p>
+          <p><span className="font-mono text-cyan-400">02</span> · Named users, unit scope and audit</p>
+          <p><span className="font-mono text-cyan-400">03</span> · Silent evaluation before live alerts</p>
+        </div>
+        <p className="mt-16 text-xs leading-5 text-slate-400">Connection status appears after a hospital configures and validates its own feed. This page does not represent a live hospital deployment.</p>
+      </aside>
+      <div className="space-y-5 py-4">
       <div>
         <h1 className="font-display text-3xl">Sign in</h1>
         <p className="mt-1 text-sm text-ink/60">
@@ -67,7 +79,7 @@ export default function LoginPage() {
               event.preventDefault();
               void run(async () => {
                 const result = await signInLocal(userId.trim(), password, totp || undefined);
-                return result.must_change_password ? "/login" : "/";
+                return result.must_change_password ? "/login" : "/icu";
               });
             }}>
               <Field label="User ID">
@@ -163,6 +175,7 @@ export default function LoginPage() {
       </div>
       </details>
       {error && <p role="alert" className="text-sm text-risk-high">{error}</p>}
+      </div>
     </div>
   );
 }

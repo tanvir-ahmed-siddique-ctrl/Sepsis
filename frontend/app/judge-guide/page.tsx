@@ -49,7 +49,7 @@ export default function JudgeGuidePage() {
         <h2 className="font-display text-2xl">Use these paths</h2>
         <div className="flex flex-wrap gap-2 text-sm">
           {[
-            ["/presentation", "Presentation"], ["/", "ICU board"], ["/integration", "Integration hub"],
+            ["/presentation", "Presentation"], ["/icu", "ICU board"], ["/integration", "Integration hub"],
             ["/readiness", "Readiness passport"], ["/docs", "Technical whitepaper"], ["/fleet", "Fleet Console"],
           ].map(([href, label]) => (
             <Link key={href} href={href} className="border border-ink/20 bg-white px-3 py-2 hover:border-accent hover:text-accent">{label}</Link>

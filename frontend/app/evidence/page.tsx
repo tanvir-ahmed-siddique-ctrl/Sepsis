@@ -46,7 +46,7 @@ const CRITERIA: Array<{
   {
     name: "Innovation",
     claim: "Sepsis ML is missing from hospitals because of EHR lock-in and unsafe transfer — not missing math. PredictRx unlocks both: a Connection Ladder (paper→HL7/FHIR→SMART) that keeps our IP out of the EHR vendor, and a Transfer Shield that blocks alerts until local calibration and measurement habits clear.",
-    proof: [["/connection", "Connection & Transfer Shield"], ["/presentation", "Replay"], ["/", "TrustGate board"]],
+    proof: [["/connection", "Connection & Transfer Shield"], ["/presentation", "Replay"], ["/icu", "TrustGate board"]],
     measured: "L0–L3+U0 shipped with conformance; L4 adapter contract + U1/U2 SMART/CDS path specified; Transfer Shield S1–S8 named; international pathway timeline documented.",
     status: "Built",
     gap: "Epic Showroom listing is commercial roadmap — not claimed live today.",

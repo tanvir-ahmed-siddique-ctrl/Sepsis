@@ -1,5 +1,5 @@
 const CACHE = "predictrx-shell-v2";
-const SHELL = ["/", "/chart", "/ward", "/login", "/presentation", "/model", "/readiness"];
+const SHELL = ["/", "/icu", "/chart", "/ward", "/login", "/presentation", "/model", "/readiness"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));

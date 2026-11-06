@@ -31,7 +31,14 @@ export function AppNav() {
   const { me, isAdmin, isOperator } = useSession();
   if (pathname === "/presentation") return null;
   const links = [
-    ...(isOperator
+    ...(!me
+      ? [
+          { href: "/", label: "Platform" },
+          { href: "/connection", label: "Architecture" },
+          { href: "/evidence", label: "Evidence" },
+          { href: "/business", label: "For hospitals" },
+        ]
+      : isOperator
       ? [
           { href: process.env.NEXT_PUBLIC_FLEET_URL || "/fleet", label: "Fleet console" },
           { href: "/super-admin", label: "Platform" },
@@ -41,7 +48,7 @@ export function AppNav() {
           { href: "/business", label: "Business" },
         ]
       : [
-          { href: "/", label: t.nav.overview },
+          { href: "/icu", label: t.nav.overview },
           { href: "/home", label: "Portal" },
           { href: "/staff", label: "On shift" },
           { href: "/chart", label: t.nav.chart },
@@ -74,7 +81,7 @@ export function AppNav() {
           PredictRx <span className="text-accent">Sentinel</span>
         </Link>
         {links.map((link) => {
-          const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+          const active = pathname === link.href || pathname.startsWith(link.href + "/");
           return (
             <Link
               key={link.href}
