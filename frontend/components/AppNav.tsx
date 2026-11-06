@@ -30,13 +30,15 @@ export function AppNav() {
   const { locale, setLocale, t } = useLocale();
   const { me, isAdmin, isOperator } = useSession();
   if (pathname === "/presentation") return null;
+  const publicView = !me;
   const links = [
     ...(!me
       ? [
-          { href: "/", label: "Platform" },
-          { href: "/connection", label: "Architecture" },
-          { href: "/evidence", label: "Evidence" },
-          { href: "/business", label: "For hospitals" },
+          { href: "/#platform", label: "Platform" },
+          { href: "/#architecture", label: "Architecture" },
+          { href: "/#intelligence", label: "Intelligence" },
+          { href: "/#evidence", label: "Evidence" },
+          { href: "/#deployment", label: "Deployment" },
         ]
       : isOperator
       ? [
@@ -74,11 +76,11 @@ export function AppNav() {
       : []),
   ];
   return (
-    <header className={`sticky top-0 z-40 bg-white/95 shadow-sm backdrop-blur transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
+    <header className={`sticky top-0 z-40 border-b backdrop-blur transition-transform duration-200 ${publicView ? "border-slate-800 bg-[#080C14]/95 text-slate-50" : "border-slate-200 bg-white/95 text-ink"} ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       {me && <ShiftStrip />}
       <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 sm:px-6" aria-label="Primary">
-        <Link href="/" className="mr-auto font-display text-xl text-ink">
-          PredictRx <span className="text-accent">Sentinel</span>
+        <Link href="/" className={`mr-auto text-lg font-semibold tracking-tight ${publicView ? "text-slate-50" : "text-ink"}`}>
+          <span className={publicView ? "text-cyan-300" : "text-accent"} aria-hidden="true">⌁ </span>PredictRx <span className={publicView ? "text-cyan-300" : "text-accent"}>Sentinel</span>
         </Link>
         {links.map((link) => {
           const active = pathname === link.href || pathname.startsWith(link.href + "/");
@@ -87,8 +89,8 @@ export function AppNav() {
               key={link.href}
               href={link.href}
               aria-current={active ? "page" : undefined}
-              className={`text-sm font-medium transition ${
-                active ? "text-accent underline decoration-2 underline-offset-4" : "text-ink/60 hover:text-ink"
+              className={`text-sm font-medium transition duration-150 ${publicView ? "hidden lg:inline" : ""} ${
+                active ? (publicView ? "text-cyan-300" : "text-accent underline decoration-2 underline-offset-4") : (publicView ? "text-slate-400 hover:text-slate-50" : "text-ink/60 hover:text-ink")
               }`}
             >
               {link.label}
@@ -104,14 +106,14 @@ export function AppNav() {
         <Link
           href="/login"
           aria-current={pathname === "/login" ? "page" : undefined}
-          className="rounded-md bg-ink px-3 py-1.5 text-xs text-white"
+          className={`px-4 py-2 text-xs font-semibold transition-colors duration-150 ${publicView ? "bg-cyan-400 text-slate-950 hover:bg-cyan-300" : "bg-ink text-white"}`}
         >
           {me ? "Session" : t.nav.signIn}
         </Link>
         <button
           type="button"
           onClick={() => setLocale(locale === "en" ? "bn" : "en")}
-          className="rounded-md bg-mist px-2.5 py-1.5 text-xs text-ink/70"
+          className={`px-2.5 py-1.5 text-xs ${publicView ? "border border-slate-700 text-slate-200" : "bg-mist text-ink/70"}`}
           aria-label="Toggle clinician language"
         >
           {locale === "en" ? "বাংলা" : "EN"}

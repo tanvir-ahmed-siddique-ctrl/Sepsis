@@ -118,7 +118,7 @@ export default function OverviewPage() {
                     <p className="font-medium">{p.display_name}</p>
                     <p className="text-xs text-ink/55">
                       {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} ·{" "}
-                      {p.source_mode === "api" ? "hospital connector" : "de-identified PhysioNet replay"}
+                      {p.source_mode === "api" ? (data.site_mode === "demo" ? "generated feed" : "hospital connector") : "de-identified PhysioNet replay"}
                     </p>
                   </div>
                   <RiskBadge band={p.risk_band} />

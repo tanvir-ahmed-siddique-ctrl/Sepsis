@@ -12,6 +12,7 @@ export default function LoginPage() {
   const { me, signInDemo, signInLocal, signInPin, signInWithToken, signOut } = useSession();
   const [userId, setUserId] = useState("dr.demo");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [totp, setTotp] = useState("");
   const [pin, setPin] = useState("");
   const [role, setRole] = useState<UserRole>("clinician");
@@ -34,8 +35,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(280px,.8fr)_minmax(0,1.2fr)]">
-      <aside className="bg-[#080C14] p-8 text-slate-50 lg:min-h-[650px] lg:p-10">
+    <div className="mx-auto grid max-w-6xl gap-0 overflow-hidden border border-slate-200 bg-white shadow-sm lg:grid-cols-2">
+      <aside className="bg-[#080C14] p-8 text-slate-50 lg:min-h-[690px] lg:p-12">
         <p className="text-xs font-semibold uppercase tracking-[.22em] text-cyan-400">PredictRx / Hospital edge</p>
         <h2 className="mt-10 font-display text-4xl leading-tight">Clinical intelligence stays close to the bedside.</h2>
         <p className="mt-5 text-sm leading-7 text-slate-300">The hospital owns its identity, observation feeds and clinical decisions. The vendor receives a signed, patient-free operational heartbeat when configured.</p>
@@ -46,7 +47,7 @@ export default function LoginPage() {
         </div>
         <p className="mt-16 text-xs leading-5 text-slate-400">Connection status appears after a hospital configures and validates its own feed. This page does not represent a live hospital deployment.</p>
       </aside>
-      <div className="space-y-5 py-4">
+      <div className="space-y-5 p-7 sm:p-10">
       <div>
         <h1 className="font-display text-3xl">Sign in</h1>
         <p className="mt-1 text-sm text-ink/60">
@@ -54,7 +55,6 @@ export default function LoginPage() {
           for 15 minutes; use a password for administration.
         </p>
       </div>
-      <div className="grid gap-4 bg-ink p-6 text-white md:grid-cols-[1fr_auto] md:items-center"><div><p className="text-xs uppercase tracking-widest text-cyan-300">AI Builders Congress 2026 / evaluator access</p><h2 className="mt-2 font-display text-2xl">Explore the hospital workflows by role</h2><p className="mt-2 text-sm text-white/65">Simulation access is separate from hospital account sign-in.</p></div><Link href="/evaluator" className="bg-white px-5 py-3 text-sm font-semibold text-ink">Launch role matrix →</Link></div>
       {me && (
         <>
           <Panel className="border-accent/30 bg-accent/5">
@@ -73,7 +73,7 @@ export default function LoginPage() {
         </>
       )}
       {!me && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           <Panel title="Hospital account">
             <form className="space-y-3 text-sm" onSubmit={(event) => {
               event.preventDefault();
@@ -85,9 +85,9 @@ export default function LoginPage() {
               <Field label="User ID">
                 <input value={userId} onChange={(e) => setUserId(e.target.value)} required className={INPUT} autoComplete="username" />
               </Field>
-              <Field label="Password">
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={INPUT} autoComplete="current-password" />
-              </Field>
+              <div><label htmlFor="hospital-password" className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50">Password</label>
+                <div className="flex items-center border border-ink/20 bg-white focus-within:border-accent"><input id="hospital-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="min-w-0 flex-1 px-2 py-1.5 outline-none" autoComplete="current-password" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="px-3 py-1.5 text-xs text-ink/60" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div>
+              </div>
               <Field label="Authenticator code (if enabled)">
                 <input inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))} className={INPUT} />
               </Field>
@@ -96,7 +96,7 @@ export default function LoginPage() {
               </button>
             </form>
           </Panel>
-          <Panel title="Ward tablet quick unlock">
+          <details className="border-t border-ink/10 pt-4"><summary className="cursor-pointer text-sm font-medium text-ink/65">Ward tablet quick unlock</summary><Panel title="15-minute PIN access">
             <form className="space-y-3 text-sm" onSubmit={(event) => {
               event.preventDefault();
               void run(() => signInPin(userId.trim(), pin, totp || undefined));
@@ -115,9 +115,10 @@ export default function LoginPage() {
                 Unlock for 15 minutes
               </button>
             </form>
-          </Panel>
+          </Panel></details>
         </div>
       )}
+      <p className="border-t border-slate-200 pt-5 text-xs leading-6 text-ink/60">Evaluating for the AI Builders Congress? <Link href="/evaluator" className="font-semibold text-accent underline underline-offset-2">Open the five-role evaluator gateway →</Link></p>
       <details className="border-t border-ink/10 pt-4">
         <summary className="cursor-pointer text-sm font-medium text-ink/65">Judge access · simulated roles</summary>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
