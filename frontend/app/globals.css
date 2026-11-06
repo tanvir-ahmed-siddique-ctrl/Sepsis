@@ -31,3 +31,11 @@ section {
 .risk-pill {
   @apply inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

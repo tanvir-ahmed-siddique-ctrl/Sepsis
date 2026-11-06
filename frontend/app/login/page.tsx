@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Panel } from "@/components/ui";
@@ -33,7 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="mx-auto max-w-5xl space-y-5">
       <div>
         <h1 className="font-display text-3xl">Sign in</h1>
         <p className="mt-1 text-sm text-ink/60">
@@ -41,6 +42,7 @@ export default function LoginPage() {
           for 15 minutes; use a password for administration.
         </p>
       </div>
+      <div className="grid gap-4 bg-ink p-6 text-white md:grid-cols-[1fr_auto] md:items-center"><div><p className="text-xs uppercase tracking-widest text-cyan-300">AI Builders Congress 2026 / evaluator access</p><h2 className="mt-2 font-display text-2xl">Explore the hospital workflows by role</h2><p className="mt-2 text-sm text-white/65">Simulation access is separate from hospital account sign-in.</p></div><Link href="/evaluator" className="bg-white px-5 py-3 text-sm font-semibold text-ink">Launch role matrix →</Link></div>
       {me && (
         <>
           <Panel className="border-accent/30 bg-accent/5">

@@ -18,12 +18,13 @@ import os
 import re
 import sqlite3
 import threading
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 SCHEMA = "predictrx-heartbeat/v1"
 ALLOWED_KEYS = frozenset({
@@ -129,6 +130,20 @@ class Heartbeat(BaseModel):
     signature_algorithm: str = "HMAC-SHA256"
 
 
+class CommercialRecord(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    site_id: str = Field(min_length=1, max_length=64)
+    kind: str = Field(pattern="^(agreement|subscription|invoice|contact|support|decommission)$")
+    title: str = Field(min_length=1, max_length=120)
+    status: str = Field(pattern="^(draft|active|due|paid|paused|closed|requested|rejected)$")
+    due_at: str | None = Field(default=None, max_length=40)
+    amount_minor: int | None = Field(default=None, ge=0, le=10_000_000_000)
+    currency: str | None = Field(default=None, pattern="^[A-Z]{3}$")
+    reference: str | None = Field(default=None, max_length=120)
+    summary: str | None = Field(default=None, max_length=500)
+    reason: str = Field(min_length=8, max_length=300)
+
+
 def _canonical(payload: dict) -> bytes:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()
 
@@ -147,6 +162,8 @@ def create_app(
         "site_id TEXT NOT NULL, received_at TEXT NOT NULL, generated_at TEXT NOT NULL, payload TEXT NOT NULL)"
     )
     db.execute("CREATE INDEX IF NOT EXISTS heartbeats_site_time ON heartbeats (site_id, generated_at DESC)")
+    db.execute("CREATE TABLE IF NOT EXISTS commercial (id TEXT PRIMARY KEY, site_id TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, updated_at TEXT NOT NULL)")
+    db.execute("CREATE TABLE IF NOT EXISTS commercial_audit (id TEXT PRIMARY KEY, record_id TEXT NOT NULL, action TEXT NOT NULL, at TEXT NOT NULL, before_json TEXT, after_json TEXT, reason TEXT NOT NULL)")
     lock = threading.Lock()
 
     def require_console(authorization: str | None = Header(default=None)) -> None:
@@ -155,6 +172,55 @@ def create_app(
         scheme, _, token = (authorization or "").partition(" ")
         if not console_token or scheme.lower() != "bearer" or not hmac.compare_digest(token, console_token):
             raise HTTPException(status_code=401, detail="Console token required")
+
+    def require_private_console(authorization: str | None = Header(default=None)) -> None:
+        if public_read:
+            raise HTTPException(status_code=403, detail="Commercial records are unavailable in a public console")
+        require_console(authorization)
+
+    @app.get("/v1/commercial", dependencies=[Depends(require_private_console)])
+    def commercial(site_id: str | None = None):
+        if site_id is not None and site_id not in sites:
+            raise HTTPException(status_code=404, detail="Unknown site")
+        with lock:
+            rows = db.execute("SELECT id, payload, updated_at FROM commercial WHERE (? IS NULL OR site_id = ?) ORDER BY updated_at DESC LIMIT 500", (site_id, site_id)).fetchall()
+        return {"records": [{"id": row[0], **json.loads(row[1]), "updated_at": row[2]} for row in rows]}
+
+    @app.post("/v1/commercial", dependencies=[Depends(require_private_console)])
+    def create_commercial(body: CommercialRecord):
+        if body.site_id not in sites:
+            raise HTTPException(status_code=404, detail="Unknown site")
+        if body.kind == "decommission" and body.status not in {"draft", "requested"}:
+            raise HTTPException(status_code=422, detail="Vendor can request decommission only; hospital-side verified backup and authorization are required")
+        record_id, at = uuid.uuid4().hex, datetime.now(timezone.utc).isoformat()
+        payload = body.model_dump()
+        with lock:
+            db.execute("INSERT INTO commercial VALUES (?, ?, ?, ?, ?)", (record_id, body.site_id, body.kind, json.dumps(payload), at))
+            db.execute("INSERT INTO commercial_audit VALUES (?, ?, ?, ?, ?, ?, ?)", (uuid.uuid4().hex, record_id, "created", at, None, json.dumps(payload), body.reason))
+            db.commit()
+        return {"id": record_id, **payload, "updated_at": at}
+
+    @app.put("/v1/commercial/{record_id}", dependencies=[Depends(require_private_console)])
+    def update_commercial(record_id: str, body: CommercialRecord):
+        with lock:
+            found = db.execute("SELECT site_id, kind, payload FROM commercial WHERE id = ?", (record_id,)).fetchone()
+            if not found:
+                raise HTTPException(status_code=404, detail="Record not found")
+            if (body.site_id, body.kind) != (found[0], found[1]):
+                raise HTTPException(status_code=409, detail="Site and record kind cannot change")
+            if body.kind == "decommission" and body.status not in {"draft", "requested", "rejected"}:
+                raise HTTPException(status_code=422, detail="Hospital-side decommission cannot be completed here")
+            at, payload = datetime.now(timezone.utc).isoformat(), body.model_dump()
+            db.execute("UPDATE commercial SET payload = ?, updated_at = ? WHERE id = ?", (json.dumps(payload), at, record_id))
+            db.execute("INSERT INTO commercial_audit VALUES (?, ?, ?, ?, ?, ?, ?)", (uuid.uuid4().hex, record_id, "updated", at, found[2], json.dumps(payload), body.reason))
+            db.commit()
+        return {"id": record_id, **payload, "updated_at": at}
+
+    @app.get("/v1/commercial/audit", dependencies=[Depends(require_private_console)])
+    def commercial_audit():
+        with lock:
+            rows = db.execute("SELECT record_id, action, at, before_json, after_json, reason FROM commercial_audit ORDER BY at DESC LIMIT 500").fetchall()
+        return {"events": [{"record_id": row[0], "action": row[1], "at": row[2], "before": json.loads(row[3]) if row[3] else None, "after": json.loads(row[4]) if row[4] else None, "reason": row[5]} for row in rows]}
 
     @app.post("/v1/heartbeats")
     def receive(body: Heartbeat):
@@ -231,16 +297,62 @@ def create_app(
 
 CONSOLE_HTML = """<!doctype html>
 <html><head><meta charset="utf-8"><title>PredictRx fleet console</title>
-<style>body{font-family:system-ui;margin:2rem;color:#0f1c24}table{border-collapse:collapse;width:100%}
-td,th{border-bottom:1px solid #ddd;padding:.4rem;text-align:left;font-size:.9rem}.online{color:#1f7a4d}.stale,.never_reported{color:#b42318}</style>
+<style>body{font-family:system-ui;margin:2rem auto;max-width:1300px;padding:0 1rem;color:#0f1c24;background:#f7f9f8}table{border-collapse:collapse;width:100%}
+td,th{border-bottom:1px solid #dce4e2;padding:.65rem;text-align:left;font-size:.9rem}.online{color:#1f7a4d}.stale,.never_reported{color:#b42318}
+h1,h2{letter-spacing:-.04em}h2{margin-top:2.5rem}input,select,textarea,button{font:inherit;padding:.55rem;border:1px solid #bac9c5;border-radius:6px}button{background:#0b6e69;color:white;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem}.grid label{display:grid;gap:.3rem;font-size:.8rem}.grid input,.grid select,.grid textarea{width:100%;box-sizing:border-box}.muted{color:#596a67;font-size:.9rem}.panel{background:white;padding:1.25rem;border-radius:12px;margin-top:1rem;overflow:auto}</style>
 </head><body><h1>PredictRx fleet console</h1>
 <p>Metadata only. No patient, encounter or user data is ever sent to this console.</p>
 <p id="note"></p>
-<table><thead><tr><th>Site</th><th>Status</th><th>Release</th><th>Mode</th><th>Model</th><th>Audit chain</th>
+<div class="panel"><table><thead><tr><th>Site</th><th>Status</th><th>Release</th><th>Mode</th><th>Model</th><th>Audit chain</th>
 <th>Readiness</th><th>Open circuits</th><th>Predictions 24h</th><th>Attention</th></tr></thead><tbody id="rows"></tbody></table>
+</div><section id="commercial" hidden><h2>Business operations</h2><p class="muted">Private operator ledger. Invoice state is recorded here; payment collection occurs through your accounting provider. Expiry never disables bedside workflows. Decommission here is a request only.</p>
+<div class="panel"><form id="recordForm"><div class="grid">
+<label>Site<select name="site_id" id="siteSelect" required></select></label>
+<label>Record type<select name="kind"><option>agreement</option><option>subscription</option><option>invoice</option><option>contact</option><option>support</option><option>decommission</option></select></label>
+<label>Title<input name="title" maxlength="120" required placeholder="Annual ICU licence"></label>
+<label>Status<select name="status"><option>draft</option><option>active</option><option>due</option><option>paid</option><option>paused</option><option>closed</option><option>requested</option><option>rejected</option></select></label>
+<label>Due / renewal date<input name="due_at" type="date"></label>
+<label>Amount in smallest currency unit<input name="amount_minor" type="number" min="0" max="10000000000"></label>
+<label>Currency<input name="currency" maxlength="3" pattern="[A-Z]{3}" placeholder="BDT"></label>
+<label>External reference<input name="reference" maxlength="120" placeholder="Invoice or contract ID"></label>
+<label>Summary (no patient data)<textarea name="summary" maxlength="500" rows="2"></textarea></label>
+<label>Reason for change<input name="reason" minlength="8" maxlength="300" required></label>
+</div><p><button type="submit">Save record</button> <span id="saveStatus" role="status"></span></p></form></div>
+<div class="panel"><h3>Agreements, subscriptions, invoices, contacts & support</h3><table><thead><tr><th>Site</th><th>Type</th><th>Title</th><th>Status</th><th>Due</th><th>Amount</th><th>Reference</th><th>Last change</th><th>Action</th></tr></thead><tbody id="businessRows"></tbody></table></div>
+</section>
 <script>
 const base = location.pathname.replace(/\\/$/, "");
 const esc = (v) => String(v ?? "—").replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
+function headers(){const token=sessionStorage.getItem("fleetToken");return token?{Authorization:"Bearer "+token}:{};}
+let commercialRecords=[];
+async function loadBusiness(){
+  const r=await fetch(base+"/v1/commercial",{headers:headers()});
+  if(!r.ok)return;
+  document.getElementById("commercial").hidden=false;
+  const {records}=await r.json();
+  commercialRecords=records;
+  document.getElementById("businessRows").innerHTML=records.map(x=>`<tr><td>${esc(x.site_id)}</td><td>${esc(x.kind)}</td><td>${esc(x.title)}</td><td>${esc(x.status)}</td><td>${esc(x.due_at)}</td><td>${x.amount_minor==null?"—":esc(x.amount_minor)+" "+esc(x.currency)}</td><td>${esc(x.reference)}</td><td>${esc(x.updated_at)}</td><td><button data-record-id="${esc(x.id)}" type="button">Update</button></td></tr>`).join("")||'<tr><td colspan="9">No commercial records yet</td></tr>';
+}
+document.getElementById("businessRows").addEventListener("click",async e=>{
+  const button=e.target.closest("button[data-record-id]");if(!button)return;
+  const record=commercialRecords.find(x=>x.id===button.dataset.recordId);if(!record)return;
+  const status=prompt("New status: draft, active, due, paid, paused, closed, requested or rejected",record.status);
+  if(!status)return;
+  const reason=prompt("Reason for this change (at least 8 characters)");
+  if(!reason||reason.trim().length<8)return;
+  const {id,updated_at,...payload}=record;
+  const r=await fetch(base+"/v1/commercial/"+encodeURIComponent(id),{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({...payload,status,reason})});
+  document.getElementById("saveStatus").textContent=r.ok?"Updated and audited":`Could not update (${r.status})`;
+  if(r.ok)await loadBusiness();
+});
+document.getElementById("recordForm").addEventListener("submit",async e=>{
+  e.preventDefault();const values=Object.fromEntries(new FormData(e.currentTarget));
+  for(const k of ["due_at","reference","summary","currency"])if(!values[k])values[k]=null;
+  values.amount_minor=values.amount_minor?Number(values.amount_minor):null;
+  const r=await fetch(base+"/v1/commercial",{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(values)});
+  document.getElementById("saveStatus").textContent=r.ok?"Saved and audited":`Could not save (${r.status})`;
+  if(r.ok){e.currentTarget.reset();await loadBusiness();}
+});
 async function fetchSites(){
   let token = sessionStorage.getItem("fleetToken");
   let r = await fetch(base + "/v1/sites", token ? {headers:{Authorization:"Bearer "+token}} : {});
@@ -254,6 +366,7 @@ async function load(){
   const r = await fetchSites();
   if(!r.ok){document.getElementById("rows").innerHTML="<tr><td colspan=10>Unauthorised</td></tr>";return;}
   const {sites, public_read} = await r.json();
+  document.getElementById("siteSelect").innerHTML=sites.map(s=>`<option value="${esc(s.site_id)}">${esc(s.name)}</option>`).join("");
   document.getElementById("note").innerHTML = public_read
     ? 'Public demo console: read-only. Each hospital pushes a signed heartbeat every minute; nothing else leaves the hospital. <a href="/">Open the demo hospital app</a>.' : "";
   document.getElementById("rows").innerHTML = sites.map(s => `<tr><td>${esc(s.name)}</td>
@@ -263,6 +376,7 @@ async function load(){
   <td>${s.audit_chain_valid==null?"—":s.audit_chain_valid?"valid":"BROKEN"}</td><td>${esc(s.readiness)}</td>
   <td>${esc((s.connectors_open_circuit||[]).join(", ")||"none")}</td><td>${esc(s.activity?.predictions_24h)}</td>
   <td>${(s.attention||[]).length ? s.attention.map(a => esc(a.message)).join("; ") : "Clear"}</td></tr>`).join("");
+  if(!public_read)await loadBusiness();
 }
 load(); setInterval(load, 30000);
 </script></body></html>"""

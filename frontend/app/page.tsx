@@ -58,7 +58,7 @@ export default function OverviewPage() {
           <h1 className="font-display text-3xl text-ink">ICU command centre</h1>
           <p className="mt-1 text-sm text-ink/65">
             {data?.site_mode === "demo"
-              ? `24 de-identified PhysioNet test encounters · replay controls below · model ${data?.model_version ?? "…"}`
+              ? `${data?.patients.length ?? 0} de-identified replay/scored encounters in this unit · model ${data?.model_version ?? "…"}`
               : `Hospital-local live feed · model ${data?.model_version ?? "…"}`}
           </p>
           {units.data && units.data.units.length > 1 && (

@@ -33,12 +33,16 @@ export function AppNav() {
   const links = [
     ...(isOperator
       ? [
+          { href: process.env.NEXT_PUBLIC_FLEET_URL || "/fleet", label: "Fleet console" },
+          { href: "/super-admin", label: "Platform" },
           { href: "/operations", label: "Operations" },
           { href: "/connection", label: "Connection" },
           { href: "/evidence", label: "Evidence" },
+          { href: "/business", label: "Business" },
         ]
       : [
           { href: "/", label: t.nav.overview },
+          { href: "/home", label: "Portal" },
           { href: "/staff", label: "On shift" },
           { href: "/chart", label: t.nav.chart },
           { href: "/ward", label: t.nav.ward },
@@ -47,6 +51,7 @@ export function AppNav() {
           { href: "/workflows", label: "How it works" },
           { href: "/connection", label: "Connection" },
           { href: "/evidence", label: "Evidence" },
+          { href: "/business", label: "For hospitals" },
         ]),
     ...(isAdmin
       ? [

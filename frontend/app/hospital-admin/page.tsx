@@ -1,0 +1,5 @@
+"use client";
+import Link from "next/link";
+import { useSession } from "@/lib/session";
+const sections=[["/admin/setup","Site governance"],["/admin/users","Users & units"],["/integration","Integration hub"],["/pilot","Silent pilot"],["/operations","Operations"]];
+export default function HospitalAdminPage(){const {me,isAdmin}=useSession();if(!me)return <p>Sign in to the hospital workspace.</p>;if(!isAdmin)return <p>This workspace requires a hospital administrator.</p>;return <div className="space-y-6"><header><p className="text-xs uppercase tracking-widest text-accent">Hospital administration</p><h1 className="mt-2 font-display text-4xl">Site command</h1><p className="mt-2 text-sm text-ink/60">Commission feeds, manage staff, review pilot evidence and keep the clinical go-live decision local.</p></header><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{sections.map(([href,label])=><Link key={href} href={href} className="bg-white p-6 font-medium transition hover:shadow-md">{label} <span className="float-right text-accent">→</span></Link>)}</div></div>}

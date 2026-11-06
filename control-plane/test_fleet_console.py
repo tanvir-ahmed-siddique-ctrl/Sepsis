@@ -77,3 +77,27 @@ def test_nested_metadata_contract_and_health_flags():
 def test_unreported_site_is_visible():
     row = client().get("/v1/sites", headers=AUTH).json()["sites"][0]
     assert row["attention"] == [{"code": "no_heartbeat", "severity": "warning", "message": "Site has never reported"}]
+
+
+def test_commercial_ledger_is_private_persistent_and_audited(tmp_path):
+    path = str(tmp_path / "fleet.db")
+    site = {"site-1": {"name": "Site 1", "key": KEY}}
+    body = {"site_id": "site-1", "kind": "subscription", "title": "Annual ICU plan", "status": "active",
+            "due_at": "2027-01-01", "amount_minor": 120000000, "currency": "BDT", "reason": "Contract recorded"}
+    first = TestClient(fleet_console.create_app(site, db_path=path, console_token="console-token"))
+    assert first.get("/v1/commercial").status_code == 401
+    created = first.post("/v1/commercial", headers=AUTH, json=body)
+    assert created.status_code == 200, created.text
+    second = TestClient(fleet_console.create_app(site, db_path=path, console_token="console-token"))
+    record = second.get("/v1/commercial", headers=AUTH).json()["records"][0]
+    assert record["id"] == created.json()["id"]
+    changed = second.put(f"/v1/commercial/{record['id']}", headers=AUTH,
+                         json={**body, "status": "due", "reason": "Renewal invoice due"})
+    assert changed.status_code == 200
+    assert len(second.get("/v1/commercial/audit", headers=AUTH).json()["events"]) == 2
+    public = TestClient(fleet_console.create_app(site, public_read=True))
+    assert public.get("/v1/commercial").status_code == 403
+    assert public.post("/v1/commercial", json=body).status_code == 403
+    blocked = second.post("/v1/commercial", headers=AUTH,
+                          json={**body, "kind": "decommission", "status": "closed"})
+    assert blocked.status_code == 422

@@ -4,6 +4,7 @@ import { AppNav } from "@/components/AppNav";
 import { AlertNotifier } from "@/components/AlertNotifier";
 import { AttentionBanner } from "@/components/AttentionBanner";
 import { OfflineSync } from "@/components/OfflineSync";
+import { EvaluatorHud } from "@/components/EvaluatorHud";
 import { LocaleProvider } from "@/lib/locale";
 import { SessionProvider } from "@/lib/session";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AttentionBanner />
             <OfflineSync />
             <AlertNotifier />
+            <EvaluatorHud />
             <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
           </SessionProvider>
         </LocaleProvider>
