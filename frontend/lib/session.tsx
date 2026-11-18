@@ -11,8 +11,17 @@ async function webSession(action: "login" | "pin" | "exchange" | "logout", body:
     method: "POST", credentials: "same-origin", cache: "no-store",
     headers: { "Content-Type": "application/json", "X-Auralis-Request": "1" }, body: JSON.stringify(body),
   });
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.detail || "Session request failed");
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = result?.detail;
+    const message =
+      typeof detail === "string"
+        ? detail
+        : Array.isArray(detail)
+          ? detail.map((item) => item?.msg || String(item)).join("; ")
+          : result?.message || `Sign-in failed (${response.status})`;
+    throw new Error(message);
+  }
   announceSessionChange();
   return result;
 }

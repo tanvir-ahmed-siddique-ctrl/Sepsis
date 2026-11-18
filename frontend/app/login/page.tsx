@@ -126,7 +126,7 @@ function LoginPageContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFBFA] py-10 lg:py-16">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="auralis-container-public">
         {/* Top return bar */}
         <div className="mb-8 flex items-center justify-between">
           <BrandMark href="/" />

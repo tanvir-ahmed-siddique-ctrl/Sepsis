@@ -782,7 +782,10 @@ class Engine:
                 continue
             existing = accounts.get(user_id)
             if existing:
-                if demo_password and user_id.startswith("demo-") and existing.get("must_change_password"):
+                # Always re-assert the known sandbox password in DEMO_MODE so
+                # one-click sign-in stays valid across container restarts that
+                # reuse a volume where an older random secret was written.
+                if demo_password and user_id.startswith("demo-"):
                     accounts.set_password(user_id, demo_password, admin=True)
                 continue
             secret = demo_password if (demo_password and user_id.startswith("demo-")) else secrets.token_urlsafe(32)
