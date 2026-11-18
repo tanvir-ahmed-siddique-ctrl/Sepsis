@@ -194,12 +194,16 @@ export function SurfaceFrame({ children }: { children: ReactNode }) {
 
   // Hospital workspace
   if (!me && !loading && !account) {
+    const signInHref = `/signin?next=${encodeURIComponent(pathname || "/app/icu")}`;
     return (
       <div className="auralis-container py-16">
         <div className="auralis-panel max-w-xl">
           <h1 className="auralis-page-title">Hospital sign-in required</h1>
-          <p className="mt-3 text-sm text-muted">This workspace is protected. Authenticate with your hospital identity to continue.</p>
-          <Link href="/signin" className="auralis-btn-primary mt-6">Sign in</Link>
+          <p className="mt-3 text-sm text-muted">
+            This workspace is protected. On the next page, enter your hospital username and password in the sign-in form on the left, then press Sign In.
+            Workspace Go buttons alone do not log you in.
+          </p>
+          <Link href={signInHref} className="auralis-btn-primary mt-6">Sign in</Link>
         </div>
       </div>
     );

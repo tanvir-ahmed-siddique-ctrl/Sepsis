@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { Panel } from "@/components/ui";
 import { api } from "@/lib/api";
@@ -17,9 +17,26 @@ const WORKSPACES = [
   { title: "Evaluation Environment", detail: "Isolated synthetic / replay evaluation", href: "/system-check", requires: "any" as const },
 ];
 
+function safeNext(raw: string | null): string | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  if (raw.startsWith("/signin") || raw.startsWith("/login")) return null;
+  return raw;
+}
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="auralis-container py-16 text-sm text-muted">Loading sign-in…</div>}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
-  const { me, account, signInLocal, signInPin, signInWithToken, signOut } = useSession();
+  const searchParams = useSearchParams();
+  const nextPath = safeNext(searchParams.get("next"));
+  const formRef = useRef<HTMLFormElement>(null);
+  const { me, account, loading, signInLocal, signInPin, signInWithToken, signOut } = useSession();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,15 +47,23 @@ export default function LoginPage() {
   const [accountCurrent, setAccountCurrent] = useState("");
   const [accountNew, setAccountNew] = useState("");
   const [accountNotice, setAccountNotice] = useState<string | null>(null);
+  const [selectedHref, setSelectedHref] = useState<string | null>(nextPath);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (nextPath) setSelectedHref(nextPath);
+  }, [nextPath]);
+
+  const signedIn = Boolean(me || account);
 
   async function run(action: () => Promise<string | void>) {
     setBusy(true);
     try {
       const destination = await action();
       setError(null);
-      router.push(destination || "/app/icu");
+      router.push(destination || selectedHref || nextPath || "/app/icu");
+      router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
@@ -47,17 +72,51 @@ export default function LoginPage() {
   }
 
   async function destinationForIdentity() {
+    if (selectedHref) return selectedHref;
+    if (nextPath) return nextPath;
     const result = await api<{ default_path: string | null }>("/v1/auth/workspaces");
     if (!result.default_path) throw new Error("This identity has no interactive workspace assigned.");
     return result.default_path;
   }
 
-  function workspaceHref(item: (typeof WORKSPACES)[number]) {
-    if (item.requires === "any") return item.href;
-    if (item.requires === "vendor") return account?.vendor ? item.href : `/signin?next=${encodeURIComponent(item.href)}`;
-    if (item.requires === "customer") return account && !account.vendor ? item.href : `/signin?next=${encodeURIComponent(item.href)}`;
-    return me ? item.href : `/signin?next=${encodeURIComponent(item.href)}`;
+  function accessFor(item: (typeof WORKSPACES)[number]): { open: boolean; status: string } {
+    if (item.requires === "any") return { open: true, status: signedIn ? "Open" : "Available after sign-in" };
+    if (item.requires === "vendor") {
+      if (account?.vendor) return { open: true, status: "Open" };
+      if (account && !account.vendor) return { open: false, status: "Needs a vendor organization account" };
+      if (me) return { open: false, status: "Needs organization work-email sign-in" };
+      return { open: false, status: "Sign in first with the form on the left" };
+    }
+    if (item.requires === "customer") {
+      if (account && !account.vendor) return { open: true, status: "Open" };
+      if (account?.vendor) return { open: false, status: "Needs a customer organization account" };
+      if (me) return { open: false, status: "Needs organization work-email sign-in" };
+      return { open: false, status: "Sign in first with the form on the left" };
+    }
+    if (me) return { open: true, status: "Open" };
+    if (account) return { open: false, status: "Needs hospital identity (username, not only vendor email)" };
+    return { open: false, status: "Sign in first with the form on the left" };
   }
+
+  function chooseWorkspace(href: string) {
+    setSelectedHref(href);
+    setError(null);
+    if (!signedIn) {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = formRef.current?.querySelector<HTMLInputElement>("input[autoComplete='username'], input[autocomplete='username']");
+      input?.focus();
+    } else {
+      const item = WORKSPACES.find((entry) => entry.href === href);
+      if (item && accessFor(item).open) router.push(href);
+    }
+  }
+
+  const helper = useMemo(() => {
+    if (loading) return "Checking your session…";
+    if (me) return `Hospital session active as ${me.display_name || me.user_id}. Open a hospital or deployment workspace below.`;
+    if (account) return `Organization session active as ${account.display_name}. Open Vendor or Customer Portal below. Hospital clinical pages need a separate hospital username sign-in.`;
+    return "Enter your username/email and password in the form on the left, then press Sign In. That one sign-in opens the workspaces you are authorized for. The Go buttons do not bypass login.";
+  }, [loading, me, account]);
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -65,7 +124,15 @@ export default function LoginPage() {
         <section className="auralis-panel max-w-xl self-start p-6 sm:p-8">
           <BrandMark href="/" />
           <h1 className="mt-8 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">Sign in to Auralis</h1>
-          <p className="mt-3 text-sm leading-6 text-muted">Use your hospital identity or organization work email. Production authentication is always required for protected workspaces.</p>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Use this form. Username + password here creates your session for every workspace you are allowed to open.
+            Hospital clinical access uses a hospital username. Vendor / customer portal access uses an organization work email.
+          </p>
+          {(nextPath || selectedHref) && (
+            <p className="mt-3 border-l-2 border-teal pl-3 text-sm text-ink">
+              After sign-in you will continue to <code className="text-xs">{selectedHref || nextPath}</code>.
+            </p>
+          )}
 
           {account && (
             <Panel className="mt-6">
@@ -96,14 +163,17 @@ export default function LoginPage() {
               <Panel className="mt-6 border-teal/30 bg-teal/5">
                 <p className="text-sm">Signed in as <strong>{me.display_name || me.user_id}</strong> ({me.role}, {me.auth_mode})</p>
                 {me.must_change_password && <p className="mt-1 text-sm font-medium text-risk-high">Change the temporary password before routine use.</p>}
-                <button type="button" onClick={signOut} className="auralis-btn-secondary mt-3">Sign out</button>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <Link href={selectedHref || nextPath || "/app/icu"} className="auralis-btn-primary">Continue to workspace</Link>
+                  <button type="button" onClick={signOut} className="auralis-btn-secondary">Sign out</button>
+                </div>
               </Panel>
               {["password", "pin"].includes(me.auth_mode) && <div className="mt-4"><AccountSecurity onDone={signOut} mustChange={me.must_change_password} /></div>}
             </>
           )}
 
           {!me && !account && (
-            <form className="mt-8 grid gap-4" onSubmit={(event) => {
+            <form ref={formRef} className="mt-8 grid gap-4" onSubmit={(event) => {
               event.preventDefault();
               void run(async () => {
                 const result = await signInLocal(userId.trim(), password, totp || undefined);
@@ -165,21 +235,36 @@ export default function LoginPage() {
 
         <aside className="self-start">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">Choose Your Workspace</h2>
-          <p className="mt-2 text-sm text-muted">These are real destinations. Protected workspaces still require an authorized session.</p>
+          <p className="mt-2 text-sm leading-6 text-muted">{helper}</p>
           <div className="mt-6 grid gap-3">
-            {WORKSPACES.map((item) => (
-              <Link key={item.href} href={workspaceHref(item)} className="auralis-panel transition-colors hover:border-teal">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-ink">{item.title}</p>
-                    <p className="mt-1 text-sm text-muted">{item.detail}</p>
+            {WORKSPACES.map((item) => {
+              const access = accessFor(item);
+              const selected = selectedHref === item.href;
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => chooseWorkspace(item.href)}
+                  className={`auralis-panel w-full text-left transition-colors ${selected ? "border-teal" : "hover:border-teal"} ${access.open ? "" : "opacity-95"}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-ink">{item.title}</p>
+                      <p className="mt-1 text-sm text-muted">{item.detail}</p>
+                      <p className={`mt-2 text-xs ${access.open ? "text-teal" : "text-muted"}`}>{access.status}</p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold text-teal">
+                      {access.open ? "Go →" : signedIn ? "Locked" : "Sign in first"}
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-teal">Go →</span>
-                </div>
-              </Link>
-            ))}
+                </button>
+              );
+            })}
           </div>
-          <p className="mt-6 text-xs leading-5 text-muted">Evaluation Environment uses pre-provisioned synthetic accounts only when a separate evaluation runtime is configured. No production passwords are embedded in this interface.</p>
+          <p className="mt-6 text-xs leading-5 text-muted">
+            Tip: clicking a workspace before sign-in only selects where you will go after you press <strong>Sign In</strong> on the left. It does not open a protected page by itself.
+            Evaluation Environment uses pre-provisioned synthetic accounts only when a separate evaluation runtime is configured.
+          </p>
         </aside>
       </div>
     </div>
