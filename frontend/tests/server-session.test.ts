@@ -36,6 +36,26 @@ describe("web session boundary", () => {
     expect(upstream).not.toHaveBeenCalled();
   });
 
+  it("accepts same-origin writes when nextUrl is the container bind but Host is public", async () => {
+    const upstream = vi.fn()
+      .mockResolvedValueOnce(Response.json({ access_token: "private-token", expires_in_seconds: 900, must_change_password: false }))
+      .mockResolvedValueOnce(Response.json({ user_id: "clinician", role: "clinician" }));
+    vi.stubGlobal("fetch", upstream);
+    const request = new NextRequest("http://0.0.0.0:10000/api/session/login", {
+      method: "POST",
+      headers: {
+        Origin: "https://predictrx-sentinel-demo.onrender.com",
+        Host: "predictrx-sentinel-demo.onrender.com",
+        "X-Forwarded-Host": "predictrx-sentinel-demo.onrender.com",
+        "X-Auralis-Request": "1",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: "clinician", password: "test-secret" }),
+    });
+    expect((await sessionPost(request, sessionContext("login"))).status).toBe(200);
+    expect(upstream).toHaveBeenCalled();
+  });
+
   it("requires a cookie and rejects cross-origin clinical writes", async () => {
     const upstream = vi.fn();
     vi.stubGlobal("fetch", upstream);
