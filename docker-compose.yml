@@ -64,9 +64,9 @@ services:
     build:
       context: .
       dockerfile: infra/Dockerfile.web
-      args:
-        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000}
     restart: unless-stopped
+    environment:
+      - API_PROXY_TARGET=http://api:8000
     ports:
       - "3000:3000"
     depends_on:

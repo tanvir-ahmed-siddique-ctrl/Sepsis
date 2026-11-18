@@ -1,36 +1,38 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource/manrope/500.css";
+import "@fontsource/manrope/600.css";
+import "@fontsource/manrope/700.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/noto-sans-bengali/400.css";
+import "@fontsource/noto-sans-bengali/600.css";
 import "./globals.css";
-import { AppNav } from "@/components/AppNav";
-import { AlertNotifier } from "@/components/AlertNotifier";
-import { AttentionBanner } from "@/components/AttentionBanner";
-import { OfflineSync } from "@/components/OfflineSync";
-import { EvaluatorHud } from "@/components/EvaluatorHud";
+import { SurfaceFrame } from "@/components/shells/SurfaceFrame";
 import { LocaleProvider } from "@/lib/locale";
 import { SessionProvider } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "PredictRx Sentinel",
-  description: "ICU sepsis early-warning decision support — research prototype",
+  title: "Auralis",
+  description: "Auralis hospital-local ICU sepsis-risk review with accountable clinician oversight",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/app-icon.svg", apple: "/app-icon.svg" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b6e69",
+  themeColor: "#087E83",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-mist text-ink font-sans antialiased">
+      <body className="min-h-screen bg-canvas text-ink font-sans antialiased">
         <LocaleProvider>
           <SessionProvider>
-            <AppNav />
-            <AttentionBanner />
-            <OfflineSync />
-            <AlertNotifier />
-            <EvaluatorHud />
-            <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+            <SurfaceFrame>{children}</SurfaceFrame>
           </SessionProvider>
         </LocaleProvider>
       </body>

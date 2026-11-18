@@ -12,8 +12,8 @@ type Ops = {
   site: { site_id: string; effective_mode: string };
 };
 const surfaces = [
-  { n: "01", title: "Fleet registry", detail: "Hospital nodes, signed heartbeat health, release status and operational exceptions.", href: process.env.NEXT_PUBLIC_FLEET_URL || "/fleet", action: "Open vendor console" },
-  { n: "02", title: "Commercial ledger", detail: "Subscriptions, invoices, contact history and decommission requests in the authenticated vendor console.", href: process.env.NEXT_PUBLIC_FLEET_URL || "/fleet", action: "Open commercial controls" },
+  { n: "01", title: "Fleet heartbeat", detail: "Signed, patient-free status metadata from registered site deployments. The current console does not manage customer contracts or billing.", href: process.env.NEXT_PUBLIC_FLEET_URL || "/fleet", action: "Open fleet heartbeat" },
+  { n: "02", title: "Commercial operations", detail: "Organization accounts, licences, invoices, renewals and support cases are not connected in this build.", href: "/portal", action: "Review customer portal status" },
   { n: "03", title: "Site operations", detail: "Writer lease, connector health, readiness gates, model provenance and audit-chain verification.", href: "/operations", action: "Inspect current site" },
   { n: "04", title: "Deployment offer", detail: "Assessment, silent pilot, implementation and annual licence structure for hospital buyers.", href: "/business", action: "Review commercial offer" },
 ];
@@ -21,7 +21,7 @@ export default function SuperAdminPage() {
   const { me, isOperator } = useSession();
   const status = usePoll(() => isOperator ? api<Ops>("/v1/ops/status") : Promise.resolve(null), 15000, [isOperator]);
   if (!me) return <div className="max-w-2xl py-16"><h1 className="text-3xl font-semibold">Platform operator sign-in</h1><p className="mt-3 text-sm text-ink/60">Use your assigned operator credentials to access the vendor control plane.</p><Link href="/login" className="mt-5 inline-block bg-ink px-5 py-3 text-sm font-semibold text-white">Sign in</Link></div>;
-  if (!isOperator) return <div className="max-w-2xl py-16"><h1 className="text-3xl font-semibold">Operator workspace</h1><p className="mt-3 text-sm text-ink/60">This workspace requires the platform operator role.</p><Link href="/evaluator" className="mt-5 inline-block text-sm font-semibold text-accent">Switch evaluator role →</Link></div>;
+  if (!isOperator) return <div className="max-w-2xl py-16"><h1 className="text-3xl font-semibold">Operator workspace</h1><p className="mt-3 text-sm text-ink/60">This workspace requires the platform operator role assigned to your account.</p><Link href="/signin" className="mt-5 inline-block text-sm font-semibold text-accent">Return to sign in →</Link></div>;
   const ops = status.data;
   const integrity = ops ? ops.database.healthy && ops.audit.linkage_valid && ops.audit.content_hash_mismatches === 0 && !ops.writer.read_only : null;
   return <div className="space-y-9 pb-16">

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 
 from app.api.deps import is_blinded
-from app.auth import CLINICAL_ROLES, Actor, ensure_unit, require_roles
+from app.auth import CLINICAL_READ_ROLES, CLINICAL_ROLES, Actor, ensure_unit, require_roles
 from app.core.config import settings
 from app.schemas import PatientOverviewCard, UnitOverviewResponse
 from app.services.engine import BAND_ORDER, REQUIRED_SIGNALS, Engine, Patient, get_engine
@@ -11,6 +11,7 @@ from app.services.engine import BAND_ORDER, REQUIRED_SIGNALS, Engine, Patient, g
 router = APIRouter(tags=["units"])
 TRUST_ORDER = {"alert": 4, "verify_data": 3, "watch": 2, "abstain": 1}
 CLINICAL = require_roles(*CLINICAL_ROLES)
+CLINICAL_READ = require_roles(*CLINICAL_READ_ROLES)
 
 
 def _minutes_since(stamp: str | None) -> int | None:
@@ -54,7 +55,7 @@ def _urgency(trust_state: str, band: str, open_alerts: int, probability: float |
 
 
 @router.get("/units")
-def list_units(actor: Actor = Depends(CLINICAL)):
+def list_units(actor: Actor = Depends(CLINICAL_READ)):
     engine = get_engine()
     with engine.lock:
         units = sorted({
@@ -66,7 +67,7 @@ def list_units(actor: Actor = Depends(CLINICAL)):
 
 
 @router.get("/units/{unit_id}/overview", response_model=UnitOverviewResponse)
-def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL)):
+def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL_READ)):
     ensure_unit(actor, unit_id)
     engine = get_engine()
     sla = settings.alert_review_sla_minutes
@@ -129,7 +130,7 @@ def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL)):
 
 
 @router.get("/units/{unit_id}/handoff")
-def unit_handoff(unit_id: str, actor: Actor = Depends(CLINICAL)):
+def unit_handoff(unit_id: str, actor: Actor = Depends(CLINICAL_READ)):
     """Deterministic shift-handoff summary assembled from recorded data — nothing is generated."""
     ensure_unit(actor, unit_id)
     engine = get_engine()

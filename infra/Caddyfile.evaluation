@@ -1,0 +1,33 @@
+# Isolated synthetic evaluation front door. Require HTTPS outside local testing.
+{$EVAL_SITE_ADDRESS}
+
+encode gzip
+
+basic_auth {
+	{$EVAL_GATE_USER} {$EVAL_GATE_PASSWORD_HASH}
+}
+
+handle /api/account/* {
+	reverse_proxy web:3000
+}
+handle /api/hospital/* {
+	reverse_proxy web:3000
+}
+handle /api/session/* {
+	reverse_proxy web:3000
+}
+handle_path /api/* {
+	@basic header_regexp Authorization ^Basic\s
+	request_header @basic -Authorization
+	reverse_proxy api:8000
+}
+handle {
+	reverse_proxy web:3000
+}
+
+header {
+	X-Content-Type-Options nosniff
+	X-Frame-Options DENY
+	Referrer-Policy no-referrer
+	-Server
+}

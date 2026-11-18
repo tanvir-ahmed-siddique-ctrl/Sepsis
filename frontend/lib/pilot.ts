@@ -19,7 +19,7 @@ export function siteModeBanner(mode: SiteMode): { tone: Tone; title: string; bod
     case "demo":
       return {
         tone: "info",
-        title: "Demo mode",
+        title: "Evaluation replay mode",
         body: "Held-out PhysioNet replay and synthetic integration data. Nothing here is a real patient.",
       };
     case "silent":

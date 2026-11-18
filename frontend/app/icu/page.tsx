@@ -31,7 +31,7 @@ export default function OverviewPage() {
     setUnit(stored && available.includes(stored) ? stored : available.includes(API_UNIT) ? API_UNIT : units.data.default_unit ?? DEMO_UNIT);
   }, [unit, units.data]);
 
-  const { data, error, refresh } = usePoll(
+  const { data, error, updatedAt, refresh } = usePoll(
     () => (unit ? api<UnitOverview>(`/v1/units/${encodeURIComponent(unit)}/overview`) : Promise.resolve(null)),
     3000,
     [unit],
@@ -58,8 +58,11 @@ export default function OverviewPage() {
           <h1 className="font-display text-3xl text-ink">ICU command centre</h1>
           <p className="mt-1 text-sm text-ink/65">
             {data?.site_mode === "demo"
-              ? `${data?.patients.length ?? 0} de-identified replay/scored encounters in this unit · model ${data?.model_version ?? "…"}`
+              ? `${data?.patients.length ?? 0} ${me?.evaluation_runtime ? "synthetic evaluation encounters" : "de-identified replay/scored encounters"} in this unit · model ${data?.model_version ?? "…"}`
               : `Hospital-local live feed · model ${data?.model_version ?? "…"}`}
+          </p>
+          <p className="mt-2 font-mono text-xs text-ink/55" aria-live="polite">
+            {error ? "Feed refresh failed · showing last received state" : updatedAt ? `View refreshed ${updatedAt.toLocaleTimeString()} · polling every 3 seconds` : "Connecting to local feed…"}
           </p>
           {units.data && units.data.units.length > 1 && (
             <label className="mt-2 flex items-center gap-2 text-sm">
@@ -118,7 +121,7 @@ export default function OverviewPage() {
                     <p className="font-medium">{p.display_name}</p>
                     <p className="text-xs text-ink/55">
                       {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} ·{" "}
-                      {p.source_mode === "api" ? (data.site_mode === "demo" ? "generated feed" : "hospital connector") : "de-identified PhysioNet replay"}
+                      {p.source_mode === "api" ? (data.site_mode === "demo" ? "generated feed" : "hospital connector") : me?.evaluation_runtime ? "synthetic evaluation replay" : "de-identified PhysioNet replay"}
                     </p>
                   </div>
                   <RiskBadge band={p.risk_band} />

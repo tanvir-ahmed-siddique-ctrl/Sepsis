@@ -12,8 +12,7 @@ WORKDIR /web
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend ./
-ENV NEXT_PUBLIC_API_URL=/api \
-    API_PROXY_TARGET=http://127.0.0.1:8000 \
+ENV API_PROXY_TARGET=http://127.0.0.1:8000 \
     FLEET_PROXY_TARGET=http://127.0.0.1:8100 \
     NEXT_PUBLIC_FLEET_URL=/fleet \
     NEXT_PUBLIC_JUDGE_DEMO=true \

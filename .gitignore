@@ -63,3 +63,16 @@ frontend/out/
 *.db
 *.sqlite3
 predictrx.db
+
+# Local scratch / runtime logs (never commit)
+tmp_*.log
+tmp_*.json
+tmp_*.txt
+tmp_accounts*
+tmp_backend*
+tmp_cp*
+tmp_doc*
+tmp_frontend*
+tmp_login*
+tmp_matrix*
+tmp_roles*

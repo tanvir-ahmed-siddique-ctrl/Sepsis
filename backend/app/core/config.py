@@ -47,12 +47,16 @@ class Settings(BaseSettings):
     public_demo_lockdown: bool = False
     public_simulation_enabled: bool = False
     public_simulation_interval_seconds: int = 30
+    evaluation_runtime: bool = False
+    evaluation_admin_password: SecretStr | None = None
     database_url: str = f"sqlite:///{(REPO_ROOT / 'backend' / 'predictrx.db').as_posix()}"
 
     # Site operation. ``site_mode`` is the *requested* mode at first start; afterwards the
     # persisted, audited site configuration is authoritative.
     site_id: str = "predictrx-local-site"
     site_mode: str = "demo"
+    licence_required: bool = False
+    licence_public_keys_json: str = "{}"
     alert_review_sla_minutes: int = 15
     feed_stale_minutes: int = 120
     circuit_failure_threshold: int = 3

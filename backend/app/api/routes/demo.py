@@ -9,7 +9,7 @@ CLINICAL = require_roles(*CLINICAL_ROLES)
 
 
 def _reject_public_replay_mutation() -> None:
-    if settings.public_demo_lockdown:
+    if settings.public_demo_lockdown and not settings.evaluation_runtime:
         raise HTTPException(
             status_code=403,
             detail="This public demo is locked to its prepared replay state. Hospital installations retain replay controls locally.",

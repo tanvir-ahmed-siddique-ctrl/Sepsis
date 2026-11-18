@@ -19,8 +19,8 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className={`border border-ink/10 bg-white/90 p-4 sm:p-5 ${className}`}>
-      {title && <h2 className="mb-3 font-display text-xl text-ink">{title}</h2>}
+    <section className={`auralis-panel ${className}`}>
+      {title && <h2 className="mb-3 font-display text-xl font-semibold text-ink">{title}</h2>}
       {children}
     </section>
   );
@@ -45,26 +45,49 @@ export function SiteModeBanner({ mode, detail }: { mode: SiteMode; detail?: Reac
   return (
     <div role="status" className={`border px-4 py-2 text-sm ${TONE_CLASS[banner.tone]}`}>
       <strong>{banner.title}.</strong> {banner.body}
-      {detail && <span className="ml-1 text-ink/60">{detail}</span>}
+      {detail && <span className="ml-1 text-muted">{detail}</span>}
     </div>
   );
 }
 
 export function Stat({ label, value, color = "text-ink" }: { label: string; value: ReactNode; color?: string }) {
   return (
-    <div className="min-w-[5.5rem] border border-ink/10 bg-white/70 px-3 py-2 text-center">
+    <div className="min-w-[5.5rem] border border-border bg-white px-3 py-2 text-center">
       <p className={`text-2xl font-semibold tabular-nums ${color}`}>{value}</p>
-      <p className="text-xs uppercase tracking-wide text-ink/50">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
     </div>
   );
 }
 
 export function KeyValue({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex justify-between gap-3 border-b border-ink/5 py-1 text-sm">
-      <dt className="text-ink/55">{label}</dt>
-      <dd className="text-right tabular-nums">{value}</dd>
+    <div className="flex justify-between gap-3 border-b border-border/70 py-1 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right tabular-nums text-ink">{value}</dd>
     </div>
+  );
+}
+
+export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+  return (
+    <div className="auralis-panel text-sm">
+      <h2 className="font-display text-lg font-semibold text-ink">{title}</h2>
+      <p className="mt-2 text-muted">{body}</p>
+      {action && <div className="mt-4">{action}</div>}
+    </div>
+  );
+}
+
+export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {
+  return (
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
+      <div>
+        {eyebrow && <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal">{eyebrow}</p>}
+        <h1 className="mt-2 auralis-page-title">{title}</h1>
+        {description && <p className="mt-2 max-w-2xl text-sm text-muted">{description}</p>}
+      </div>
+      {actions}
+    </header>
   );
 }
 
@@ -79,7 +102,7 @@ export function Sparkline({
     .map((value, index) => ({ value, index }))
     .filter((point): point is { value: number; index: number } => point.value != null && Number.isFinite(point.value));
   if (observed.length < 2) {
-    return <div className="h-8 border-b border-ink/10" aria-label="Not enough risk history for a trend" />;
+    return <div className="h-8 border-b border-border" aria-label="Not enough risk history for a trend" />;
   }
   const width = 112;
   const height = 32;

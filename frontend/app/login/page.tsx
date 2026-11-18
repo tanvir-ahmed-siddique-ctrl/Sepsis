@@ -3,21 +3,33 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { Panel } from "@/components/ui";
-import { api, ROLE_LABELS, type UserRole } from "@/lib/api";
+import { api } from "@/lib/api";
+import { accountApi } from "@/lib/account-api";
 import { useSession } from "@/lib/session";
+
+const WORKSPACES = [
+  { title: "Hospital System", detail: "Clinical and hospital-admin workspace", href: "/app/icu", requires: "hospital" as const },
+  { title: "Vendor System", detail: "Vendor control plane for tenants and commercial ops", href: "/platform/overview", requires: "vendor" as const },
+  { title: "Deployment System", detail: "Site commissioning, interfaces and readiness", href: "/deploy", requires: "hospital" as const },
+  { title: "Customer Portal", detail: "Organization contracts, licences and support", href: "/portal", requires: "customer" as const },
+  { title: "Evaluation Environment", detail: "Isolated synthetic / replay evaluation", href: "/system-check", requires: "any" as const },
+];
 
 export default function LoginPage() {
   const router = useRouter();
-  const { me, signInDemo, signInLocal, signInPin, signInWithToken, signOut } = useSession();
-  const [userId, setUserId] = useState("dr.demo");
+  const { me, account, signInLocal, signInPin, signInWithToken, signOut } = useSession();
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [totp, setTotp] = useState("");
   const [pin, setPin] = useState("");
-  const [role, setRole] = useState<UserRole>("clinician");
-  const [units, setUnits] = useState("");
   const [token, setToken] = useState("");
+  const [accountCurrent, setAccountCurrent] = useState("");
+  const [accountNew, setAccountNew] = useState("");
+  const [accountNotice, setAccountNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -26,7 +38,7 @@ export default function LoginPage() {
     try {
       const destination = await action();
       setError(null);
-      router.push(destination || "/icu");
+      router.push(destination || "/app/icu");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
@@ -34,161 +46,143 @@ export default function LoginPage() {
     }
   }
 
+  async function destinationForIdentity() {
+    const result = await api<{ default_path: string | null }>("/v1/auth/workspaces");
+    if (!result.default_path) throw new Error("This identity has no interactive workspace assigned.");
+    return result.default_path;
+  }
+
+  function workspaceHref(item: (typeof WORKSPACES)[number]) {
+    if (item.requires === "any") return item.href;
+    if (item.requires === "vendor") return account?.vendor ? item.href : `/signin?next=${encodeURIComponent(item.href)}`;
+    if (item.requires === "customer") return account && !account.vendor ? item.href : `/signin?next=${encodeURIComponent(item.href)}`;
+    return me ? item.href : `/signin?next=${encodeURIComponent(item.href)}`;
+  }
+
   return (
-    <div className="mx-auto grid max-w-6xl gap-0 overflow-hidden border border-slate-200 bg-white shadow-sm lg:grid-cols-2">
-      <aside className="bg-[#080C14] p-8 text-slate-50 lg:min-h-[690px] lg:p-12">
-        <p className="text-xs font-semibold uppercase tracking-[.22em] text-cyan-400">PredictRx / Hospital edge</p>
-        <h2 className="mt-10 font-display text-4xl leading-tight">Clinical intelligence stays close to the bedside.</h2>
-        <p className="mt-5 text-sm leading-7 text-slate-300">The hospital owns its identity, observation feeds and clinical decisions. The vendor receives a signed, patient-free operational heartbeat when configured.</p>
-        <div className="mt-12 space-y-5 border-t border-slate-700 pt-6 text-sm">
-          <p><span className="font-mono text-cyan-400">01</span> · Local scoring and data-quality checks</p>
-          <p><span className="font-mono text-cyan-400">02</span> · Named users, unit scope and audit</p>
-          <p><span className="font-mono text-cyan-400">03</span> · Silent evaluation before live alerts</p>
-        </div>
-        <p className="mt-16 text-xs leading-5 text-slate-400">Connection status appears after a hospital configures and validates its own feed. This page does not represent a live hospital deployment.</p>
-      </aside>
-      <div className="space-y-5 p-7 sm:p-10">
-      <div>
-        <h1 className="font-display text-3xl">Sign in</h1>
-        <p className="mt-1 text-sm text-ink/60">
-          Hospital sites can use local accounts or their identity provider. A short PIN unlocks a shared ward tablet
-          for 15 minutes; use a password for administration.
-        </p>
-      </div>
-      {me && (
-        <>
-          <Panel className="border-accent/30 bg-accent/5">
-            <p className="text-sm">
-              Signed in as <strong>{me.display_name || me.user_id}</strong> ({me.role}, {me.auth_mode}) · units{" "}
-              {me.units ? me.units.join(", ") : "all"}
-            </p>
-            {me.must_change_password && <p className="mt-1 text-sm font-medium text-risk-high">Change the temporary password before routine use.</p>}
-            <button type="button" onClick={signOut} className="mt-2 border border-ink/20 px-3 py-1 text-sm">
-              Sign out
-            </button>
-          </Panel>
-          {["password", "pin"].includes(me.auth_mode) && (
-            <AccountSecurity onDone={signOut} mustChange={me.must_change_password} />
+    <div className="min-h-screen bg-canvas">
+      <div className="auralis-container grid gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
+        <section className="auralis-panel max-w-xl self-start p-6 sm:p-8">
+          <BrandMark href="/" />
+          <h1 className="mt-8 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">Sign in to Auralis</h1>
+          <p className="mt-3 text-sm leading-6 text-muted">Use your hospital identity or organization work email. Production authentication is always required for protected workspaces.</p>
+
+          {account && (
+            <Panel className="mt-6">
+              <p className="text-sm">Signed in as <strong>{account.display_name}</strong>.</p>
+              {account.must_change_password ? (
+                <form className="mt-4 grid gap-3 text-sm" onSubmit={(event) => {
+                  event.preventDefault();
+                  void run(async () => {
+                    await accountApi("/v1/auth/change-password", { method: "POST", body: JSON.stringify({ current_password: accountCurrent, new_password: accountNew }) });
+                    setAccountCurrent(""); setAccountNew(""); setAccountNotice("Password changed. Sign in again."); signOut(); return "/signin";
+                  });
+                }}>
+                  <p>Change the temporary password before using the account workspace.</p>
+                  <label className="auralis-label">Current password<input type="password" value={accountCurrent} onChange={(event) => setAccountCurrent(event.target.value)} required className="auralis-input" /></label>
+                  <label className="auralis-label">New password<input type="password" minLength={12} value={accountNew} onChange={(event) => setAccountNew(event.target.value)} required className="auralis-input" /></label>
+                  <button type="submit" className="auralis-btn-primary justify-self-start">Change password</button>
+                </form>
+              ) : (
+                <Link href={account.vendor ? "/platform/accounts" : "/portal"} className="mt-3 inline-block text-sm font-semibold text-teal">Open your workspace →</Link>
+              )}
+              <button type="button" onClick={signOut} className="ml-4 text-sm text-muted underline">Sign out</button>
+            </Panel>
           )}
-        </>
-      )}
-      {!me && (
-        <div className="grid gap-4">
-          <Panel title="Hospital account">
-            <form className="space-y-3 text-sm" onSubmit={(event) => {
+          {accountNotice && <p role="status" className="mt-3 text-sm text-teal">{accountNotice}</p>}
+
+          {me && (
+            <>
+              <Panel className="mt-6 border-teal/30 bg-teal/5">
+                <p className="text-sm">Signed in as <strong>{me.display_name || me.user_id}</strong> ({me.role}, {me.auth_mode})</p>
+                {me.must_change_password && <p className="mt-1 text-sm font-medium text-risk-high">Change the temporary password before routine use.</p>}
+                <button type="button" onClick={signOut} className="auralis-btn-secondary mt-3">Sign out</button>
+              </Panel>
+              {["password", "pin"].includes(me.auth_mode) && <div className="mt-4"><AccountSecurity onDone={signOut} mustChange={me.must_change_password} /></div>}
+            </>
+          )}
+
+          {!me && !account && (
+            <form className="mt-8 grid gap-4" onSubmit={(event) => {
               event.preventDefault();
               void run(async () => {
                 const result = await signInLocal(userId.trim(), password, totp || undefined);
-                return result.must_change_password ? "/login" : "/icu";
+                if (remember) {
+                  // Remember-me is advisory for browser autofill only; sessions remain server-managed.
+                }
+                return result.must_change_password ? "/signin" : result.destination || destinationForIdentity();
               });
             }}>
-              <Field label="User ID">
-                <input value={userId} onChange={(e) => setUserId(e.target.value)} required className={INPUT} autoComplete="username" />
-              </Field>
-              <div><label htmlFor="hospital-password" className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50">Password</label>
-                <div className="flex items-center border border-ink/20 bg-white focus-within:border-accent"><input id="hospital-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="min-w-0 flex-1 px-2 py-1.5 outline-none" autoComplete="current-password" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="px-3 py-1.5 text-xs text-ink/60" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button></div>
+              <label className="auralis-label">Username / email
+                <input value={userId} onChange={(e) => setUserId(e.target.value)} required className="auralis-input" autoComplete="username" />
+              </label>
+              <div>
+                <label htmlFor="auralis-password" className="auralis-label">Password</label>
+                <div className="mt-1 flex items-center border border-border bg-white focus-within:border-teal">
+                  <input id="auralis-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="min-w-0 flex-1 px-3 py-2 text-sm outline-none" autoComplete="current-password" />
+                  <button type="button" onClick={() => setShowPassword((value) => !value)} className="px-3 py-2 text-xs text-muted" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "Show"}</button>
+                </div>
               </div>
-              <Field label="Authenticator code (if enabled)">
-                <input inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))} className={INPUT} />
-              </Field>
-              <button type="submit" disabled={busy} className="border border-accent bg-accent px-3 py-1.5 font-medium text-white disabled:opacity-50">
-                Sign in
-              </button>
-            </form>
-          </Panel>
-          <details className="border-t border-ink/10 pt-4"><summary className="cursor-pointer text-sm font-medium text-ink/65">Ward tablet quick unlock</summary><Panel title="15-minute PIN access">
-            <form className="space-y-3 text-sm" onSubmit={(event) => {
-              event.preventDefault();
-              void run(() => signInPin(userId.trim(), pin, totp || undefined));
-            }}>
-              <p className="text-xs text-ink/55">Use your own user ID and 4–6 digit PIN. Never share one ward account.</p>
-              <Field label="User ID">
-                <input value={userId} onChange={(e) => setUserId(e.target.value)} required className={INPUT} autoComplete="username" />
-              </Field>
-              <Field label="PIN">
-                <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} required className={INPUT} />
-              </Field>
-              <Field label="Authenticator code (if enabled)">
-                <input inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))} className={INPUT} />
-              </Field>
-              <button type="submit" disabled={busy} className="border border-ink/20 px-3 py-1.5 font-medium disabled:opacity-50">
-                Unlock for 15 minutes
-              </button>
-            </form>
-          </Panel></details>
-        </div>
-      )}
-      <p className="border-t border-slate-200 pt-5 text-xs leading-6 text-ink/60">Evaluating for the AI Builders Congress? <Link href="/evaluator" className="font-semibold text-accent underline underline-offset-2">Open the five-role evaluator gateway →</Link></p>
-      <details className="border-t border-ink/10 pt-4">
-        <summary className="cursor-pointer text-sm font-medium text-ink/65">Judge access · simulated roles</summary>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <Panel title="Demo sign-in">
-          <form
-            className="space-y-3 text-sm"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void run(() => signInDemo(userId.trim(), role, units));
-            }}
-          >
-            <Field label="User ID">
-              <input value={userId} onChange={(e) => setUserId(e.target.value)} required maxLength={128} className={INPUT} />
-            </Field>
-            <fieldset>
-              <legend className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">Choose a judge walkthrough</legend>
-              <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(ROLE_LABELS) as UserRole[]).map((value) => (
-                  <button key={value} type="button" role="radio" aria-checked={role === value} onClick={() => setRole(value)}
-                    className={`min-h-11 px-3 py-2 text-left text-sm transition ${role === value ? "bg-accent text-white" : "bg-mist text-ink hover:bg-accent/10"}`}>
-                    {ROLE_LABELS[value]}
-                  </button>
-                ))}
+              <label className="auralis-label">Authenticator code (if enabled)
+                <input inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value.replace(/\D/g, "").slice(0, 6))} className="auralis-input" />
+              </label>
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                <label className="inline-flex items-center gap-2 text-muted"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Remember me on this device</label>
+                <span className="text-muted">Forgot password? Contact your administrator.</span>
               </div>
-            </fieldset>
-            <p className="text-xs text-ink/55">Simulated role walkthrough only. Hospital users sign in above with their assigned account.</p>
-            <Field label="Unit scope (optional, comma-separated)">
-              <input value={units} onChange={(e) => setUnits(e.target.value)} placeholder="icu-demo-1" className={INPUT} />
-            </Field>
-            <button type="submit" disabled={busy} className="border border-accent bg-accent px-3 py-1.5 font-medium text-white disabled:opacity-50">
-              Get demo session
-            </button>
-          </form>
-        </Panel>
-        <Panel title="Hospital identity provider token">
-          <form
-            className="space-y-3 text-sm"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void run(() => signInWithToken(token));
-            }}
-          >
-            <p className="text-xs text-ink/55">
-              For pilot testing, paste an access token issued by the hospital IdP. The backend validates issuer,
-              audience, signature (JWKS) and role/unit claims. Tokens stay in this browser tab only.
-            </p>
-            <Field label="Bearer token">
-              <textarea value={token} onChange={(e) => setToken(e.target.value)} rows={4} required className={`${INPUT} font-mono text-xs`} />
-            </Field>
-            <button type="submit" disabled={busy} className="border border-ink/20 px-3 py-1.5 font-medium disabled:opacity-50">
-              Use token
-            </button>
-          </form>
-        </Panel>
-      </div>
-      </details>
-      {error && <p role="alert" className="text-sm text-risk-high">{error}</p>}
+              <button type="submit" disabled={busy} className="auralis-btn-primary disabled:opacity-50">{busy ? "Signing in…" : "Sign In"}</button>
+              {error && <p role="alert" className="text-sm text-risk-high">{error}</p>}
+            </form>
+          )}
+
+          {!me && !account && (
+            <div className="mt-6 space-y-3 border-t border-border pt-5">
+              <details>
+                <summary className="cursor-pointer text-sm font-medium text-muted">Ward tablet quick unlock</summary>
+                <form className="mt-3 grid gap-3 text-sm" onSubmit={(event) => {
+                  event.preventDefault();
+                  void run(async () => { await signInPin(userId.trim(), pin, totp || undefined); return destinationForIdentity(); });
+                }}>
+                  <p className="text-xs text-muted">Use your own user ID and 4–6 digit PIN. Never share one ward account.</p>
+                  <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} required className="auralis-input" placeholder="PIN" />
+                  <button type="submit" disabled={busy} className="auralis-btn-secondary justify-self-start">Unlock for 15 minutes</button>
+                </form>
+              </details>
+              <details>
+                <summary className="cursor-pointer text-sm font-medium text-muted">Hospital identity provider</summary>
+                <form className="mt-3 grid gap-3 text-sm" onSubmit={(event) => {
+                  event.preventDefault();
+                  void run(async () => { await signInWithToken(token); return destinationForIdentity(); });
+                }}>
+                  <p className="text-xs text-muted">For configured identity providers only. Paste a validated hospital access token.</p>
+                  <textarea value={token} onChange={(event) => setToken(event.target.value)} rows={3} required className="auralis-input font-mono text-xs" autoComplete="off" />
+                  <button type="submit" disabled={busy} className="auralis-btn-secondary justify-self-start">Validate hospital identity</button>
+                </form>
+              </details>
+            </div>
+          )}
+        </section>
+
+        <aside className="self-start">
+          <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">Choose Your Workspace</h2>
+          <p className="mt-2 text-sm text-muted">These are real destinations. Protected workspaces still require an authorized session.</p>
+          <div className="mt-6 grid gap-3">
+            {WORKSPACES.map((item) => (
+              <Link key={item.href} href={workspaceHref(item)} className="auralis-panel transition-colors hover:border-teal">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-ink">{item.title}</p>
+                    <p className="mt-1 text-sm text-muted">{item.detail}</p>
+                  </div>
+                  <span className="text-sm font-semibold text-teal">Go →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <p className="mt-6 text-xs leading-5 text-muted">Evaluation Environment uses pre-provisioned synthetic accounts only when a separate evaluation runtime is configured. No production passwords are embedded in this interface.</p>
+        </aside>
       </div>
     </div>
-  );
-}
-
-const INPUT = "w-full border border-ink/20 bg-white px-2 py-1.5 outline-none focus:border-accent";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50">{label}</span>
-      {children}
-    </label>
   );
 }
 
@@ -213,41 +207,43 @@ function AccountSecurity({ onDone, mustChange }: { onDone: () => void; mustChang
       <Panel title="Change password">
         <form className="space-y-2 text-sm" onSubmit={(event) => {
           event.preventDefault();
-          void run(() => api("/v1/auth/password", {
-            method: "POST", body: JSON.stringify({ current_password: current, new_password: next }),
-          }), "Password changed. Sign in again.", true);
+          void run(() => api("/v1/auth/password", { method: "POST", body: JSON.stringify({ current_password: current, new_password: next }) }), "Password changed. Sign in again.", true);
         }}>
-          <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Current password" className={INPUT} required />
-          <input type="password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="New password (12+ characters)" className={INPUT} required minLength={12} />
-          <button className="border border-ink/20 px-3 py-1.5">Change</button>
+          <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Current password" className="auralis-input" required />
+          <input type="password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="New password (12+ characters)" className="auralis-input" required minLength={12} />
+          <button className="auralis-btn-secondary">Change</button>
         </form>
       </Panel>
-      {!mustChange && <Panel title="Ward PIN">
-        <form className="space-y-2 text-sm" onSubmit={(event) => {
-          event.preventDefault();
-          void run(() => api("/v1/auth/pin", { method: "POST", body: JSON.stringify({ pin }) }), "PIN changed. Sign in again.", true);
-        }}>
-          <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="4–6 digits" className={INPUT} required />
-          <button className="border border-ink/20 px-3 py-1.5">Set PIN</button>
-        </form>
-      </Panel>}
-      {!mustChange && <Panel title="Two-factor authentication">
-        {!secret ? (
-          <button type="button" className="border border-ink/20 px-3 py-1.5 text-sm" onClick={() => void run(async () => {
-            const result = await api<{ secret: string }>("/v1/auth/totp/begin", { method: "POST" });
-            setSecret(result.secret);
-          }, "Enter this secret in an authenticator, then confirm a code.")}>Begin setup</button>
-        ) : (
+      {!mustChange && (
+        <Panel title="Ward PIN">
           <form className="space-y-2 text-sm" onSubmit={(event) => {
             event.preventDefault();
-            void run(() => api("/v1/auth/totp/confirm", { method: "POST", body: JSON.stringify({ code }) }), "Two-factor authentication enabled.");
+            void run(() => api("/v1/auth/pin", { method: "POST", body: JSON.stringify({ pin }) }), "PIN changed. Sign in again.", true);
           }}>
-            <code className="block break-all bg-mist p-2 text-xs">{secret}</code>
-            <input inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" className={INPUT} required />
-            <button className="border border-ink/20 px-3 py-1.5">Confirm</button>
+            <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="4–6 digits" className="auralis-input" required />
+            <button className="auralis-btn-secondary">Set PIN</button>
           </form>
-        )}
-      </Panel>}
+        </Panel>
+      )}
+      {!mustChange && (
+        <Panel title="Two-factor authentication">
+          {!secret ? (
+            <button type="button" className="auralis-btn-secondary text-sm" onClick={() => void run(async () => {
+              const result = await api<{ secret: string }>("/v1/auth/totp/begin", { method: "POST" });
+              setSecret(result.secret);
+            }, "Enter this secret in an authenticator, then confirm a code.")}>Begin setup</button>
+          ) : (
+            <form className="space-y-2 text-sm" onSubmit={(event) => {
+              event.preventDefault();
+              void run(() => api("/v1/auth/totp/confirm", { method: "POST", body: JSON.stringify({ code }) }), "Two-factor authentication enabled.");
+            }}>
+              <code className="block break-all bg-muted-surface p-2 text-xs">{secret}</code>
+              <input inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" className="auralis-input" required />
+              <button className="auralis-btn-secondary">Confirm</button>
+            </form>
+          )}
+        </Panel>
+      )}
       {message && <p className="text-sm md:col-span-3">{message}</p>}
     </div>
   );

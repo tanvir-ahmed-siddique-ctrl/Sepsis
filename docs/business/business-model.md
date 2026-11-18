@@ -1,4 +1,13 @@
-# PredictRx Sentinel — business model
+# Auralis — business model
+
+Canonical positioning updates (2026-11-18): Auralis is a **Hospital Technology & Clinical Intelligence Partner** combining hospital-local clinical software, Forward Deployed Engineering, technology enablement, managed services and long-term institutional partnerships. See also:
+
+- `docs/architecture/business-ecosystem-reconciliation.md`
+- `docs/business/hospital-segmentation-and-readiness-tiers.md`
+- `docs/business/pricing-assumptions.md` (internal hypotheses — never public)
+- `docs/business/founder-decision-register.md`
+
+Visible brand: **Auralis** / **Aurie AI**. Historical PredictRx Sentinel naming in older sections below may remain as technical history.
 
 ## Status and evidence boundary
 

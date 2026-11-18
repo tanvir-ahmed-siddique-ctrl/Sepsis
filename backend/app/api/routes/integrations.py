@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 
-from app.auth import Actor, ensure_scope, ensure_unit, require_roles
+from app.auth import CLINICAL_IT_ROLES, Actor, ensure_scope, ensure_unit, require_roles
 from app.core.config import settings
 from app.habit_fingerprint import assess as assess_habit
 from app.habit_fingerprint import compute_fingerprint, save_baseline
@@ -19,9 +19,10 @@ from app.schemas import MappingSignoffRequest, MappingSuggestRequest
 from app.services.engine import get_engine
 
 router = APIRouter(tags=["integrations"], prefix="/integrations")
-INGEST = require_roles("admin", "integration")
+INGEST = require_roles("admin", "clinical_it", "integration")
 ADMIN = require_roles("admin")
-OPERATIONS = require_roles("admin", "operator")
+CLINICAL_IT = require_roles(*CLINICAL_IT_ROLES)
+OPERATIONS = require_roles("admin", "clinical_it", "operator")
 MAX_PAYLOAD_BYTES = 10 * 1024 * 1024
 
 
@@ -339,7 +340,7 @@ def connection_ladder(_: Actor = Depends(OPERATIONS)):
 
 
 @router.get("/mappings")
-def mapping_registry(_: Actor = Depends(require_roles("admin", "integration", "operator"))):
+def mapping_registry(_: Actor = Depends(require_roles("admin", "clinical_it", "integration", "operator"))):
     return get_integration_service(get_engine()).registry.describe()
 
 
@@ -395,7 +396,7 @@ def unmapped_codes(_: Actor = Depends(OPERATIONS)):
 
 
 @router.get("/quarantine")
-def quarantine(limit: int = Query(100, ge=1, le=500), _: Actor = Depends(ADMIN)):
+def quarantine(limit: int = Query(100, ge=1, le=500), _: Actor = Depends(CLINICAL_IT)):
     return {"events": get_integration_service(get_engine()).quarantine(limit)}
 
 

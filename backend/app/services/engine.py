@@ -771,6 +771,10 @@ class Engine:
                 continue
             accounts.create(user_id, display_name, role, secrets.token_urlsafe(32),
                             units=units, actor_id="simulation-commissioning")
+        if settings.evaluation_runtime and settings.evaluation_admin_password and not accounts.get("eval-admin"):
+            accounts.create("eval-admin", "Synthetic evaluation administrator", "admin",
+                            settings.evaluation_admin_password.get_secret_value(), units=None,
+                            actor_id="evaluation-bootstrap", must_change_password=False)
 
     def step(self, hours: int = 1) -> dict:
         with self.lock:

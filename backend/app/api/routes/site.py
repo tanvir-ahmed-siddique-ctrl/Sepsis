@@ -1,9 +1,12 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from app.auth import CLINICAL_ROLES, Actor, require_roles
 from app.core.config import settings
 from app.integrations.service import get_integration_service
+from app.licensing import status as licence_status, verify_package
 from app.pilot import evaluate_gates
 from app.records import utc_now
 from app.schemas import GovernanceSignoffRequest, SiteModeRequest, SoftLandingRequest
@@ -44,9 +47,13 @@ def site_status(_: Actor = Depends(require_roles(*CLINICAL_ROLES, "operator"))):
 def site_readiness(_: Actor = Depends(OPERATIONS)):
     engine = get_engine()
     gates = evaluate_gates(engine, get_integration_service(engine).connector_health())
+    licence = licence_status(engine.records.load_config("local_licence"), settings.site_id)
+    if settings.licence_required:
+        gates.append({"gate": "commercial_licence", "passed": licence["activation_eligible"], "value": licence["status"], "target": "current", "detail": "An offline signed, site-bound licence is required for a new live-mode request."})
     return {
         "site": engine.site.state.as_dict(),
         "gates": gates,
+        "licence": licence,
         "live_eligible": all(gate["passed"] for gate in gates),
         "policy": "Interruptive alerts for real encounters stay disabled until every gate passes.",
     }
@@ -61,11 +68,38 @@ def set_site_mode(body: SiteModeRequest, actor: Actor = Depends(ADMIN)):
         )
     engine = get_engine()
     gates = evaluate_gates(engine, get_integration_service(engine).connector_health()) if body.mode == "live" else []
+    if body.mode == "live" and settings.licence_required:
+        licence = licence_status(engine.records.load_config("local_licence"), settings.site_id)
+        gates.append({"gate": "commercial_licence", "passed": licence["activation_eligible"], "value": licence["status"], "target": "current", "detail": "An offline signed, site-bound licence is required for a new live-mode request."})
     try:
         state = engine.set_site_mode(body.mode, actor, body.reason, gates)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     return {"site": state, "gates": gates}
+
+
+@router.get("/licence")
+def local_licence(_: Actor = Depends(OPERATIONS)):
+    engine = get_engine()
+    return {**licence_status(engine.records.load_config("local_licence"), settings.site_id), "required_for_new_live_request": settings.licence_required, "clinical_approval_separate": True}
+
+
+@router.put("/licence")
+def import_licence(package: dict, actor: Actor = Depends(ADMIN)):
+    if settings.demo_mode or settings.evaluation_runtime:
+        raise HTTPException(status_code=403, detail="Clinical licence import is disabled in demo and evaluation")
+    if len(json.dumps(package)) > 16384:
+        raise HTTPException(status_code=413, detail="Licence package too large")
+    try:
+        claims = verify_package(package, settings.site_id)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    engine = get_engine()
+    with engine.lock:
+        engine._require_writable()
+        engine.records.save_config("local_licence", package, actor.user_id)
+        engine._log("local_licence_imported", {"actor": actor.user_id, "licence_id": claims["licence_id"], "site_id": settings.site_id, "key_id": package["key_id"]})
+    return {**licence_status(package, settings.site_id), "clinical_approval_separate": True}
 
 
 @router.post("/governance-signoff")

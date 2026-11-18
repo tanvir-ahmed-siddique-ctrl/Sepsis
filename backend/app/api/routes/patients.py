@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app import clinical_context
 from app.api.deps import patient_for
-from app.auth import CLINICAL_ROLES, PHYSICIAN_ROLES, Actor, require_roles
+from app.auth import CLINICAL_READ_ROLES, CLINICAL_ROLES, PHYSICIAN_ROLES, Actor, require_roles
 from app.core.config import settings
 from app.schemas import (
     ClinicalContextRequest,
@@ -15,6 +15,7 @@ from app.services.engine import ReadOnlyError, get_engine
 
 router = APIRouter(tags=["patients"])
 CLINICAL = require_roles(*CLINICAL_ROLES)
+CLINICAL_READ = require_roles(*CLINICAL_READ_ROLES)
 PHYSICIAN = require_roles(*PHYSICIAN_ROLES)
 
 
@@ -32,7 +33,7 @@ def _context_view(engine, patient) -> dict:
 
 
 @router.get("/patients/{patient_id}/context")
-def get_clinical_context(patient_id: str, actor: Actor = Depends(CLINICAL)):
+def get_clinical_context(patient_id: str, actor: Actor = Depends(CLINICAL_READ)):
     engine = get_engine()
     with engine.lock:
         p = patient_for(engine, actor, patient_id, require_predictions=False)
@@ -65,7 +66,7 @@ def set_clinical_context(patient_id: str, body: ClinicalContextRequest, actor: A
 
 
 @router.get("/patients/{patient_id}/risk/current", response_model=RiskCurrentResponse)
-def current_risk(patient_id: str, actor: Actor = Depends(CLINICAL)):
+def current_risk(patient_id: str, actor: Actor = Depends(CLINICAL_READ)):
     engine = get_engine()
     p = patient_for(engine, actor, patient_id)
     if p.kind != "icu" or not p.predictions:
@@ -87,7 +88,7 @@ def current_risk(patient_id: str, actor: Actor = Depends(CLINICAL)):
 
 
 @router.get("/patients/{patient_id}/risk/timeline", response_model=RiskTimelineResponse)
-def risk_timeline(patient_id: str, actor: Actor = Depends(CLINICAL)):
+def risk_timeline(patient_id: str, actor: Actor = Depends(CLINICAL_READ)):
     engine = get_engine()
     p = patient_for(engine, actor, patient_id)
     if p.kind != "icu":
@@ -101,7 +102,7 @@ def risk_timeline(patient_id: str, actor: Actor = Depends(CLINICAL)):
 
 
 @router.get("/patients/{patient_id}/provenance")
-def observation_provenance(patient_id: str, actor: Actor = Depends(CLINICAL)):
+def observation_provenance(patient_id: str, actor: Actor = Depends(CLINICAL_READ)):
     engine = get_engine()
     with engine.lock:
         p = patient_for(engine, actor, patient_id)
@@ -121,7 +122,7 @@ def observation_provenance(patient_id: str, actor: Actor = Depends(CLINICAL)):
 def missing_signal_matrix(
     patient_id: str,
     hours: int = Query(24, ge=4, le=72),
-    actor: Actor = Depends(CLINICAL),
+    actor: Actor = Depends(CLINICAL_READ),
 ):
     engine = get_engine()
     with engine.lock:
@@ -145,7 +146,7 @@ def release_bed(patient_id: str, actor: Actor = Depends(CLINICAL)):
 
 
 @router.get("/patients/{patient_id}/handoff-notes")
-def list_handoff_notes(patient_id: str, limit: int = Query(10, ge=1, le=50), actor: Actor = Depends(CLINICAL)):
+def list_handoff_notes(patient_id: str, limit: int = Query(10, ge=1, le=50), actor: Actor = Depends(CLINICAL_READ)):
     engine = get_engine()
     p = patient_for(engine, actor, patient_id, require_predictions=False)
     return {"patient_id": p.encounter_key, "notes": engine.handoff_notes_for(p.encounter_key, limit)}

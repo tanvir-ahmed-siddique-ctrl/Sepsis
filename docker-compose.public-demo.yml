@@ -14,6 +14,7 @@ services:
     environment:
       - DATABASE_URL=postgresql+psycopg://predictrx:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/predictrx
       - DEMO_MODE=true
+      - PUBLIC_DEMO_LOCKDOWN=true
       - SITE_ID=${SITE_ID:-predictrx-public-demo}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required (32+ random bytes)}
       - CORS_ORIGINS=[]
@@ -22,9 +23,6 @@ services:
 
   web:
     ports: !reset []
-    build:
-      args:
-        NEXT_PUBLIC_API_URL: /api
 
   caddy:
     image: caddy:2

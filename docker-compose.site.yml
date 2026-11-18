@@ -22,6 +22,8 @@ services:
       - DEMO_MODE=false
       - SITE_ID=${SITE_ID:?SITE_ID is required, e.g. hospital-icu-dhaka}
       - SITE_MODE=silent
+      - LICENCE_REQUIRED=true
+      - LICENCE_PUBLIC_KEYS_JSON=${LICENCE_PUBLIC_KEYS_JSON:?Offline licence public keys required}
       # Local accounts are the default for sites without an IdP; set AUTH_MODE=oidc for hospital SSO.
       - AUTH_MODE=${AUTH_MODE:-local}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required (32+ random bytes)}
@@ -39,8 +41,5 @@ services:
       - FORWARDED_ALLOW_IPS=${FORWARDED_ALLOW_IPS:-127.0.0.1}
 
   web:
-    build:
-      args:
-        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:?PUBLIC_API_URL is required, e.g. https://predictrx.hospital.local/api}
     ports: !override
       - "127.0.0.1:3000:3000"

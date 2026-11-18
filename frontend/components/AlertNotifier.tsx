@@ -37,7 +37,7 @@ export function AlertNotifier() {
           registration.active?.postMessage({
             type: "SHOW_ALERT",
             alertId: alert.alert_id,
-            title: `PredictRx · ${alert.display_name || alert.patient_id}`,
+            title: `Auralis · ${alert.display_name || alert.patient_id}`,
             body: alert.reason,
             url: `/alerts?alert=${encodeURIComponent(alert.alert_id)}`,
           });

@@ -15,7 +15,7 @@ export function BedQr({ encounterKey, bed }: { encounterKey: string; bed: string
       {/* The QR contains only an encounter key and local URL, never a name or risk score. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={`QR code for bed ${bed}`} width={180} height={180} />
-      <p className="mt-1 text-center text-xs font-medium">PredictRx · Bed {bed}</p>
+      <p className="mt-1 text-center text-xs font-medium">Auralis · Bed {bed}</p>
       <button type="button" className="mt-2 w-full border border-ink/20 px-2 py-1 text-xs print:hidden" onClick={() => window.print()}>
         Print bed label
       </button>

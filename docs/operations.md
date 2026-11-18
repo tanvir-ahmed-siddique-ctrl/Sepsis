@@ -19,8 +19,9 @@ docker compose -f docker-compose.yml -f docker-compose.site.yml --env-file .env.
 - `SITE_MODE=silent` at first start. After that the persisted, audited site
   configuration is authoritative.
 - Compose refuses to start unless `POSTGRES_PASSWORD`, `SITE_ID`, `JWT_SECRET`,
-  `EXPORT_SALT`, `METRICS_TOKEN`, `INTEGRATION_API_KEYS`, `CORS_ORIGINS` and
-  `PUBLIC_API_URL` are set.
+  `EXPORT_SALT`, `METRICS_TOKEN`, `ACCOUNT_ENCRYPTION_KEY`,
+  `INTEGRATION_API_KEYS` and `CORS_ORIGINS` are set. Set `API_PROXY_TARGET` to the hospital-local API address
+  reachable from the web container; it defaults to `http://api:8000` in Compose.
 - API and web bind to `127.0.0.1` only. Publish them through the hospital
   reverse proxy, which terminates TLS. TLS and secret storage are the site's
   responsibility and are not implemented here.

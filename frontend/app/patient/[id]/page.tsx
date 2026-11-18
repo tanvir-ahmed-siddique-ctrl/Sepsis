@@ -13,6 +13,7 @@ import { ApiError, BAND_COLOR, Panel, Pill } from "@/components/ui";
 import { api, isStatus, pct, type Alert, type AuditEvent, type RiskCurrent, type RiskPoint, type Thresholds } from "@/lib/api";
 import { reviewClock } from "@/lib/pilot";
 import { usePoll } from "@/lib/usePoll";
+import { useSession } from "@/lib/session";
 
 type EvidenceQuery = {
   feature: string;
@@ -51,6 +52,7 @@ const VITALS: { key: string; label: string; unit: string }[] = [
 ];
 
 export default function PatientPage({ params }: { params: Promise<{ id: string }> }) {
+  const { me } = useSession();
   const { id: routeId } = use(params);
   const id = encodeURIComponent(decodeURIComponent(routeId));
   const [message, setMessage] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export default function PatientPage({ params }: { params: Promise<{ id: string }
         <div>
           <h1 className="font-display text-3xl">{title}</h1>
           <p className="text-sm text-ink/60">
-            ICU hour {current.hour} · {current.unit_id} · {current.source_mode === "api" ? "live feed" : "held-out replay"} ·
+            ICU hour {current.hour} · {current.unit_id} · {current.source_mode === "api" ? "live feed" : me?.evaluation_runtime ? "synthetic evaluation replay" : "held-out replay"} ·
             model {current.model_version}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">

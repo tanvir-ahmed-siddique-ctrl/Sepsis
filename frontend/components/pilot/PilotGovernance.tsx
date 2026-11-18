@@ -102,7 +102,7 @@ export function SiteControls({ readiness, onChange }: { readiness: Readiness; on
             onClick={() => setMode(mode)}
             className={`border px-3 py-1.5 text-sm ${site.requested_mode === mode ? "border-accent bg-accent text-white" : "border-ink/20"}`}
           >
-            {mode === "live" ? "Request live" : humanize(mode)}
+            {mode === "live" ? "Request live" : mode === "demo" ? "Evaluation replay" : humanize(mode)}
           </button>
         ))}
       </div>

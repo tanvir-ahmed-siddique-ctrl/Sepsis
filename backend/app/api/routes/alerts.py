@@ -2,13 +2,14 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.auth import CLINICAL_ROLES, PHYSICIAN_ROLES, Actor, require_roles
+from app.auth import CLINICAL_READ_ROLES, CLINICAL_ROLES, PHYSICIAN_ROLES, Actor, require_roles
 from app.core.config import settings
 from app.schemas import AlertAckRequest, AlertAckResponse
 from app.services.engine import get_engine
 
 router = APIRouter(tags=["alerts"])
 CLINICAL = require_roles(*CLINICAL_ROLES)
+CLINICAL_READ = require_roles(*CLINICAL_READ_ROLES)
 PHYSICIAN = require_roles(*PHYSICIAN_ROLES)
 
 
@@ -33,7 +34,7 @@ def list_alerts(
     status: str | None = None,
     patient_id: str | None = None,
     unit_id: str | None = None,
-    actor: Actor = Depends(CLINICAL),
+    actor: Actor = Depends(CLINICAL_READ),
 ):
     if status == "silent" and "admin" not in actor.roles:
         raise HTTPException(status_code=403, detail="Shadow alerts are visible to the pilot team only")

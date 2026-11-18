@@ -15,7 +15,7 @@ export default function ApiReferencePage() {
         <h1 className="mt-2 font-display text-3xl text-ink">API & integration reference</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-ink/65">
           These are the interfaces a hospital IT team uses to connect existing systems. The public link exposes only
-          synthetic and de-identified demonstration data.
+          synthetic and de-identified evaluation data.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">

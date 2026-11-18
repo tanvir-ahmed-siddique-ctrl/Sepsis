@@ -1,0 +1,31 @@
+# Standalone account authority + ClamAV for local runtime verification.
+# Not a production topology. Generate Fernet keys before starting:
+#   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+name: auralis-accounts-standalone
+services:
+  accounts:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.accounts
+    restart: unless-stopped
+    environment:
+      - ACCOUNT_DB=/data/accounts.db
+      - ACCOUNT_DOCUMENT_KEY=${ACCOUNT_DOCUMENT_KEY:?Account document encryption key required}
+      - ACCOUNT_CLAMD_HOST=clamd
+      - ACCOUNT_CLAMD_PORT=3310
+      - ACCOUNT_REQUIRE_MFA=false
+    volumes:
+      - auralis-accounts-standalone:/data
+    ports:
+      - "127.0.0.1:8101:8101"
+    depends_on:
+      - clamd
+  clamd:
+    image: clamav/clamav:stable
+    restart: unless-stopped
+    volumes:
+      - auralis-clamav-standalone:/var/lib/clamav
+
+volumes:
+  auralis-accounts-standalone:
+  auralis-clamav-standalone:

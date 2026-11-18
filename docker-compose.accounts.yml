@@ -1,0 +1,37 @@
+# Optional local account-service development overlay. Deploy the vendor/customer
+# metadata authority on separate approved infrastructure in production.
+services:
+  accounts:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.accounts
+    restart: unless-stopped
+    environment:
+      - ACCOUNT_DB=/data/accounts.db
+      - ACCOUNT_DOCUMENT_KEY=${ACCOUNT_DOCUMENT_KEY:?Account document encryption key required}
+      - ACCOUNT_CLAMD_HOST=clamd
+      - ACCOUNT_CLAMD_PORT=3310
+      - ACCOUNT_REQUIRE_MFA=${ACCOUNT_REQUIRE_MFA:-true}
+      - ACCOUNT_MFA_KEY=${ACCOUNT_MFA_KEY:?Account MFA encryption key required}
+      - ACCOUNT_LICENCE_KEY_ID=${ACCOUNT_LICENCE_KEY_ID:-}
+      - ACCOUNT_LICENCE_PRIVATE_KEY=${ACCOUNT_LICENCE_PRIVATE_KEY:-}
+    volumes:
+      - auralis-accounts:/data
+    ports:
+      - "127.0.0.1:8101:8101"
+  clamd:
+    image: clamav/clamav:stable
+    restart: unless-stopped
+    volumes:
+      - auralis-clamav-signatures:/var/lib/clamav
+    # Scanner has no host-published port; account service talks over Compose LAN.
+  web:
+    environment:
+      - ACCOUNT_API_INTERNAL_URL=http://accounts:8101
+    depends_on:
+      accounts:
+        condition: service_healthy
+
+volumes:
+  auralis-accounts:
+  auralis-clamav-signatures:

@@ -11,6 +11,14 @@ basic_auth {
 	{$DEMO_USER} {$DEMO_PASSWORD_HASH}
 }
 
+handle /api/hospital/* {
+	reverse_proxy web:3000
+}
+
+handle /api/session/* {
+	reverse_proxy web:3000
+}
+
 handle_path /api/* {
 	# Browsers resend the demo password on every same-origin call; the API accepts Bearer only.
 	@basic header_regexp Authorization ^Basic\s

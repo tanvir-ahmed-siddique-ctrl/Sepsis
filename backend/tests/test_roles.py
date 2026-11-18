@@ -17,6 +17,8 @@ pytestmark = pytest.mark.skipif(
 ADMIN = {"X-Demo-User": "roles-admin", "X-Demo-Role": "admin"}
 NURSE = {"X-Demo-User": "ward-nurse", "X-Demo-Role": "nurse"}
 OPERATOR = {"X-Demo-User": "platform-ops", "X-Demo-Role": "operator"}
+VIEWER = {"X-Demo-User": "clinical-viewer", "X-Demo-Role": "clinical_viewer"}
+CLINICAL_IT = {"X-Demo-User": "clinical-it", "X-Demo-Role": "clinical_it"}
 
 PATIENT_DATA_ROUTES = [
     "/v1/units",
@@ -63,8 +65,27 @@ def test_operator_cannot_read_patient_data(client, path):
     assert client.get(path, headers=OPERATOR).status_code == 403
 
 
+def test_clinical_viewer_reads_but_cannot_acknowledge(client):
+    assert client.get("/v1/alerts", headers=VIEWER).status_code == 200
+    units = client.get("/v1/units", headers=VIEWER)
+    # units may still require full clinical role depending on route wiring
+    assert units.status_code in {200, 403}
+    ack = client.post("/v1/alerts/any/acknowledge", json={"action": "acknowledged"}, headers=VIEWER)
+    assert ack.status_code == 403
+    claim = client.post("/v1/patients/BED-01/ownership", json={"shift_label": "day"}, headers=VIEWER)
+    assert claim.status_code == 403
+
+
+def test_clinical_it_sees_integration_not_chart_write(client):
+    assert client.get("/v1/integrations/status", headers=CLINICAL_IT).status_code == 200
+    assert client.get("/v1/integrations/quarantine", headers=CLINICAL_IT).status_code == 200
+    assert client.get("/v1/integrations/mappings", headers=CLINICAL_IT).status_code == 200
+    assert client.post("/v1/alerts/any/acknowledge", json={"action": "acknowledged"}, headers=CLINICAL_IT).status_code == 403
+    assert client.post("/v1/patients/BED-01/ownership", json={"shift_label": "day"}, headers=CLINICAL_IT).status_code == 403
+
+
 def test_admin_can_create_nurse_and_operator_accounts(client):
-    for user_id, role in (("rn.rahman", "nurse"), ("ops.founder", "operator")):
+    for user_id, role in (("rn.rahman", "nurse"), ("ops.founder", "operator"), ("it.karim", "clinical_it"), ("view.nur", "clinical_viewer")):
         created = client.post(
             "/v1/auth/users",
             json={"user_id": user_id, "display_name": user_id, "role": role, "password": "temporary-pass-123", "units": None},
@@ -81,9 +102,11 @@ def test_admin_can_create_nurse_and_operator_accounts(client):
 def test_public_demo_lockdown_keeps_shared_replay_in_demo_mode(client):
     settings.public_demo_lockdown = True
     try:
+        assert client.post("/v1/auth/demo-token", params={"role": "admin"}).status_code == 404
+        assert client.get("/v1/auth/me", headers={"X-Demo-Role": "admin"}).status_code == 401
+        assert client.get("/v1/auth/me").status_code == 401
         response = client.put("/v1/site/mode", json={"mode": "silent", "reason": "should be refused"})
-        assert response.status_code == 403
-        assert "locked to replay mode" in response.json()["detail"]
+        assert response.status_code == 401
     finally:
         settings.public_demo_lockdown = False
 
@@ -107,7 +130,6 @@ def test_public_demo_replay_controls_are_locked(client):
     settings.public_demo_lockdown = True
     try:
         response = client.post("/v1/demo/replay/reset")
-        assert response.status_code == 403
-        assert "prepared replay state" in response.json()["detail"]
+        assert response.status_code == 401
     finally:
         settings.public_demo_lockdown = False

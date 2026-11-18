@@ -8,11 +8,12 @@ import { api, pct, type RiskCurrent, type RiskPoint, type Thresholds } from "@/l
 
 type Status = {
   model_version: string;
+  source_split: string | null;
   median_warning_hours_test: number | null;
   patients: { patient_id: string; kind: string; labelled_onset_hour: number | null; remaining_hours: number }[];
 };
 
-/** Judge-facing replay of one genuine held-out septic case, hour by hour. */
+/** Replay presentation using the current site's declared source provenance. */
 export default function PresentationPage() {
   const [status, setStatus] = useState<Status | null>(null);
   const [bed, setBed] = useState<string | null>(null);
@@ -79,6 +80,7 @@ export default function PresentationPage() {
 
   if (error) return <ApiError error={error} />;
   if (!current || !thresholds || !status) return <p className="text-center text-sm text-ink/60">Preparing replay…</p>;
+  const synthetic = status.source_split?.toLowerCase().includes("synthetic") ?? false;
 
   const onset = status.patients.find((p) => p.patient_id === bed)?.labelled_onset_hour;
   const pastOnset = onset != null && points.length > 0 && points[points.length - 1].hour >= onset;
@@ -109,7 +111,7 @@ export default function PresentationPage() {
         <p className="text-xs uppercase tracking-[0.2em] text-accent">International AI Builders Congress 2026 · HealthSphere AI</p>
         <h1 className="mx-auto mt-2 max-w-4xl font-display text-4xl sm:text-6xl">Earn the right to alert.</h1>
         <p className="mx-auto mt-3 max-w-3xl text-lg text-ink/65">
-          PredictRx Sentinel connects fragmented ICU data, shows what is missing, and evaluates deterioration AI safely
+          Auralis connects fragmented ICU data, shows what is missing, and evaluates deterioration AI safely
           before a hospital exposes clinicians to an alert.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -155,7 +157,7 @@ export default function PresentationPage() {
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-accent">Live proof · Dataset A internal-test replay</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-accent">{synthetic ? "Synthetic evaluation · generated replay" : "Dataset A internal-test replay"}</p>
           <h2 className="mt-1 font-display text-3xl">{bed?.replace("BED-", "Bed ")} — ICU hour {current.hour}</h2>
         </div>
         <label className="text-xs font-medium uppercase tracking-wide text-ink/50">
@@ -212,9 +214,8 @@ export default function PresentationPage() {
         </button>
       </div>
       <p className="text-center text-xs text-ink/50">
-        Real PhysioNet patient from the internal test split, replayed hour by hour through the live model
-        ({status.model_version}). Case chosen by a fixed rule: warning time closest to the test-set median
-        {status.median_warning_hours_test != null ? ` (${status.median_warning_hours_test} h)` : ""}. Research prototype — not for clinical use.
+        {synthetic ? "Formula-generated synthetic case" : "De-identified PhysioNet internal-test case"}, replayed hour by hour through the frozen model
+        ({status.model_version}). {synthetic ? "No patient outcome or onset is implied." : `Case chosen by a fixed rule: warning time closest to the test-set median${status.median_warning_hours_test != null ? ` (${status.median_warning_hours_test} h)` : ""}.`} Research prototype — not for clinical use.
       </p>
 
       <div className="grid gap-4 lg:grid-cols-3">

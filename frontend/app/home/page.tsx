@@ -1,57 +1,68 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
 
 export const metadata: Metadata = {
-  title: "PredictRx Sentinel | Hospital-local ICU early warning",
-  description: "Hospital-local sepsis early warning with data quality checks, clinician review and a measured path to deployment.",
-  openGraph: { title: "PredictRx Sentinel | Hospital-local ICU early warning", description: "From hospital observations to a reviewable, six-hour sepsis risk signal." },
+  title: "Auralis | Hospital-local ICU early warning",
+  description: "Auralis hospital-local sepsis-risk review with data quality checks, clinician review and a measured path to deployment.",
 };
 
 const stages = [
-  { n: "01", label: "Acquire", title: "Meet the data where it lives", detail: "Commission a site-approved HL7, FHIR, CSV or bedside entry path. Map identifiers, units and timestamps before they reach the model." },
-  { n: "02", label: "Qualify", title: "Know when the signal is incomplete", detail: "Check freshness and missing observations. Quarantine untrusted inputs and abstain when required clinical context is unavailable." },
-  { n: "03", label: "Score", title: "Make risk inspectable", detail: "Run the frozen sepsis model locally. Show its six-hour probability, input provenance, trend and the drivers behind each score." },
-  { n: "04", label: "Respond", title: "Keep a clinician in the loop", detail: "Route review to an accountable care-team member. Capture acknowledgement, context, feedback and a traceable handoff." },
-];
-const modules = [
-  { n: "A", title: "Sepsis risk", detail: "An hour-by-hour six-hour risk estimate from available ICU observations, with calibration and missing-signal context.", status: "Working prototype" },
-  { n: "B", title: "Ward surveillance", detail: "NEWS2 observations, due times and escalation context for patients outside the ICU.", status: "Working prototype" },
-  { n: "C", title: "Clinical context", detail: "Cited guideline retrieval and structured handoff support. Retrieved text does not change the model probability.", status: "Guarded assistance" },
-];
-const adoption = [
-  { title: "Assess", text: "Inventory source systems, observation frequency, timestamps, code mappings and the hospital's governance route." },
-  { title: "Connect", text: "Commission adapters and identity. Test mapping, failures and recovery against the site's actual interfaces." },
-  { title: "Evaluate silently", text: "Measure local data quality, calibration, alert burden and clinician review before interruptive use." },
-  { title: "Operate", text: "Use readiness gates, staff training, monitoring, support and a versioned change process." },
-];
-const tiers = [
-  { name: "Single ICU", fit: "One site · one unit", detail: "Local gateway, bedside workflow and a scoped feed mapping. Start with a data-readiness assessment and silent evaluation." },
-  { name: "Medical centre", fit: "Multiple units · one hospital", detail: "Unit-specific rollout, additional source adapters, governance support and a negotiated response plan." },
-  { name: "Hospital network", fit: "Multiple hospitals", detail: "Site-local clinical data with a separate metadata-only fleet registry, contract ledger and release governance." },
+  { title: "Acquire", body: "Commission an approved HL7, FHIR, CSV or bedside entry path. Map identifiers, units and timestamps before scoring." },
+  { title: "Qualify", body: "Check freshness and missing observations. Quarantine untrusted inputs and abstain when required context is unavailable." },
+  { title: "Score", body: "Run the frozen sepsis model locally. Show probability, provenance, trend and drivers for each reviewable score." },
+  { title: "Respond", body: "Route review to an accountable clinician. Capture acknowledgement, context, feedback and a traceable handoff." },
 ];
 
 export default function HomePage() {
-  return <div className="portal-shell relative left-1/2 -ml-[50vw] -my-6 w-[100vw] overflow-hidden bg-[#080C14] text-[#F8FAFC]">
-    <div className="mx-auto max-w-7xl px-5 sm:px-8">
-      <section id="platform" className="grid min-h-[600px] items-center gap-12 py-20 lg:grid-cols-[1.06fr_.94fr] lg:py-24">
-        <div><p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[.24em] text-cyan-300"><span className="h-1.5 w-1.5 rounded-full bg-cyan-400" /> Hospital-local intelligence</p>
-          <h1 className="mt-7 max-w-[730px] text-5xl font-semibold leading-[1.08] tracking-[-.045em] sm:text-6xl lg:text-[4.5rem]">Earlier signal.<br /><span className="text-cyan-300">Clearer decision.</span></h1>
-          <p className="mt-7 max-w-xl text-lg leading-8 text-slate-300">PredictRx Sentinel brings hospital observations, six-hour sepsis risk and accountable bedside review into one ICU workflow. Clinical data and scoring stay at the hospital site.</p>
-          <div className="mt-9 flex flex-wrap gap-3"><Link href="/login" className="inline-flex min-h-12 items-center bg-cyan-400 px-6 text-sm font-semibold text-slate-950 transition-colors duration-150 hover:bg-cyan-300">Enterprise sign in <span className="ml-5" aria-hidden="true">↗</span></Link><Link href="/evaluator" className="inline-flex min-h-12 items-center border border-slate-600 px-6 text-sm font-semibold text-slate-50 transition-colors duration-150 hover:border-cyan-400 hover:text-cyan-300">Explore evaluator access</Link></div>
-          <p className="mt-5 text-xs leading-5 text-slate-500">Research prototype · retrospective evidence · hospital validation required before clinical rollout</p>
+  return (
+    <div className="bg-canvas text-ink">
+      <MarketingHero
+        eyebrow="Hospital-local intelligence"
+        title={<>Earlier signal.<br /><span className="text-teal">Clearer decision.</span></>}
+        description="Auralis brings hospital observations, six-hour sepsis risk and accountable bedside review into one ICU workflow. In a hospital deployment, clinical data and scoring stay within the site boundary."
+      />
+
+      <MarketingSection eyebrow="Architecture" title="A local path from signal to action." description="Each hospital approves its interface, data boundary and operating mode. Vendor fleet heartbeats carry technical metadata only.">
+        <FeatureGrid items={stages} />
+      </MarketingSection>
+
+      <MarketingSection eyebrow="Product surfaces" title="One product family. Six clear boundaries.">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            ["Hospital Workspace", "Role-specific clinical and administrative views for authorized hospital users.", "/signin"],
+            ["Vendor Control Plane", "Tenant, commercial, support and document operations without patient charts.", "/signin"],
+            ["Deployment Console", "Site commissioning, interfaces, readiness and silent monitoring.", "/signin"],
+            ["Customer Portal", "Organization members, contracts, licences, invoices and support tickets.", "/signin"],
+            ["Evaluation Environment", "Isolated synthetic and replay workflows for product evaluation.", "/system-check"],
+            ["Public website", "Product, security, resources and consultation requests.", "/product"],
+          ].map(([title, body, href]) => (
+            <article key={title} className="auralis-panel flex flex-col">
+              <h3 className="font-display text-lg font-semibold">{title}</h3>
+              <p className="mt-3 flex-1 text-sm leading-6 text-muted">{body}</p>
+              <Link href={href} className="mt-5 text-sm font-semibold text-teal hover:text-teal-dark">Open →</Link>
+            </article>
+          ))}
         </div>
-        <div className="border border-slate-700/70 bg-[#0E1422] p-5 shadow-[0_28px_90px_rgba(0,0,0,.3)] sm:p-7" aria-label="Illustrative ICU review interface">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-700/70 pb-4"><div><p className="text-[10px] font-semibold uppercase tracking-[.22em] text-slate-400">Workstation preview</p><p className="mt-1 text-sm font-semibold">ICU risk review</p></div><span className="border border-cyan-800 bg-cyan-950/50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-300">Illustrative</span></div>
-          <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_1.1fr]"><div><p className="text-xs text-slate-400">What the model sees</p><div className="mt-4 space-y-3">{[["Heart rate","observed"],["MAP","observed"],["Lactate","awaiting result"],["Temperature","observed"]].map(([label,value])=><div key={label} className="flex justify-between gap-3 border-b border-slate-800 pb-2 text-sm"><span>{label}</span><span className={value==="awaiting result"?"text-amber-300":"text-emerald-300"}>{value}</span></div>)}</div></div><div className="bg-slate-900/90 p-5"><p className="text-xs uppercase tracking-widest text-slate-400">Six-hour risk workflow</p><div className="mt-6 flex h-24 items-end gap-2" aria-hidden="true">{[30,36,29,41,48,56,61,54,68,73,69,78].map((v,i)=><span key={i} className={`flex-1 ${i>8?"bg-amber-400":"bg-cyan-500/70"}`} style={{height:`${v}%`}} />)}</div><div className="mt-5 flex items-center gap-2 text-xs text-slate-300"><span className="h-2 w-2 rounded-full bg-amber-400" /> Review with care team <span className="ml-auto font-mono">T − 06 h</span></div></div></div>
-          <p className="mt-6 border-t border-slate-700/70 pt-4 text-xs leading-6 text-slate-400">Layout preview only. Values are illustrative; no live hospital feed or outcome claim is implied.</p>
+      </MarketingSection>
+
+      <MarketingSection eyebrow="Evidence" title="Evidence travels with the decision." description="Score history, signal freshness, provenance, model limitations and audit are visible. Local validation and alert-burden review remain hospital responsibilities.">
+        <div className="grid gap-4 lg:grid-cols-3">
+          {[
+            ["Retrospective evaluation", "Public-data model evaluation is documented in the evidence view."],
+            ["Hospital validation pending", "Calibration, subgroup results and outcomes require a clinical partner."],
+            ["No claimed mortality reduction", "Unmeasured clinical benefit is never presented as fact."],
+          ].map(([title, body]) => (
+            <article key={title} className="border-l-2 border-teal bg-white p-5">
+              <h3 className="font-semibold text-ink">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
+            </article>
+          ))}
         </div>
-      </section>
-      <section id="architecture" className="border-t border-slate-800 py-16 lg:py-24"><div className="grid gap-8 lg:grid-cols-[.6fr_1.4fr]"><div><p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan-300">01 / Architecture</p><h2 className="mt-4 max-w-sm text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">A local path from signal to action.</h2><p className="mt-5 max-w-sm text-sm leading-7 text-slate-400">Each hospital approves its interface, data boundary and operating mode. A vendor fleet heartbeat carries technical metadata only.</p><Link href="/connection" className="mt-5 inline-block text-sm font-semibold text-cyan-300 hover:text-cyan-200">Explore integration ↗</Link></div><div className="grid gap-px bg-slate-700/70 sm:grid-cols-2">{stages.map(stage=><article key={stage.n} className="bg-[#0E1422] p-6"><div className="flex items-center justify-between text-xs"><span className="font-mono text-cyan-300">{stage.n}</span><span className="uppercase tracking-widest text-slate-500">{stage.label}</span></div><h3 className="mt-8 text-lg font-semibold">{stage.title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{stage.detail}</p></article>)}</div></div></section>
-      <section id="intelligence" className="border-t border-slate-800 py-16 lg:py-24"><div className="flex flex-wrap items-end justify-between gap-6"><div><p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan-300">02 / Intelligence core</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">One operational view. Distinct safeguards.</h2></div><Link href="/model" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Model transparency ↗</Link></div><div className="mt-9 grid gap-4 lg:grid-cols-3">{modules.map(item=><article key={item.n} className="flex min-h-64 flex-col bg-[#0E1422] p-6"><span className="font-mono text-sm text-cyan-300">{item.n}</span><h3 className="mt-10 text-xl font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{item.detail}</p><p className="mt-auto pt-8 text-[11px] font-semibold uppercase tracking-widest text-slate-500">{item.status}</p></article>)}</div></section>
-      <section id="evidence" className="grid gap-8 border-t border-slate-800 py-16 lg:grid-cols-2 lg:py-24"><div><p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan-300">03 / Evidence</p><h2 className="mt-4 max-w-lg text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Evidence travels with the decision.</h2><p className="mt-5 max-w-lg text-sm leading-7 text-slate-400">The product exposes score history, signal freshness, provenance, model limitations and audit. The hospital must verify local performance and alert burden before enabling interruptive alerts.</p><Link href="/evidence" className="mt-6 inline-block text-sm font-semibold text-cyan-300 hover:text-cyan-200">Review evidence ↗</Link></div><div className="border-l-2 border-cyan-500 bg-[#0E1422] p-7"><p className="text-xs uppercase tracking-widest text-slate-400">Current evidence boundary</p><ul className="mt-6 space-y-5 text-sm leading-6 text-slate-200"><li><strong className="block text-white">Retrospective public-data model evaluation</strong> Documented in the evidence view.</li><li><strong className="block text-white">Hospital-local validation pending</strong> Calibration, subgroup results, burden and outcomes require a clinical partner.</li><li><strong className="block text-white">No claimed mortality reduction</strong> An unmeasured clinical benefit is never presented as fact.</li></ul></div></section>
-      <section id="deployment" className="border-t border-slate-800 py-16 lg:py-24"><div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan-300">04 / Deployment</p><h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">A procurement path built for real hospitals.</h2><p className="mt-5 text-sm leading-7 text-slate-400">Site assessment, silent pilot, implementation and an annual ICU licence form a scoped commercial offer. Fees and service levels depend on the hospital&apos;s requirements.</p><Link href="/business" className="mt-6 inline-block text-sm font-semibold text-cyan-300 hover:text-cyan-200">Commercial model ↗</Link></div><ol className="grid gap-px bg-slate-700/70 sm:grid-cols-2">{adoption.map((item,i)=><li key={item.title} className="bg-[#0E1422] p-6"><span className="font-mono text-xs text-cyan-300">0{i+1}</span><h3 className="mt-6 text-lg font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{item.text}</p></li>)}</ol></div></section>
-      <section id="tiers" className="border-t border-slate-800 py-16 lg:py-20"><div className="flex flex-wrap items-end justify-between gap-6"><div><p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan-300">05 / Commercial scope</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">A licence shaped around the site.</h2></div><p className="max-w-md text-sm leading-6 text-slate-400">These are proposed deployment scopes, not published prices or a promise of clinical outcomes. Each quote follows a source-system and support assessment.</p></div><div className="mt-8 grid gap-4 lg:grid-cols-3">{tiers.map(tier=><article key={tier.name} className="bg-[#0E1422] p-6"><p className="text-xs font-semibold uppercase tracking-widest text-cyan-300">{tier.fit}</p><h3 className="mt-5 text-xl font-semibold">{tier.name}</h3><p className="mt-3 min-h-24 text-sm leading-6 text-slate-400">{tier.detail}</p><Link href="/business" className="mt-7 inline-block text-sm font-semibold text-cyan-300 hover:text-cyan-200">View adoption model ↗</Link></article>)}</div></section>
-      <footer className="flex flex-wrap items-end justify-between gap-8 border-t border-slate-800 py-10"><div><p className="text-xl font-semibold tracking-tight">PredictRx <span className="text-cyan-300">Sentinel</span></p><p className="mt-2 max-w-lg text-xs leading-5 text-slate-500">Hospital-local research prototype for clinical decision support. Clinical use depends on site validation, governance and applicable approvals.</p></div><div className="flex flex-wrap gap-5 text-xs text-slate-400"><Link href="/docs" className="hover:text-white">Documentation</Link><Link href="/api-reference" className="hover:text-white">Integration API</Link><Link href="/login" className="hover:text-white">Sign in</Link></div></footer>
+        <Link href="/evidence" className="mt-6 inline-block text-sm font-semibold text-teal">Review evidence →</Link>
+      </MarketingSection>
+
+      <MarketingCta />
     </div>
-  </div>;
+  );
 }

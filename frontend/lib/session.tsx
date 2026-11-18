@@ -1,17 +1,31 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { api, SESSION_EVENT, writeToken, type Me, type UserRole } from "@/lib/api";
+import { api, announceSessionChange, SESSION_EVENT, type Me } from "@/lib/api";
+import { accountApi } from "@/lib/account-api";
+
+type AccountIdentity = { user_id: string; email: string; display_name: string; role: string; vendor: boolean; evaluation: boolean; must_change_password: boolean; organization_ids: string[]; workspaces: Array<{ id: string; path: string }> };
+
+async function webSession(action: "login" | "pin" | "exchange" | "logout", body: unknown = {}) {
+  const response = await fetch(`/api/session/${action}`, {
+    method: "POST", credentials: "same-origin", cache: "no-store",
+    headers: { "Content-Type": "application/json", "X-Auralis-Request": "1" }, body: JSON.stringify(body),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.detail || "Session request failed");
+  announceSessionChange();
+  return result;
+}
 
 type SessionValue = {
   me: Me | null;
+  account: AccountIdentity | null;
   error: Error | null;
   loading: boolean;
   isAdmin: boolean;
   isOperator: boolean;
   refresh: () => Promise<void>;
-  signInDemo: (userId: string, role: UserRole, units?: string) => Promise<void>;
-  signInLocal: (userId: string, password: string, totpCode?: string) => Promise<{ must_change_password: boolean }>;
+  signInLocal: (userId: string, password: string, totpCode?: string) => Promise<{ must_change_password: boolean; destination: string | null }>;
   signInPin: (userId: string, pin: string, totpCode?: string) => Promise<void>;
   signInWithToken: (token: string) => Promise<void>;
   signOut: () => void;
@@ -21,22 +35,31 @@ const SessionContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<Me | null>(null);
+  const [account, setAccount] = useState<AccountIdentity | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
+    let hospitalError: Error | null = null;
     try {
       setMe(await api<Me>("/v1/auth/me"));
-      setError(null);
     } catch (cause) {
       setMe(null);
-      setError(cause instanceof Error ? cause : new Error(String(cause)));
+      hospitalError = cause instanceof Error ? cause : new Error(String(cause));
+    }
+    try {
+      setAccount(await accountApi<AccountIdentity>("/v1/auth/me"));
+      setError(null);
+    } catch {
+      setAccount(null);
+      setError(hospitalError);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    window.sessionStorage.removeItem("predictrx-access-token");
     void refresh();
     const onChange = () => void refresh();
     window.addEventListener(SESSION_EVENT, onChange);
@@ -50,41 +73,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const value = useMemo<SessionValue>(
     () => ({
       me,
+      account,
       error,
       loading,
       isAdmin: Boolean(me?.roles.includes("admin")),
       isOperator: me?.role === "operator",
       refresh,
-      signInDemo: async (userId, role, units) => {
-        const params = new URLSearchParams({ user_id: userId, role });
-        if (units?.trim()) params.set("units", units.trim());
-        const token = await api<{ access_token: string }>(`/v1/auth/demo-token?${params}`, { method: "POST" });
-        writeToken(token.access_token);
-      },
       signInLocal: async (userId, password, totpCode) => {
-        const token = await api<{ access_token: string; must_change_password: boolean }>("/v1/auth/login", {
-          method: "POST",
-          body: JSON.stringify({ user_id: userId, password, totp_code: totpCode || null }),
-        });
-        writeToken(token.access_token);
-        return { must_change_password: token.must_change_password };
+        const result = await webSession("login", { user_id: userId, password, totp_code: totpCode || null });
+        return { must_change_password: Boolean(result.must_change_password), destination: result.destination || null };
       },
       signInPin: async (userId, pin, totpCode) => {
-        const token = await api<{ access_token: string }>("/v1/auth/pin-login", {
-          method: "POST",
-          body: JSON.stringify({ user_id: userId, pin, totp_code: totpCode || null }),
-        });
-        writeToken(token.access_token);
+        await webSession("pin", { user_id: userId, pin, totp_code: totpCode || null });
       },
       signInWithToken: async (token) => {
-        writeToken(token.trim());
+        await webSession("exchange", { token: token.trim() });
       },
       signOut: () => {
-        void api("/v1/auth/logout", { method: "POST" }).catch(() => undefined);
-        writeToken(null);
+        void webSession("logout").catch(() => { announceSessionChange(); });
       },
     }),
-    [me, error, loading, refresh],
+    [me, account, error, loading, refresh],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

@@ -24,11 +24,14 @@ from fastapi import Header, HTTPException, status
 from app.accounts import AccountStore
 from app.core.config import DEFAULT_EXPORT_SALT, DEFAULT_JWT_SECRET, settings
 
-ROLES = {"clinician", "nurse", "admin", "operator", "integration"}
-ROLE_PRIORITY = ("admin", "clinician", "nurse", "operator", "integration")
+ROLES = {"clinician", "nurse", "admin", "clinical_it", "clinical_viewer", "operator", "integration"}
+ROLE_PRIORITY = ("admin", "clinician", "nurse", "clinical_it", "clinical_viewer", "operator", "integration")
 # Platform operators see deployment metadata only; no route that returns
 # patient-level data may list "operator".
+# clinical_viewer is read-only clinical; clinical_it is integration/ops without default chart write.
 CLINICAL_ROLES = ("clinician", "nurse", "admin")
+CLINICAL_READ_ROLES = ("clinician", "nurse", "admin", "clinical_viewer")
+CLINICAL_IT_ROLES = ("admin", "clinical_it")
 PHYSICIAN_ROLES = ("clinician", "admin")
 INGEST_SCOPES = {"ingest:json", "ingest:fhir", "ingest:hl7v2"}
 
@@ -234,6 +237,8 @@ def authenticate(
     if x_integration_key:
         return _decode_integration_key(x_integration_key)
     if settings.demo_mode:
+        if settings.public_demo_lockdown:
+            raise _unauthorized("Authentication required on the public demo service")
         role = x_demo_role or "clinician"
         if role not in ROLES:
             raise HTTPException(status_code=403, detail="Unsupported demo role")
@@ -291,6 +296,12 @@ def ensure_unit(actor: Actor, unit_id: str) -> None:
 
 def validate_security_configuration() -> None:
     problems: list[str] = []
+    if settings.evaluation_runtime and (
+        not settings.demo_mode or not settings.public_demo_lockdown
+        or not settings.evaluation_admin_password
+        or len(settings.evaluation_admin_password.get_secret_value()) < 12
+    ):
+        problems.append("Evaluation runtime requires DEMO_MODE=true, PUBLIC_DEMO_LOCKDOWN=true and a 12+ character evaluation administrator secret.")
     if settings.auth_mode not in {"local", "oidc"}:
         problems.append("AUTH_MODE must be 'local' or 'oidc'.")
     if settings.site_mode not in {"demo", "silent", "live"}:

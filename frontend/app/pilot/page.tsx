@@ -118,7 +118,7 @@ export default function PilotPage() {
           </label>
           <label className="flex items-center gap-1.5">
             <input type="checkbox" checked={pilotOnly} onChange={(e) => setPilotOnly(e.target.checked)} />
-            Real-time pilot rows only (excludes demo & backfill)
+            Real-time pilot rows only (excludes evaluation replay & backfill)
           </label>
           <label>
             <span className="block text-xs text-ink/55">Simulate thresholds (comma-separated, 0–1)</span>

@@ -79,7 +79,7 @@ export default function ModelPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl">Model transparency</h1>
+        <h1 className="font-display text-3xl">Aurie · model transparency</h1>
         <p className="mt-1 text-sm text-ink/60">
           {data.model_version} · {data.frozen ? "frozen" : "not frozen (still in development)"} · CPU latency{" "}
           {data.cpu_latency_ms_per_prediction?.toFixed(0)} ms per prediction

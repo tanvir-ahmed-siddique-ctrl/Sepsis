@@ -122,7 +122,7 @@ def demo_token(
     role: str = Query("clinician"),
     units: str | None = Query(None, max_length=500, description="Comma-separated unit scope"),
 ):
-    if not settings.demo_mode:
+    if not settings.demo_mode or settings.public_demo_lockdown:
         raise HTTPException(status_code=404, detail="Not found")
     if role not in ROLES:
         raise HTTPException(status_code=422, detail=f"Role must be one of {sorted(ROLES)}")
@@ -183,6 +183,7 @@ def whoami(actor: Actor = Depends(AUTHENTICATED)):
         "units": list(actor.units) if actor.units is not None else None,
         "auth_mode": actor.auth_mode,
         "demo_mode": settings.demo_mode,
+        "evaluation_runtime": settings.evaluation_runtime,
         "site_mode": state.effective_mode,
         "interruptive_alerts_enabled": state.interruptive_alerts_enabled,
         "bedside_blinded": state.blinded,
@@ -190,6 +191,29 @@ def whoami(actor: Actor = Depends(AUTHENTICATED)):
         "must_change_password": actor.must_change_password,
         "totp_enabled": actor.totp_enabled,
     }
+
+
+def _resolved_workspaces(actor: Actor, site_id: str) -> dict:
+    """Return only destinations supported by this site's current identity model."""
+    workspaces = []
+    if actor.role == "operator":
+        workspaces.append({"id": "platform", "label": "Platform operations", "path": "/platform/overview", "scope": "metadata"})
+    elif actor.role == "admin":
+        workspaces.append({"id": "hospital-admin", "label": "Hospital administration", "path": "/app/admin/overview", "scope": "site", "site_id": site_id})
+        workspaces.append({"id": "clinical", "label": "Clinical workstation", "path": "/app/icu", "scope": "site", "site_id": site_id})
+    elif actor.role in {"clinician", "nurse"}:
+        path = "/app/chart" if actor.role == "nurse" else "/app/icu"
+        workspaces.append({"id": "clinical", "label": "Clinical workstation", "path": path, "scope": "site", "site_id": site_id})
+    elif actor.role == "integration" and actor.auth_mode != "integration-key":
+        workspaces.append({"id": "hospital-integration", "label": "Hospital integration", "path": "/app/admin/integrations", "scope": "site", "site_id": site_id})
+    preferred = "platform" if actor.role == "operator" else "hospital-admin" if actor.role == "admin" else "hospital-integration" if actor.role == "integration" else "clinical"
+    default = next((item["path"] for item in workspaces if item["id"] == preferred), None)
+    return {"site_id": site_id, "organization_id": None, "workspaces": workspaces, "default_path": default}
+
+
+@router.get("/workspaces")
+def resolved_workspaces(actor: Actor = Depends(AUTHENTICATED)):
+    return _resolved_workspaces(actor, get_engine().site.state.site_id)
 
 
 def _profile_key(user_id: str) -> str:

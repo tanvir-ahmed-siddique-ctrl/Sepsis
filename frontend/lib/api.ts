@@ -1,4 +1,4 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export const API_BASE = "/api/hospital";
 export const DEMO_UNIT = process.env.NEXT_PUBLIC_DEMO_UNIT_ID ?? "icu-demo-1";
 export const API_UNIT = "icu-api";
 
@@ -100,12 +100,14 @@ export type UnitOverview = {
   disclaimer: string;
 };
 
-export type UserRole = "clinician" | "nurse" | "admin" | "operator";
+export type UserRole = "clinician" | "nurse" | "admin" | "clinical_it" | "clinical_viewer" | "operator";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   clinician: "Doctor / clinician",
   nurse: "Nurse / ward staff",
   admin: "Hospital admin",
+  clinical_it: "Clinical IT (integrations)",
+  clinical_viewer: "Clinical viewer (read-only)",
   operator: "Platform operator (no patient data)",
 };
 
@@ -116,6 +118,7 @@ export type Me = {
   units: string[] | null;
   auth_mode: string;
   demo_mode: boolean;
+  evaluation_runtime: boolean;
   site_mode: SiteMode;
   interruptive_alerts_enabled: boolean;
   bedside_blinded: boolean;
@@ -330,35 +333,22 @@ export class ApiRequestError extends Error {
   }
 }
 
-const TOKEN_KEY = "predictrx-access-token";
 export const SESSION_EVENT = "predictrx-session-changed";
 
-export function readToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.sessionStorage.getItem(TOKEN_KEY);
-}
-
-export function writeToken(token: string | null): void {
-  if (token) window.sessionStorage.setItem(TOKEN_KEY, token);
-  else window.sessionStorage.removeItem(TOKEN_KEY);
+export function announceSessionChange(): void {
   window.dispatchEvent(new Event(SESSION_EVENT));
 }
 
 export async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
-  const token = readToken();
-  if (token && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${token}`);
-  } else if (!headers.has("Authorization")) {
-    headers.set("X-Demo-User", process.env.NEXT_PUBLIC_DEMO_USER ?? "demo-clinician");
-    headers.set("X-Demo-Role", process.env.NEXT_PUBLIC_DEMO_ROLE ?? "clinician");
-  }
+  if (init?.method && init.method.toUpperCase() !== "GET") headers.set("X-Auralis-Request", "1");
   if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers,
+    credentials: "same-origin",
     cache: "no-store",
   });
   const contentType = response.headers.get("content-type") ?? "";

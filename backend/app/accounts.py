@@ -22,7 +22,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from app.core.config import settings
 from app.records import RecordStore, revoked_tokens, site_users, utc_now
 
-ROLES = {"clinician", "nurse", "admin", "operator"}
+ROLES = {"clinician", "nurse", "admin", "clinical_it", "clinical_viewer", "operator"}
 LOCKOUT_AFTER = 5
 LOCKOUT_SECONDS = 15 * 60
 PIN_LENGTHS = {4, 5, 6}

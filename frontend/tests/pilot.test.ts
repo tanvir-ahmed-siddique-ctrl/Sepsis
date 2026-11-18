@@ -48,7 +48,8 @@ describe("siteModeBanner", () => {
     }
   });
 
-  it("labels demo data as non-patient data", () => {
+  it("labels evaluation replay data as non-patient data", () => {
+    expect(siteModeBanner("demo").title).toContain("Evaluation replay");
     expect(siteModeBanner("demo").body).toContain("Nothing here is a real patient");
   });
 });

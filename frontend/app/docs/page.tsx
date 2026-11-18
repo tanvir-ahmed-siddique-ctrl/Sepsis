@@ -85,7 +85,7 @@ export default function DocsPage() {
 
       <div className="space-y-10">
         <header className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-accent">PredictRx Sentinel · technical whitepaper & live status</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-accent">Auralis · technical whitepaper & live status</p>
           <h1 className="font-display text-4xl">Earn the right to alert.</h1>
           <p className="max-w-3xl text-lg text-ink/65">
             A hospital-local ICU workflow and data-quality layer that connects fragmented data, exposes uncertainty, can

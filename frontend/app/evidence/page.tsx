@@ -91,7 +91,7 @@ const COMPARISON: Array<[string, string, string, string]> = [
   ["Alert authority", "Configured on", "Configured on", "Software-gated by nine local readiness gates; silent first"],
   ["Model change on site", "Vendor update", "Possible retraining", "Frozen artefact, SHA-256 verified at start-up; no on-site tuning"],
   ["Vendor access", "Central patient database", "Central patient database", "Hospital-local data; vendor receives signed metadata only"],
-  ["Failure evidence", "Best cases", "Best cases", "Missed detection and false-alert cases are part of the demo"],
+  ["Failure evidence", "Best cases", "Best cases", "Missed detection and false-alert cases are part of the evaluation evidence"],
 ];
 
 export default function EvidencePage() {
@@ -110,7 +110,7 @@ export default function EvidencePage() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Evidence centre</p>
         <h1 className="font-display text-4xl">Every claim, its proof, and what is still missing.</h1>
         <p className="max-w-3xl text-ink/65">
-          PredictRx Sentinel is a hospital-local ICU intelligence layer that must earn the right to alert.
+          Auralis is a hospital-local ICU intelligence layer that must earn the right to alert.
           This page separates what is built, what has been measured, and what still requires external proof —
           so nothing here needs to be taken on trust.
         </p>
@@ -192,7 +192,7 @@ export default function EvidencePage() {
                 <th className="py-2 pr-3">Situation</th>
                 <th className="py-2 pr-3">Rule-based EHR alert</th>
                 <th className="py-2 pr-3">Score-only ML</th>
-                <th className="py-2">PredictRx Sentinel</th>
+                <th className="py-2">Auralis</th>
               </tr>
             </thead>
             <tbody>
@@ -432,7 +432,7 @@ export default function EvidencePage() {
         <ul className="list-disc space-y-1 pl-5 text-sm text-ink/75">
           <li>No diagnosis, treatment or dosing output; the evidence copilot refuses those questions.</li>
           <li>No Bangladesh clinical validation, outcome improvement or lives-saved claim exists today.</li>
-          <li>Public demo data is de-identified public replay plus disclosed synthetic commissioning data — never presented as a live hospital feed.</li>
+          <li>Public evaluation data is de-identified public replay plus disclosed synthetic commissioning data — never presented as a live hospital feed.</li>
           <li>The platform operator role cannot open patient pages; the vendor fleet console receives allowlisted, signed metadata only.</li>
           <li>Interruptive alerts stay off until all ten readiness gates pass at a real site.</li>
           {!me && <li>Sign in (Session) as Hospital admin or Platform operator to see live operations counters on this page.</li>}

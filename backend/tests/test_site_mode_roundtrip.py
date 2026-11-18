@@ -55,6 +55,7 @@ def test_mode_roundtrip_survives_engine_restart(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "database_url", f"sqlite:///{(tmp_path / 'site.db').as_posix()}")
     monkeypatch.setattr(settings, "demo_mode", True)
     monkeypatch.setattr(settings, "public_demo_lockdown", False)
+    monkeypatch.setattr(settings, "public_simulation_enabled", True)
     monkeypatch.setattr(settings, "writer_lease_enabled", True)
 
     first = Engine()

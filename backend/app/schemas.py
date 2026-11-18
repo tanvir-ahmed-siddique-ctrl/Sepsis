@@ -261,14 +261,14 @@ class PinLoginRequest(BaseModel):
 class LocalUserRequest(BaseModel):
     user_id: str = Field(min_length=1, max_length=64)
     display_name: str = Field(min_length=1, max_length=128)
-    role: str = Field(pattern="^(clinician|nurse|admin|operator)$")
+    role: str = Field(pattern="^(clinician|nurse|admin|clinical_it|clinical_viewer|operator)$")
     password: str = Field(min_length=12, max_length=256)
     units: list[str] | None = Field(default=None, max_length=50)
 
 
 class LocalUserUpdateRequest(BaseModel):
     display_name: str | None = Field(default=None, min_length=1, max_length=128)
-    role: str | None = Field(default=None, pattern="^(clinician|nurse|admin|operator)$")
+    role: str | None = Field(default=None, pattern="^(clinician|nurse|admin|clinical_it|clinical_viewer|operator)$")
     units: list[str] | None = Field(default=None, max_length=50)
     disabled: bool | None = None
 

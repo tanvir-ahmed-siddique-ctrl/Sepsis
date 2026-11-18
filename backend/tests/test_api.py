@@ -24,7 +24,7 @@ def client():
     from app.main import app
 
     with TestClient(app, headers={"X-Demo-User": "tester", "X-Demo-Role": "admin"}) as c:
-        c.post("/v1/demo/replay/reset")
+        assert c.get("/health").json()["replay_patients"] > 0
         yield c
 
 

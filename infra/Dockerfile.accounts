@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+WORKDIR /service
+RUN pip install --no-cache-dir "fastapi>=0.115,<1" "uvicorn>=0.30,<1" "pydantic>=2.8,<3" "cryptography>=44,<48" \
+    && useradd --system --uid 10002 --home-dir /service accounts \
+    && mkdir /data && chown accounts:accounts /data
+COPY control-plane/account_service.py ./account_service.py
+COPY control-plane/commercial_domain.py ./commercial_domain.py
+COPY control-plane/operations_domain.py ./operations_domain.py
+COPY control-plane/document_domain.py ./document_domain.py
+COPY control-plane/permissions.py ./permissions.py
+USER accounts
+ENV ACCOUNT_DB=/data/accounts.db
+EXPOSE 8101
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8101/health', timeout=3)"
+CMD ["uvicorn", "account_service:app", "--host", "0.0.0.0", "--port", "8101"]

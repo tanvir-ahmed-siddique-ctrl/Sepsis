@@ -1,0 +1,86 @@
+# Run as its own Compose project. This stack contains generated synthetic cases,
+# isolated Postgres/SQLite volumes, evaluation-only secrets and no fleet relay.
+name: auralis-evaluation
+services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${EVAL_DB_PASSWORD:?Separate evaluation database password required}
+  eval-seed:
+    image: python:3.12-slim
+    volumes:
+      - ./demo/generate_synthetic_eval.py:/seed.py:ro
+      - auralis-evaluation-cases:/cases
+    command: ["python", "/seed.py", "--output", "/cases", "--count", "24"]
+  api:
+    ports: !reset []
+    volumes: !override
+      - ./ml/artifacts:/app/ml/artifacts:ro
+      - auralis-evaluation-cases:/app/evaluation-cases:ro
+      - auralis-evaluation-backups:/app/backups
+    environment:
+      - DATABASE_URL=postgresql+psycopg://predictrx:${EVAL_DB_PASSWORD:?Separate evaluation database password required}@db:5432/predictrx
+      - DEMO_MODE=true
+      - SITE_ID=auralis-evaluation-site
+      - SITE_MODE=demo
+      - AUTH_MODE=local
+      - JWT_SECRET=${EVAL_JWT_SECRET:?Separate evaluation signing secret required}
+      - EVALUATION_RUNTIME=true
+      - EVALUATION_ADMIN_PASSWORD=${EVAL_HOSPITAL_PASSWORD:?Evaluation hospital secret required}
+      - PUBLIC_DEMO_LOCKDOWN=true
+      - PUBLIC_SIMULATION_ENABLED=false
+      - DEMO_CASES_DIR=/app/evaluation-cases
+      - CORS_ORIGINS=[]
+      - COPILOT_LLM_URL=
+      - FLEET_SIGNING_KEY=
+    depends_on:
+      db:
+        condition: service_healthy
+      eval-seed:
+        condition: service_completed_successfully
+  accounts:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.accounts
+    restart: unless-stopped
+    environment:
+      - ACCOUNT_DB=/data/accounts.db
+      - EVALUATION_RUNTIME=true
+      - EVALUATION_ACCOUNT_PASSWORD=${EVAL_ACCOUNT_PASSWORD:?Evaluation account secret required}
+      - ACCOUNT_REQUIRE_MFA=false
+      - ACCOUNT_DOCUMENT_KEY=${EVAL_DOCUMENT_KEY:?Separate evaluation document key required}
+    volumes:
+      - auralis-evaluation-accounts:/data
+  web:
+    ports: !reset []
+    environment:
+      - API_PROXY_TARGET=http://api:8000
+      - ACCOUNT_API_INTERNAL_URL=http://accounts:8101
+      - EVALUATION_RUNTIME=true
+      - EVALUATION_HOSPITAL_PASSWORD=${EVAL_HOSPITAL_PASSWORD:?Evaluation hospital secret required}
+    depends_on:
+      api:
+        condition: service_healthy
+      accounts:
+        condition: service_started
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      EVAL_SITE_ADDRESS: ${EVAL_SITE_ADDRESS:?Evaluation HTTPS host required}
+      EVAL_GATE_USER: ${EVAL_GATE_USER:?Evaluation gate user required}
+      EVAL_GATE_PASSWORD_HASH: ${EVAL_GATE_PASSWORD_HASH:?Evaluation gate password hash required}
+    volumes:
+      - ./infra/Caddyfile.evaluation:/etc/caddy/Caddyfile:ro
+      - auralis-evaluation-caddy:/data
+    depends_on:
+      web:
+        condition: service_started
+
+volumes:
+  auralis-evaluation-cases:
+  auralis-evaluation-accounts:
+  auralis-evaluation-backups:
+  auralis-evaluation-caddy:
