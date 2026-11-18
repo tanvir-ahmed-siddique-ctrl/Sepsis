@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir --upgrade "pip>=26.2" && pip install --no-cache-d
 COPY backend /app/backend
 COPY knowledge /app/knowledge
 COPY demo/cases /app/demo/cases
-COPY control-plane/fleet_console.py control-plane/push_heartbeat.py /app/control-plane/
+COPY control-plane /app/control-plane
 
 COPY --from=web /web/.next/standalone /app/web
 COPY --from=web /web/.next/static /app/web/.next/static

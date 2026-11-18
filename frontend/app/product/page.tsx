@@ -1,39 +1,80 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
+import { ProductShowcaseCarousel } from "@/components/marketing/ProductShowcaseCarousel";
 
 export const metadata: Metadata = {
-  title: "Product | Auralis",
-  description: "Hospital-local ICU risk review: intended use, TrustGate, clinician-in-the-loop operation and evidence boundary.",
+  title: "Platform | Auralis",
+  description: "Hospital-local ICU sepsis risk board, bedside charting, TrustGate safety, and shift handoff.",
 };
 
 export default function ProductPage() {
   return (
-    <div>
+    <div className="bg-white">
       <MarketingHero
-        eyebrow="Product"
-        title="ICU risk review that stays inspectable."
-        description="Auralis combines observation quality checks, a frozen six-hour sepsis-risk model and clinician acknowledgement into a hospital-local workflow. A risk score is not a diagnosis or autonomous treatment recommendation."
+        eyebrow="Clinical Platform"
+        title={
+          <>
+            ICU early warning that stays{" "}
+            <span className="font-serif italic font-normal text-teal">clear at the bedside.</span>
+          </>
+        }
+        description="Auralis brings vitals freshness, 6-hour sepsis risk trends, and accountable alert review into one clean hospital-local workspace."
+        specs={[
+          { label: "Care Setting", value: "Adult ICU & General Wards" },
+          { label: "Prediction Horizon", value: "6-Hour Sepsis Window" },
+          { label: "Data Safety", value: "TrustGate Auto-Hold" },
+          { label: "Hosting", value: "100% Hospital-Local" },
+        ]}
       />
-      <MarketingSection eyebrow="Capabilities" title="What the product delivers today.">
-        <FeatureGrid items={[
-          { title: "ICU board", body: "Unit-level risk overview with provenance, freshness and review status." },
-          { title: "Patient chart", body: "Trends, drivers and observation context for authorized clinicians." },
-          { title: "Alert review", body: "SLA-aware acknowledgement with accountable clinical ownership." },
-          { title: "Handoff", body: "Shift-ready summaries without replacing clinical judgment." },
-          { title: "Ward NEWS2", body: "Deterministic ward scoring for non-ICU surveillance contexts." },
-          { title: "TrustGate", body: "Abstain and quarantine when required data quality is missing." },
-        ]} />
+
+      <MarketingSection
+        eyebrow="Interactive Walkthrough"
+        title="See every screen your ICU team uses."
+        description="Switch through the live board, patient trajectory chart, TrustGate checks, and shift handoff."
+        tone="muted"
+      >
+        <ProductShowcaseCarousel />
       </MarketingSection>
-      <MarketingSection eyebrow="Intended use & limits" title="Clinical and technical boundary.">
-        <FeatureGrid items={[
-          { title: "Intended use", body: "Assistive early-warning / risk review for adult ICU sepsis-risk workflows within licensed scope." },
-          { title: "Care setting", body: "Hospital units under institutional governance — not consumer or autonomous ICU control." },
-          { title: "Clinician in the loop", body: "Clinicians retain decision authority for every patient action." },
-          { title: "Evidence status", body: "Retrospective public-data evidence is distinct from local hospital validation and prospective evaluation." },
-          { title: "Patient-data boundary", body: "Clinical data remains under hospital-approved control in a site deployment." },
-          { title: "Interoperability", body: "Supported connectors only; FHIR availability does not guarantee every hospital integration." },
-        ]} />
+
+      <MarketingSection
+        eyebrow="Intended Use & Boundaries"
+        title="Built for clinical safety and transparency."
+      >
+        <FeatureGrid
+          items={[
+            {
+              title: "Assistive Decision Support",
+              tag: "Intended Use",
+              body: "Supports early clinical review for adult ICU patients. A risk score is never an autonomous diagnosis or treatment order.",
+            },
+            {
+              title: "Ward NEWS2 Surveillance",
+              tag: "Step-Down & General Wards",
+              body: "Uses deterministic NEWS2 scoring on general wards rather than misapplying ICU-trained sepsis models.",
+            },
+            {
+              title: "TrustGate Input Protection",
+              tag: "Zero Guessed Scores",
+              body: "Automatically abstains when required labs are stale and quarantines mismatched units before scoring.",
+            },
+            {
+              title: "Hospital Data Ownership",
+              tag: "Local Processing",
+              body: "Patient identifiers and observations remain inside your hospital's own network.",
+            },
+          ]}
+        />
+        <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
+          <Link href="/signin?next=/app/icu" className="hover:underline">
+            Open Live ICU Dashboard →
+          </Link>
+          <Link href="/model" className="hover:underline">
+            Read Model Card →
+          </Link>
+        </div>
       </MarketingSection>
+
       <MarketingCta />
     </div>
   );

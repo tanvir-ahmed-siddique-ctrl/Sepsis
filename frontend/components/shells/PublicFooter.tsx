@@ -3,81 +3,91 @@ import { BrandMark } from "@/components/ui/BrandMark";
 
 const COLUMNS = [
   {
-    title: "Product",
+    title: "Platform",
     links: [
-      { href: "/product", label: "Platform" },
+      { href: "/product", label: "ICU Clinical Platform" },
       { href: "/aurie", label: "Aurie AI" },
-      { href: "/model", label: "Model transparency" },
-      { href: "/workflows", label: "Workflows" },
+      { href: "/model", label: "Model Transparency" },
+      { href: "/workflows", label: "Clinical Workflows" },
+      { href: "/signin", label: "Open Live Demo" },
     ],
   },
   {
-    title: "Solutions",
+    title: "Hospitals",
     links: [
-      { href: "/solutions", label: "Solution map" },
-      { href: "/for-hospitals", label: "For hospitals" },
-      { href: "/how-auralis-works", label: "How Auralis works" },
-      { href: "/technology-enablement", label: "Technology enablement" },
-      { href: "/forward-deployed-engineering", label: "FDE" },
-      { href: "/deployment-integration", label: "Deployment & integration" },
-      { href: "/services", label: "Engagement models" },
+      { href: "/for-hospitals", label: "Adoption Journey" },
+      { href: "/forward-deployed-engineering", label: "Forward Deployed Eng." },
+      { href: "/technology-enablement", label: "Technology Enablement" },
+      { href: "/deployment-integration", label: "HL7 & FHIR Integration" },
+      { href: "/services", label: "Engagement Models" },
     ],
   },
   {
     title: "Resources",
     links: [
-      { href: "/resources", label: "Resource centre" },
-      { href: "/docs", label: "Documentation" },
-      { href: "/api-reference", label: "Integration API" },
-      { href: "/evidence", label: "Evidence" },
+      { href: "/resources", label: "Resource Library" },
+      { href: "/evidence", label: "Clinical Evidence" },
+      { href: "/api-reference", label: "API & FHIR Reference" },
+      { href: "/docs", label: "Operations Docs" },
     ],
   },
   {
     title: "Company",
     links: [
-      { href: "/about", label: "About" },
-      { href: "/security", label: "Security" },
+      { href: "/about", label: "About Auralis" },
+      { href: "/security", label: "Security & Privacy" },
+      { href: "/business", label: "Commercial Approach" },
       { href: "/contact", label: "Contact" },
-      { href: "/business", label: "Commercial scope" },
     ],
   },
 ];
 
 export function PublicFooter() {
   return (
-    <footer className="mt-auto bg-[#0F1C24] text-[#C9D5D3]">
-      <div className="auralis-container-public py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_2fr]">
+    <footer className="mt-auto border-t border-border bg-[#F8FAFA] text-ink">
+      <div className="auralis-container-public py-16">
+        <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr]">
           <div>
-            <BrandMark tone="dark" />
-            <p className="mt-5 max-w-sm text-sm leading-6 text-[#9AAEAB]">
-              Hospital-local ICU early-warning software. Clinical data stays with the hospital. Clinical decisions remain with clinicians.
+            <BrandMark />
+            <p className="mt-4 max-w-sm text-sm leading-6 text-muted">
+              Hospital-local ICU early-warning software & Forward Deployed Engineering. Clinical data stays inside your hospital; clinical decisions stay with your doctors.
             </p>
-            <div className="mt-6 flex gap-4 text-sm">
-              <a href="https://www.linkedin.com" className="hover:text-white" rel="noreferrer" target="_blank">LinkedIn</a>
-              <a href="mailto:contact@auralis.health" className="hover:text-white">Email</a>
+            <div className="mt-6 flex items-center gap-4 text-sm font-medium text-teal">
+              <Link href="/signin" className="hover:underline">
+                Launch Live Workspace →
+              </Link>
+              <span className="text-border">|</span>
+              <Link href="/contact" className="hover:underline">
+                Request Consultation
+              </Link>
             </div>
           </div>
+
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {COLUMNS.map((column) => (
               <div key={column.title}>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">{column.title}</p>
-                <ul className="mt-4 space-y-2.5 text-sm">
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink">{column.title}</p>
+                <ul className="mt-4 space-y-2.5 text-sm text-muted">
                   {column.links.map((link) => (
-                    <li key={link.href}><Link href={link.href} className="hover:text-white">{link.label}</Link></li>
+                    <li key={link.href}>
+                      <Link href={link.href} className="transition-colors hover:text-teal">
+                        {link.label}
+                      </Link>
+                    </li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
         </div>
-        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-[#8FA3A0]">
-          <p>© {new Date().getFullYear()} Auralis. All rights reserved.</p>
+
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted">
+          <p>© {new Date().getFullYear()} Auralis Health. Assistive decision-support software — not an autonomous medical device.</p>
           <div className="flex flex-wrap gap-5">
-            <Link href="/security" className="hover:text-white">Security</Link>
-            <Link href="/docs" className="hover:text-white">Privacy Policy</Link>
-            <Link href="/docs" className="hover:text-white">Terms of Service</Link>
-            <Link href="/contact" className="hover:text-white">Contact</Link>
+            <Link href="/security" className="hover:text-ink">Security</Link>
+            <Link href="/evidence" className="hover:text-ink">Evidence Boundary</Link>
+            <Link href="/docs" className="hover:text-ink">Privacy & Terms</Link>
+            <Link href="/contact" className="hover:text-ink">Contact</Link>
           </div>
         </div>
       </div>

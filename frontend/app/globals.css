@@ -7,18 +7,19 @@
   --font-sans: "Inter", "Noto Sans Bengali", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
 
-  --canvas: #f7f8f6;
+  --canvas: #ffffff;
   --surface: #ffffff;
-  --surface-muted: #eef3f1;
-  --ink: #142832;
-  --muted: #64747b;
+  --surface-muted: #f4f7f6;
+  --ink: #0f1f26;
+  --muted: #5a6c73;
   --teal: #087e83;
-  --teal-dark: #075f65;
-  --border: #dce5e3;
+  --teal-dark: #066367;
+  --border: #e4ebea;
 
-  /* Legacy aliases mapped to the Auralis system */
-  --bg: var(--canvas);
+  /* Legacy aliases mapped to the clean white Auralis system */
+  --bg: #ffffff;
   --forest: var(--teal);
   --olive: #6f8480;
   --copper: #8a6a4a;
@@ -37,24 +38,25 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-8: 3rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --content-public: 72rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --content-public: 76rem;
   --content-app: 80rem;
 }
 
 @layer base {
   body {
-    background: var(--canvas);
+    background: #ffffff;
     color: var(--ink);
     font-family: var(--font-sans);
     font-size: 0.9375rem;
-    line-height: 1.55;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     color: var(--ink);
   }
 
@@ -63,11 +65,11 @@
   }
 
   button, a, input, select, textarea, summary {
-    transition-duration: 150ms;
+    transition-duration: 180ms;
   }
 
   :focus-visible {
-    outline: 3px solid var(--teal);
+    outline: 2px solid var(--teal);
     outline-offset: 2px;
   }
 }
@@ -94,23 +96,23 @@
   }
 
   .auralis-input {
-    @apply mt-1 block w-full border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-muted/70 focus:border-teal focus:outline-none;
+    @apply mt-1 block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/70 focus:border-teal focus:outline-none;
   }
 
   .auralis-btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center bg-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-teal-dark;
+    @apply inline-flex min-h-11 items-center justify-center rounded-full bg-teal px-5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-dark hover:shadow;
   }
 
   .auralis-btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center border border-border bg-white px-4 text-sm font-semibold text-ink transition-colors hover:border-teal hover:text-teal;
+    @apply inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-white px-5 text-sm font-semibold text-ink transition-all hover:border-teal hover:text-teal;
   }
 
   .auralis-btn-ghost {
-    @apply inline-flex min-h-11 items-center justify-center border border-transparent px-4 text-sm font-semibold text-muted transition-colors hover:border-border hover:text-ink;
+    @apply inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold text-muted transition-colors hover:bg-muted-surface hover:text-ink;
   }
 
   .auralis-panel {
-    @apply border border-border bg-white p-4 sm:p-5;
+    @apply rounded-2xl border border-border bg-white p-5 shadow-[0_1px_3px_rgba(15,31,38,0.03)];
   }
 
   .auralis-table {
@@ -134,8 +136,46 @@
   }
 
   .risk-pill {
-    @apply inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide;
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide;
   }
+
+  .auralis-eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-teal/20 bg-teal/[0.06] px-3 py-1 text-xs font-semibold tracking-wide text-teal;
+  }
+}
+
+@keyframes auralisPulseRing {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  70% { transform: scale(1.7); opacity: 0; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes auralisSignalFlow {
+  0% { stroke-dashoffset: 240; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.auralis-pulse-dot {
+  animation: auralisPulseRing 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.auralis-signal-line {
+  stroke-dasharray: 8 6;
+  animation: auralisSignalFlow 12s linear infinite;
+}
+
+.auralis-reveal {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.auralis-reveal[data-reveal-ready="true"][data-revealed="false"] {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -143,5 +183,10 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .auralis-reveal,
+  .auralis-reveal[data-reveal-ready="true"][data-revealed="false"] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

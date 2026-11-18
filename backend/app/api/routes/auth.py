@@ -201,14 +201,32 @@ def _resolved_workspaces(actor: Actor, site_id: str) -> dict:
     elif actor.role == "admin":
         workspaces.append({"id": "hospital-admin", "label": "Hospital administration", "path": "/app/admin/overview", "scope": "site", "site_id": site_id})
         workspaces.append({"id": "clinical", "label": "Clinical workstation", "path": "/app/icu", "scope": "site", "site_id": site_id})
-    elif actor.role in {"clinician", "nurse"}:
+    elif actor.role in {"clinician", "nurse", "clinical_viewer"}:
         path = "/app/chart" if actor.role == "nurse" else "/app/icu"
         workspaces.append({"id": "clinical", "label": "Clinical workstation", "path": path, "scope": "site", "site_id": site_id})
+    elif actor.role == "clinical_it":
+        workspaces.append({"id": "hospital-integration", "label": "Deployment & integration", "path": "/deploy", "scope": "site", "site_id": site_id})
     elif actor.role == "integration" and actor.auth_mode != "integration-key":
         workspaces.append({"id": "hospital-integration", "label": "Hospital integration", "path": "/app/admin/integrations", "scope": "site", "site_id": site_id})
-    preferred = "platform" if actor.role == "operator" else "hospital-admin" if actor.role == "admin" else "hospital-integration" if actor.role == "integration" else "clinical"
+    preferred = "platform" if actor.role == "operator" else "hospital-admin" if actor.role == "admin" else "hospital-integration" if actor.role in {"integration", "clinical_it"} else "clinical"
     default = next((item["path"] for item in workspaces if item["id"] == preferred), None)
     return {"site_id": site_id, "organization_id": None, "workspaces": workspaces, "default_path": default}
+
+DEMO_QUICK_ROLES = [
+    {"user_id": "demo-clinician", "label": "ICU Consultant", "role": "clinician", "default_path": "/app/icu", "password": "auralis-demo-2026"},
+    {"user_id": "demo-nurse", "label": "Bedside ICU Nurse", "role": "nurse", "default_path": "/app/chart", "password": "auralis-demo-2026"},
+    {"user_id": "demo-admin", "label": "Hospital Admin", "role": "admin", "default_path": "/app/admin/overview", "password": "auralis-demo-2026"},
+    {"user_id": "demo-it", "label": "Clinical IT / Deployment", "role": "clinical_it", "default_path": "/deploy", "password": "auralis-demo-2026"},
+    {"user_id": "demo-operator", "label": "Vendor Fleet Operator", "role": "operator", "default_path": "/platform/overview", "password": "auralis-demo-2026"},
+]
+
+
+@router.get("/demo-accounts")
+def demo_accounts():
+    """Expose sandbox quick-login presets ONLY when DEMO_MODE is active."""
+    if not settings.demo_mode:
+        return {"enabled": False, "accounts": []}
+    return {"enabled": True, "accounts": DEMO_QUICK_ROLES}
 
 
 @router.get("/workspaces")

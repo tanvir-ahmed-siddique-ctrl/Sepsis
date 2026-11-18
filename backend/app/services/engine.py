@@ -137,7 +137,7 @@ class Engine:
         self._restore_state()
         if self.read_only_reason is None:
             self.reset_replay()
-            if settings.public_demo_lockdown:
+            if settings.demo_mode or settings.public_demo_lockdown:
                 self._seed_public_staff()
         if self.read_only_reason is None and settings.writer_lease_enabled:
             self._heartbeat = threading.Thread(target=self._heartbeat_loop, name="writer-lease", daemon=True)
@@ -755,11 +755,22 @@ class Engine:
             print(f"commissioning connector seed skipped: {error!r}", flush=True)
 
     def _seed_public_staff(self) -> None:
-        """Create named, scoped commissioning accounts with unrevealed random secrets."""
+        """Create named, scoped demo/commissioning accounts.
+
+        In DEMO_MODE, demo role accounts receive a deterministic sandbox password
+        so evaluators and clinicians can sign in on the local/public demo without
+        external provisioning; non-demo environments never run this path.
+        """
         from app.accounts import AccountStore
 
         accounts = AccountStore(self.records)
+        demo_password = "auralis-demo-2026" if settings.demo_mode else None
         roster = (
+            ("demo-clinician", "Dr. Nadia Rahman · ICU Consultant", "clinician", None),
+            ("demo-nurse", "Sister Farhana Akter · ICU Nurse", "nurse", None),
+            ("demo-admin", "Hospital Administrator", "admin", None),
+            ("demo-it", "Clinical IT & Integration Lead", "clinical_it", None),
+            ("demo-operator", "Auralis Platform Operator", "operator", None),
             ("sim-admin", "Simulation site administrator", "admin", None),
             ("sim-clinician-01", "Simulation ICU clinician 01", "clinician", [settings.api_unit_id]),
             ("sim-clinician-02", "Simulation ICU clinician 02", "clinician", [settings.api_unit_id]),
@@ -767,10 +778,23 @@ class Engine:
             ("sim-nurse-02", "Simulation ward nurse 02", "nurse", ["ward-demo-1"]),
         )
         for user_id, display_name, role, units in roster:
-            if accounts.get(user_id):
+            if not settings.demo_mode and user_id.startswith("demo-"):
                 continue
-            accounts.create(user_id, display_name, role, secrets.token_urlsafe(32),
-                            units=units, actor_id="simulation-commissioning")
+            existing = accounts.get(user_id)
+            if existing:
+                if demo_password and user_id.startswith("demo-") and existing.get("must_change_password"):
+                    accounts.set_password(user_id, demo_password, admin=True)
+                continue
+            secret = demo_password if (demo_password and user_id.startswith("demo-")) else secrets.token_urlsafe(32)
+            accounts.create(
+                user_id,
+                display_name,
+                role,
+                secret,
+                units=units,
+                actor_id="simulation-commissioning",
+                must_change_password=not (demo_password and user_id.startswith("demo-")),
+            )
         if settings.evaluation_runtime and settings.evaluation_admin_password and not accounts.get("eval-admin"):
             accounts.create("eval-admin", "Synthetic evaluation administrator", "admin",
                             settings.evaluation_admin_password.get_secret_value(), units=None,

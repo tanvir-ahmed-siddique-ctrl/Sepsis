@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Reveal } from "@/components/marketing/MotionPrimitives";
 
 const PURPOSES = [
-  { value: "clinical_workflow", label: "Clinical workflow discussion" },
-  { value: "hospital_it", label: "Hospital IT and interoperability" },
-  { value: "infrastructure", label: "Infrastructure and technology assessment" },
-  { value: "equipment_connectivity", label: "Medical equipment connectivity" },
   { value: "site_readiness", label: "Site-readiness assessment" },
-  { value: "deployment_planning", label: "Deployment planning" },
-  { value: "managed_it", label: "Managed IT services" },
-  { value: "commercial", label: "Commercial / procurement discussion" },
-  { value: "education", label: "Education or institutional seminar" },
+  { value: "clinical_workflow", label: "ICU clinical workflow discussion" },
+  { value: "hospital_it", label: "HL7 / FHIR & hospital IT integration" },
+  { value: "infrastructure", label: "Servers, network & device readiness" },
+  { value: "deployment_planning", label: "Silent pilot & deployment planning" },
+  { value: "managed_it", label: "Managed IT & support services" },
+  { value: "commercial", label: "Commercial / procurement inquiry" },
+  { value: "education", label: "Clinical training or seminar" },
 ] as const;
 
 const empty = {
@@ -65,116 +65,127 @@ export default function ContactPage() {
     }
   }
 
-  const field = "mt-1 block w-full border border-[#C6CECA] bg-white p-3";
+  const field = "mt-1.5 block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-ink focus:border-teal focus:outline-none";
 
   return (
-    <div className="mx-auto max-w-6xl py-12">
-      <div className="grid gap-12 lg:grid-cols-[.85fr_1.15fr]">
-        <header>
-          <p className="text-xs font-semibold uppercase tracking-[.2em] text-forest">Auralis / contact</p>
-          <h1 className="mt-5 font-display text-5xl leading-tight">Request a consultation.</h1>
-          <p className="mt-6 text-base leading-8 text-slate">
-            Tell us about your institution and preferred meeting windows. An Auralis owner will confirm, decline or reschedule — preferred times are not booked until confirmed.
-          </p>
-          <ul className="mt-6 space-y-2 text-sm leading-6 text-slate">
-            <li>Do not enter patient data or clinical records.</li>
-            <li>Self-reported readiness is optional and is not a clinical eligibility decision.</li>
-            <li>See the <Link href="/for-hospitals" className="font-semibold text-forest underline underline-offset-2">hospital adoption journey</Link> for what happens after first contact.</li>
-          </ul>
-        </header>
-
-        <div className="border-t-2 border-forest bg-warm p-6 sm:p-8">
-          {state === "recorded" ? (
-            <div role="status">
-              <h2 className="text-xl font-semibold">Consultation request recorded</h2>
-              <p className="mt-3 text-sm leading-6 text-slate">{note}</p>
-              <p className="mt-3 text-sm leading-6 text-slate">No deployment, quote or clinical access is confirmed by this submission.</p>
+    <div className="bg-[#FAFBFA] py-14 lg:py-20">
+      <div className="auralis-container-public">
+        <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <Reveal as="header" className="space-y-6">
+            <div>
+              <span className="auralis-eyebrow">Book a Consultation</span>
+              <h1 className="mt-4 font-display text-4xl font-semibold leading-tight tracking-tight text-ink">
+                Talk with our clinical & engineering team.
+              </h1>
+              <p className="mt-3 text-base leading-7 text-muted">
+                Share your hospital details and preferred meeting times. Our team will confirm a slot with you directly.
+              </p>
             </div>
-          ) : (
-            <form onSubmit={(event) => void submit(event)} className="grid gap-4 text-sm sm:grid-cols-2">
-              <h2 className="text-xl font-semibold sm:col-span-2">Book a Consultation</h2>
-              {state === "error" && <p role="alert" className="border-l-2 border-risk-watch p-3 sm:col-span-2">{error}</p>}
 
-              <label className="sm:col-span-2">Institution / hospital name
-                <input required minLength={2} maxLength={160} value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} className={field} />
-              </label>
-              <label>Contact name
-                <input required minLength={2} maxLength={120} value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className={field} />
-              </label>
-              <label>Institutional email
-                <input required type="email" maxLength={254} value={form.work_email} onChange={(e) => setForm({ ...form, work_email: e.target.value })} className={field} />
-              </label>
-              <label>Job title
-                <input required minLength={2} maxLength={120} value={form.job_title} onChange={(e) => setForm({ ...form, job_title: e.target.value })} className={field} />
-              </label>
-              <label>Department
-                <input maxLength={120} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} className={field} />
-              </label>
-              <label>Country
-                <input required minLength={2} maxLength={80} value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className={field} />
-              </label>
-              <label>Location / city
-                <input required minLength={2} maxLength={160} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={field} />
-              </label>
-              <label>Hospital type
-                <input required minLength={2} maxLength={80} value={form.hospital_type} onChange={(e) => setForm({ ...form, hospital_type: e.target.value })} className={field} placeholder="e.g. district hospital, tertiary ICU" />
-              </label>
-              <label>Approximate organisation size
-                <select value={form.organization_size} onChange={(e) => setForm({ ...form, organization_size: e.target.value })} className={field}>
-                  <option value="unspecified">Prefer not to say</option>
-                  <option value="clinic">Clinic / outpatient</option>
-                  <option value="small">Small hospital</option>
-                  <option value="medium">Medium hospital</option>
-                  <option value="large">Large hospital</option>
-                  <option value="tertiary">Tertiary</option>
-                  <option value="academic">Academic</option>
-                  <option value="specialist">Specialist</option>
-                  <option value="group">Hospital group / multi-site</option>
-                </select>
-              </label>
-              <label>Self-reported digital readiness
-                <select value={form.readiness_self_report} onChange={(e) => setForm({ ...form, readiness_self_report: e.target.value })} className={field}>
-                  <option value="unspecified">Not sure</option>
-                  <option value="foundation">Foundation</option>
-                  <option value="connected">Connected</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </label>
-              <label className="sm:col-span-2">Meeting purpose
-                <select required value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} className={field}>
-                  {PURPOSES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </label>
-              <label className="sm:col-span-2">Preferred dates and times
-                <textarea required minLength={3} maxLength={500} rows={3} value={form.preferred_dates} onChange={(e) => setForm({ ...form, preferred_dates: e.target.value })} className={field} placeholder="e.g. Week of 5 May, mornings BDT; or 12 May 10:00–12:00" />
-              </label>
-              <label>Meeting modality
-                <select value={form.modality} onChange={(e) => setForm({ ...form, modality: e.target.value })} className={field}>
-                  <option value="online">Online</option>
-                  <option value="in_person">In person</option>
-                  <option value="either">Either</option>
-                </select>
-              </label>
-              <label className="sm:col-span-2">Optional message
-                <textarea maxLength={2000} rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={field} />
-              </label>
+            <div className="rounded-2xl border border-border bg-white p-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-teal">What to expect</p>
+              <ul className="mt-3 space-y-2.5 text-sm text-muted">
+                <li>• Preferred times stay pending until our team confirms.</li>
+                <li>• Please do not include any patient data in this form.</li>
+                <li>
+                  • Want to try the software right now?{" "}
+                  <Link href="/signin" className="font-semibold text-teal hover:underline">
+                    Open the 1-click Live Demo →
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </Reveal>
 
-              <div className="hidden" aria-hidden="true">
-                <label>Website
-                  <input tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
-                </label>
+          <Reveal delayMs={80} className="rounded-2xl border border-border bg-white p-6 shadow-sm sm:p-8">
+            {state === "recorded" ? (
+              <div role="status" className="py-6">
+                <span className="rounded-full bg-teal/10 px-3 py-1 text-xs font-semibold text-teal">Request Received</span>
+                <h2 className="mt-3 font-display text-2xl font-semibold text-ink">Consultation request recorded</h2>
+                <p className="mt-2 text-sm leading-6 text-muted">{note}</p>
               </div>
+            ) : (
+              <form onSubmit={(event) => void submit(event)} className="grid gap-4 text-sm sm:grid-cols-2">
+                {state === "error" && (
+                  <p role="alert" className="rounded-lg border border-risk-high/30 bg-risk-high/5 p-3 text-risk-high sm:col-span-2">
+                    {error}
+                  </p>
+                )}
 
-              <label className="flex items-start gap-3 sm:col-span-2">
-                <input required type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} className="mt-1" />
-                <span>I agree to be contacted about this consultation request. I understand that preferred times are pending confirmation and that no patient or clinical data belongs in this form.</span>
-              </label>
+                <label className="sm:col-span-2">
+                  <span className="text-xs font-semibold text-ink">Hospital / Institution Name *</span>
+                  <input required minLength={2} maxLength={160} value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Your Name *</span>
+                  <input required minLength={2} maxLength={120} value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Work Email *</span>
+                  <input required type="email" maxLength={254} value={form.work_email} onChange={(e) => setForm({ ...form, work_email: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Job Title *</span>
+                  <input required minLength={2} maxLength={120} value={form.job_title} onChange={(e) => setForm({ ...form, job_title: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Department</span>
+                  <input maxLength={120} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Country *</span>
+                  <input required minLength={2} maxLength={80} value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">City *</span>
+                  <input required minLength={2} maxLength={160} value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={field} />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Hospital Type *</span>
+                  <input required minLength={2} maxLength={80} value={form.hospital_type} onChange={(e) => setForm({ ...form, hospital_type: e.target.value })} className={field} placeholder="e.g. Tertiary, Private ICU" />
+                </label>
+                <label>
+                  <span className="text-xs font-semibold text-ink">Meeting Format</span>
+                  <select value={form.modality} onChange={(e) => setForm({ ...form, modality: e.target.value })} className={field}>
+                    <option value="online">Online</option>
+                    <option value="in_person">In person</option>
+                    <option value="either">Either</option>
+                  </select>
+                </label>
+                <label className="sm:col-span-2">
+                  <span className="text-xs font-semibold text-ink">Topic *</span>
+                  <select required value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} className={field}>
+                    {PURPOSES.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="sm:col-span-2">
+                  <span className="text-xs font-semibold text-ink">Preferred Dates & Times *</span>
+                  <textarea required minLength={3} maxLength={500} rows={2} value={form.preferred_dates} onChange={(e) => setForm({ ...form, preferred_dates: e.target.value })} className={field} placeholder="e.g. Next Tuesday 10:00–12:00" />
+                </label>
+                <label className="sm:col-span-2">
+                  <span className="text-xs font-semibold text-ink">Optional Notes</span>
+                  <textarea maxLength={2000} rows={2} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className={field} />
+                </label>
 
-              <button disabled={state === "sending"} className="justify-self-start bg-forest px-6 py-3 font-semibold text-white disabled:opacity-50 sm:col-span-2">
-                {state === "sending" ? "Recording…" : "Submit consultation request"}
-              </button>
-            </form>
-          )}
+                <div className="hidden" aria-hidden="true">
+                  <input tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} />
+                </div>
+
+                <label className="flex items-start gap-2.5 text-xs text-muted sm:col-span-2">
+                  <input required type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} className="mt-0.5" />
+                  <span>I consent to be contacted regarding this request and confirm no patient data is included.</span>
+                </label>
+
+                <button disabled={state === "sending"} className="auralis-btn-primary justify-self-start px-7 disabled:opacity-50 sm:col-span-2">
+                  {state === "sending" ? "Submitting…" : "Request Consultation →"}
+                </button>
+              </form>
+            )}
+          </Reveal>
         </div>
       </div>
     </div>

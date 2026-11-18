@@ -1,22 +1,57 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
 
-export const metadata: Metadata = { title: "Solutions | Auralis", description: "ICU, ward and governance solution map." };
+export const metadata: Metadata = {
+  title: "Solutions | Auralis",
+  description: "ICU sepsis early warning, ward NEWS2 surveillance, HL7/FHIR integration, and hospital technology enablement.",
+};
 
 export default function SolutionsPage() {
   return (
-    <div>
-      <MarketingHero eyebrow="Solutions" title="Solutions shaped around hospital reality." description="Start with one ICU, expand to ward surveillance and governance workflows only after local readiness is demonstrated." />
-      <MarketingSection eyebrow="Solution map" title="Where Auralis fits.">
-        <FeatureGrid items={[
-          { title: "ICU early warning", body: "Six-hour sepsis-risk review for authorized ICU teams." },
-          { title: "Ward surveillance", body: "NEWS2 observation and escalation context outside the ICU." },
-          { title: "Integration readiness", body: "Mapping, quarantine and connectivity diagnostics before live mode." },
-          { title: "Silent evaluation", body: "Shadow scoring and burden measurement without interruptive alerts." },
-          { title: "Commercial governance", body: "Contracts, licences and support records in a separate account plane." },
-          { title: "Quality operations", body: "CAPA, document retention and support SLA clocks for vendor operations." },
-        ]} />
+    <div className="bg-white">
+      <MarketingHero
+        eyebrow="Solutions"
+        title={
+          <>
+            Clinical intelligence &{" "}
+            <span className="font-serif italic font-normal text-teal">hospital engineering.</span>
+          </>
+        }
+        description="Start with infrastructure readiness, HL7/FHIR integration, or a silent ICU evaluation — scoped cleanly to what your hospital needs."
+      />
+
+      <MarketingSection eyebrow="Core Solutions" title="Four modular tracks." tone="muted">
+        <FeatureGrid
+          items={[
+            {
+              tag: "Adult ICU",
+              title: "6-Hour Sepsis Early Warning",
+              body: "Real-time risk trends, physiological driver explanations, SLA alert timers, and shift handoff.",
+            },
+            {
+              tag: "General Wards",
+              title: "Deterministic NEWS2 Surveillance",
+              body: "Structured vital-sign scoring and deterioration visibility outside the ICU.",
+            },
+            {
+              tag: "Integration",
+              title: "Forward Deployed HL7 & FHIR Engineering",
+              body: "On-site connector buildout, unit alignment, and quarantine protection for hospital IT.",
+            },
+            {
+              tag: "Enablement",
+              title: "Servers, Networking & Device Readiness",
+              body: "Hardware planning, monitor compatibility checks, and staff onboarding for growing hospitals.",
+            },
+          ]}
+        />
+        <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
+          <Link href="/signin" className="hover:underline">Try Live Demo →</Link>
+          <Link href="/deployment-integration" className="hover:underline">Integration Details →</Link>
+        </div>
       </MarketingSection>
+
       <MarketingCta />
     </div>
   );
