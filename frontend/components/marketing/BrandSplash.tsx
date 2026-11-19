@@ -1,64 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BrandGlyph, BrandWordmark } from "@/components/ui/BrandMark";
-
-const STORAGE_KEY = "auralis.domain-splash";
-
-export function markSplashDone() {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(STORAGE_KEY, "1");
-  } catch {
-    /* private mode */
-  }
-  window.dispatchEvent(new Event("auralis:splash-done"));
-}
-
-export function splashAlreadySeen(): boolean {
-  if (typeof window === "undefined") return true;
-  try {
-    return window.sessionStorage.getItem(STORAGE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
 
 /**
- * Full-viewport domain entry: Auralis glyph + wordmark side by side,
- * then a soft cloud dissolve into the homepage.
- * Once per browser tab session.
+ * Full-viewport homepage entry — every refresh / direct domain hit.
+ * Renders opaque on first paint (SSR + hydration) so the site never peeks through,
+ * then cloud-dissolves after a short hold.
  */
 export function BrandSplash() {
-  const [phase, setPhase] = useState<"boot" | "hold" | "out" | "gone">("boot");
+  const [phase, setPhase] = useState<"hold" | "out" | "gone">("hold");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    document.documentElement.classList.add("auralis-splash-active");
+
+    const finish = () => {
+      document.documentElement.classList.remove("auralis-splash-active");
+      window.dispatchEvent(new Event("auralis:splash-done"));
+      setPhase("gone");
+    };
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      markSplashDone();
-      setPhase("gone");
-      return;
-    }
-    if (splashAlreadySeen()) {
-      markSplashDone();
-      setPhase("gone");
+      finish();
       return;
     }
 
-    setPhase("hold");
-    const toOut = window.setTimeout(() => setPhase("out"), 1200);
-    const toGone = window.setTimeout(() => {
-      markSplashDone();
-      setPhase("gone");
-    }, 2400);
+    const toOut = window.setTimeout(() => setPhase("out"), 1400);
+    const toGone = window.setTimeout(finish, 2700);
 
     return () => {
       window.clearTimeout(toOut);
       window.clearTimeout(toGone);
+      document.documentElement.classList.remove("auralis-splash-active");
     };
   }, []);
 
-  if (phase === "boot" || phase === "gone") return null;
+  if (phase === "gone") return null;
 
   return (
     <div
@@ -70,9 +48,32 @@ export function BrandSplash() {
       <div className="auralis-splash-cloud auralis-splash-cloud-b" />
       <div className="auralis-splash-cloud auralis-splash-cloud-c" />
       <div className="auralis-splash-mark">
-        <BrandGlyph size={58} className="auralis-splash-glyph shadow-soft" title="Auralis" />
-        <BrandWordmark tone="light" height={38} className="auralis-splash-word" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/app-icon.png"
+          alt=""
+          width={160}
+          height={160}
+          className="auralis-splash-glyph"
+          decoding="sync"
+          fetchPriority="high"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/wordmark-on-light.png"
+          alt="Auralis"
+          width={720}
+          height={148}
+          className="auralis-splash-word"
+          decoding="sync"
+          fetchPriority="high"
+        />
       </div>
     </div>
   );
+}
+
+/** Hero / page motion should wait for this; never skip on homepage refresh. */
+export function splashAlreadySeen(): boolean {
+  return false;
 }

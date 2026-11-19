@@ -341,56 +341,63 @@
   50% { transform: translate3d(2%, -2%, 0) scale(1.05); }
 }
 
+/* Lock scroll + keep page visually behind opaque splash until dissolve */
+html.auralis-splash-active,
+html.auralis-splash-active body {
+  overflow: hidden !important;
+}
+
 .auralis-splash {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: clamp(1rem, 4vw, 2.5rem);
   background:
-    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(255, 255, 255, 0.92), transparent 70%),
-    linear-gradient(165deg, #eef8f1 0%, #f7fbf8 48%, #e8f5ee 100%);
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255, 255, 255, 0.95), transparent 68%),
+    linear-gradient(165deg, #e8f5ee 0%, #f4faf6 46%, #eef8f1 100%);
   overflow: hidden;
 }
 
 .auralis-splash.is-out {
-  animation: auralisSplashCloudOut 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: auralisSplashCloudOut 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   pointer-events: none;
 }
 
 .auralis-splash-cloud {
   position: absolute;
   border-radius: 999px;
-  filter: blur(28px);
-  opacity: 0.55;
+  filter: blur(32px);
+  opacity: 0.58;
   animation: auralisSplashCloudDrift 7s ease-in-out infinite;
   pointer-events: none;
 }
 
 .auralis-splash-cloud-a {
-  width: min(42vw, 28rem);
-  height: min(28vw, 16rem);
-  left: 8%;
-  top: 18%;
-  background: rgba(168, 217, 190, 0.7);
+  width: min(52vw, 34rem);
+  height: min(34vw, 20rem);
+  left: 4%;
+  top: 12%;
+  background: rgba(168, 217, 190, 0.78);
 }
 
 .auralis-splash-cloud-b {
-  width: min(48vw, 32rem);
-  height: min(30vw, 18rem);
-  right: 6%;
-  bottom: 16%;
-  background: rgba(91, 184, 138, 0.35);
+  width: min(56vw, 38rem);
+  height: min(36vw, 22rem);
+  right: 2%;
+  bottom: 10%;
+  background: rgba(91, 184, 138, 0.38);
   animation-delay: -2s;
 }
 
 .auralis-splash-cloud-c {
-  width: min(36vw, 22rem);
-  height: min(22vw, 12rem);
-  left: 38%;
-  bottom: 28%;
-  background: rgba(255, 255, 255, 0.75);
+  width: min(44vw, 28rem);
+  height: min(26vw, 15rem);
+  left: 34%;
+  bottom: 22%;
+  background: rgba(255, 255, 255, 0.82);
   animation-delay: -3.5s;
 }
 
@@ -399,31 +406,32 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(201, 230, 214, 0.9);
-  box-shadow: 0 18px 50px -28px rgba(11, 20, 34, 0.35);
-  animation: auralisSplashMarkIn 700ms var(--ease-out) both;
+  gap: clamp(0.85rem, 3.2vw, 1.75rem);
+  width: min(92vw, 52rem);
+  padding: clamp(1.1rem, 3.5vw, 2rem) clamp(1.15rem, 4vw, 2.35rem);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(201, 230, 214, 0.95);
+  box-shadow: 0 24px 60px -28px rgba(11, 20, 34, 0.38);
+  animation: auralisSplashMarkIn 820ms var(--ease-out) both;
 }
 
 .auralis-splash-glyph {
-  border-radius: 0.9rem;
+  flex-shrink: 0;
+  width: clamp(4.25rem, 16vw, 8rem);
+  height: clamp(4.25rem, 16vw, 8rem);
+  border-radius: clamp(0.85rem, 2vw, 1.25rem);
+  object-fit: cover;
+  box-shadow: 0 10px 28px -16px rgba(11, 20, 34, 0.4);
 }
 
 .auralis-splash-word {
-  max-width: min(58vw, 14rem);
-}
-
-@media (min-width: 640px) {
-  .auralis-splash-mark {
-    gap: 1.15rem;
-    padding: 1.4rem 1.75rem;
-  }
-  .auralis-splash-word {
-    max-width: none;
-  }
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: clamp(2.6rem, 10vw, 5.25rem);
+  object-fit: contain;
+  object-position: left center;
 }
 
 /* ---------- Hero entry + headline crossfade ---------- */
@@ -482,8 +490,8 @@
   opacity: 0;
 }
 
-/* Only after hydration: hold a soft veil + hidden slots for one frame, then enter */
-.auralis-hero-stage[data-hero-ready="true"][data-hero-armed="false"][data-hero-reduced="false"] .auralis-hero-veil {
+/* Hero stays veiled until splash finishes — no homepage peek */
+.auralis-hero-stage[data-hero-ready="true"][data-hero-armed="false"] .auralis-hero-veil {
   opacity: 1;
 }
 
@@ -491,9 +499,15 @@
   animation: auralisHeroVeilLift 780ms var(--ease-out) both;
 }
 
-.auralis-hero-stage[data-hero-ready="true"][data-hero-armed="false"][data-hero-reduced="false"] .auralis-hero-copy [data-hero-slot],
-.auralis-hero-stage[data-hero-ready="true"][data-hero-armed="false"][data-hero-reduced="false"] .auralis-hero-board {
+.auralis-hero-stage[data-hero-ready="true"][data-hero-armed="false"] .auralis-hero-copy [data-hero-slot],
+.auralis-hero-stage[data-hero-ready="true"][data-hero-armed="false"] .auralis-hero-board {
   opacity: 0;
+  visibility: hidden;
+}
+
+.auralis-hero-stage[data-hero-armed="true"] .auralis-hero-copy [data-hero-slot],
+.auralis-hero-stage[data-hero-armed="true"] .auralis-hero-board {
+  visibility: visible;
 }
 
 .auralis-hero-stage[data-hero-armed="true"][data-hero-reduced="false"] .auralis-hero-copy [data-hero-slot] {

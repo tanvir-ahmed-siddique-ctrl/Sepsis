@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { splashAlreadySeen } from "@/components/marketing/BrandSplash";
 
 /**
- * First-paint hero choreography — waits for BrandSplash (if any), then
- * soft veil lifts and copy / board rise into place.
+ * Hero choreography — stays hidden until BrandSplash finishes, then rises in.
+ * Arms only on `auralis:splash-done` (every homepage refresh).
  */
 export function HeroEntrance({
   copy,
@@ -14,7 +13,6 @@ export function HeroEntrance({
   copy: ReactNode;
   showcase: ReactNode;
 }) {
-  const [ready, setReady] = useState(false);
   const [armed, setArmed] = useState(false);
   const [reduced, setReduced] = useState(false);
 
@@ -22,7 +20,6 @@ export function HeroEntrance({
     if (typeof window === "undefined") return;
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setReduced(prefersReduced);
-    setReady(true);
 
     const arm = () => {
       if (prefersReduced) {
@@ -34,15 +31,9 @@ export function HeroEntrance({
       });
     };
 
-    if (prefersReduced || splashAlreadySeen()) {
-      arm();
-      return;
-    }
-
     const onSplash = () => arm();
     window.addEventListener("auralis:splash-done", onSplash);
-    // Safety: never block hero forever if splash fails to fire
-    const fallback = window.setTimeout(arm, 2800);
+    const fallback = window.setTimeout(arm, 3200);
     return () => {
       window.removeEventListener("auralis:splash-done", onSplash);
       window.clearTimeout(fallback);
@@ -52,7 +43,7 @@ export function HeroEntrance({
   return (
     <div
       className="auralis-hero-stage relative"
-      data-hero-ready={ready ? "true" : "false"}
+      data-hero-ready="true"
       data-hero-armed={armed ? "true" : "false"}
       data-hero-reduced={reduced ? "true" : "false"}
     >
