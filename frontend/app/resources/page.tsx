@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "Resources | Auralis",
@@ -24,7 +25,7 @@ export default function ResourcesPage() {
         title={
           <>
             Clear technical &{" "}
-            <span className="font-serif italic font-normal text-teal">clinical documentation.</span>
+            <span className="text-teal">clinical documentation.</span>
           </>
         }
         description="Explore our model card, HL7/FHIR schemas, clinical workflows, and validation evidence."
@@ -45,7 +46,7 @@ export default function ResourcesPage() {
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{item.body}</p>
               </div>
-              <span className="mt-5 text-xs font-semibold text-teal">Read guide →</span>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-teal">Read guide<Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" /></span>
             </Link>
           ))}
         </div>

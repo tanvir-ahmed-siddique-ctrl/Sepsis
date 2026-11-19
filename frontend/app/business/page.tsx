@@ -10,9 +10,9 @@ const offers = [
 export default function BusinessPage() {
   return <div className="mx-auto max-w-6xl space-y-10 pb-16">
     <header className="max-w-3xl pt-8"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">For hospitals</p>
-      <h1 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">A measured path from ICU data to a usable early warning workflow.</h1>
-      <p className="mt-5 text-lg leading-8 text-ink/70">PredictRx combines hospital-local data mapping, input quality checks, model abstention, clinician review and silent evaluation. The hospital chooses whether evidence supports a later clinical rollout.</p>
-      <div className="mt-6 flex flex-wrap gap-3"><Link href="/connection" className="bg-accent px-5 py-3 text-sm font-medium text-white">Explore integration</Link><Link href="/judge" className="bg-white px-5 py-3 text-sm font-medium text-ink">Review evidence</Link></div>
+      <h1 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">A model worth the ICU — and a path that gets it there.</h1>
+      <p className="mt-5 text-lg leading-8 text-ink/70">Auralis ships a frozen, holdout-validated six-hour sepsis model (beat simpler baselines on Dataset B) with TrustGate and explainable drivers — then scopes readiness, silent evaluation, connector commissioning and an annual site licence so that model actually reaches a bed.</p>
+      <div className="mt-6 flex flex-wrap gap-3"><Link href="/deployment-integration" className="bg-accent px-5 py-3 text-sm font-medium text-white">Explore integration</Link><Link href="/contact" className="bg-white px-5 py-3 text-sm font-medium text-ink">Book a consultation</Link></div>
     </header>
     <section aria-labelledby="offer-title"><h2 id="offer-title" className="font-display text-3xl">How a hospital adopts</h2>
       <div className="mt-5 grid gap-6 md:grid-cols-2">{offers.map(offer=><article key={offer.step} className="bg-white p-6 shadow-sm"><p className="text-xs font-semibold tracking-widest text-accent">{offer.step} / {offer.fee}</p><h3 className="mt-3 font-display text-2xl">{offer.title}</h3><p className="mt-3 text-sm leading-7 text-ink/70">{offer.detail}</p></article>)}</div>

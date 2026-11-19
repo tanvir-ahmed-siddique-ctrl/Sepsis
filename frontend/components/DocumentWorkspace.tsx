@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { accountApi } from "@/lib/account-api";
+import { EmptyState, FileDrop, PageHeader, Pill } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 
 type Organization = { id: string; name: string };
 type Site = { id: string; organization_id: string; name: string };
 type Document = { id: string; organization_id: string; site_id: string | null; document_key: string; version: number; title: string; document_type: string; access: string; sha256: string; scan_status: string; approval_status: string; expires_on: string | null; lifecycle_status?: string; retention_until?: string | null; review_on?: string | null; retention_policy?: string; review_due?: boolean; retention_due?: boolean };
 const types = ["agreement", "proposal", "invoice_support", "licence_record", "training", "deployment", "compliance", "other_commercial"];
-const input = "mt-1 block w-full border border-[#C6CECA] bg-white p-2";
+const input = "auralis-input mt-1.5";
+const MAX_DOCUMENT_BYTES = 1_000_000;
+
+function approvalTone(status: string) {
+  if (status === "approved") return "success" as const;
+  if (status === "rejected") return "danger" as const;
+  return "warning" as const;
+}
 
 export function DocumentWorkspace({ vendor }: { vendor: boolean }) {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -28,7 +37,8 @@ export function DocumentWorkspace({ vendor }: { vendor: boolean }) {
   useEffect(() => { void load(); }, []);
   async function upload(event: React.FormEvent) {
     event.preventDefault();
-    if (!file || file.size > 1_000_000 || file.type !== "application/pdf") { setError("Choose a PDF below 1 MB"); return; }
+    if (!file || file.size > MAX_DOCUMENT_BYTES || file.type !== "application/pdf") { setError("Choose a PDF below 1 MB"); return; }
+    setError(null);
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -50,6 +60,207 @@ export function DocumentWorkspace({ vendor }: { vendor: boolean }) {
       await load();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Lifecycle update failed"); }
   }
-  if (loading) return <p role="status" className="py-8 text-sm text-slate">Loading documents…</p>;
-  return <div className="space-y-9"><header className="border-b border-border pb-7"><p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal">{vendor ? "Vendor Control Plane" : "Customer Portal"}</p><h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">Document centre</h1><p className="mt-3 text-sm text-muted">Private commercial and governance PDFs only. No patient records or raw clinical exports belong in this vault.</p></header>{error && <p role="alert" className="border-l-2 border-risk-watch bg-warm p-4 text-sm">{error}</p>}{notice && <p role="status" className="border-l-2 border-forest bg-warm p-4 text-sm">{notice}</p>}<section><h2 className="text-xl font-semibold">Registered documents</h2><div className="mt-4 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b border-[#D6DCD8] text-xs uppercase tracking-wider text-slate"><th className="py-3">Title</th><th>Scope</th><th>Version</th><th>Type</th><th>Status</th><th>Retention</th><th>Action</th></tr></thead><tbody>{documents.map((d) => <tr key={d.id} className="border-b border-[#D6DCD8]"><td className="py-3 font-semibold">{d.title}<small className="block font-mono text-[11px] font-normal text-slate">SHA-256 {d.sha256.slice(0, 16)}…</small></td><td>{d.organization_id}{d.site_id ? ` / ${d.site_id}` : ""}</td><td>{d.version}</td><td>{d.document_type.replaceAll("_", " ")}</td><td>{d.approval_status.replaceAll("_", " ")} · {(d.lifecycle_status || "draft").replaceAll("_", " ")}</td><td>{d.retention_until || "—"}{d.review_due || d.retention_due ? " · due" : ""}</td><td className="space-x-2">{d.approval_status === "approved" && d.lifecycle_status !== "destroyed" ? <a href={`/api/account/v1/documents/${encodeURIComponent(d.id)}/download`} className="text-forest underline underline-offset-2">Download PDF ↓</a> : vendor && d.approval_status === "draft" ? <button type="button" onClick={() => void approve(d)} className="border px-3 py-1">Approve</button> : "—"}{vendor && d.approval_status === "approved" && d.lifecycle_status !== "destroyed" && <select aria-label={`Lifecycle for ${d.id}`} defaultValue="" onChange={(event) => { if (event.target.value) void updateLifecycle(d, event.target.value); event.target.value = ""; }} className="border bg-white p-1"><option value="">Lifecycle</option><option value="under_review">Under review</option><option value="archived">Archive</option><option value="destroyed">Destroy</option><option value="active">Active</option></select>}</td></tr>)}</tbody></table>{!documents.length && <p className="py-4 text-sm text-slate">No accessible document.</p>}</div></section>{vendor && <form onSubmit={(event) => void upload(event)} className="grid max-w-3xl gap-4 border-t border-[#D6DCD8] pt-7 text-sm sm:grid-cols-2"><h2 className="text-xl font-semibold sm:col-span-2">Register a PDF</h2><p className="text-xs text-slate sm:col-span-2">Production uploads fail closed unless encryption and an approved malware scanner are configured. Legal approval is a separate human decision.</p><label>Organization<select required value={form.organization_id} onChange={(event) => setForm({ ...form, organization_id: event.target.value, site_id: "" })} className={input}><option value="">Select organization</option>{orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></label><label>Site (optional)<select value={form.site_id} onChange={(event) => setForm({ ...form, site_id: event.target.value })} className={input}><option value="">Organization wide</option>{sites.filter((s) => s.organization_id === form.organization_id).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label><label>Stable document key<input required pattern="[a-z0-9][a-z0-9-]{2,79}" value={form.document_key} onChange={(event) => setForm({ ...form, document_key: event.target.value })} className={input} /></label><label>Version<input required type="number" min="1" value={form.version} onChange={(event) => setForm({ ...form, version: Number(event.target.value) })} className={input} /></label><label>Title<input required minLength={3} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className={input} /></label><label>Type<select value={form.document_type} onChange={(event) => setForm({ ...form, document_type: event.target.value })} className={input}>{types.map((type) => <option key={type} value={type}>{type.replaceAll("_", " ")}</option>)}</select></label><label>Audience<select value={form.access} onChange={(event) => setForm({ ...form, access: event.target.value })} className={input}><option value="customer_visible">Customer visible after approval</option><option value="vendor_only">Vendor only</option></select></label><label>Owner role<input required minLength={2} value={form.owner_role} onChange={(event) => setForm({ ...form, owner_role: event.target.value })} className={input} /></label><label>Expiry (if applicable)<input type="date" value={form.expires_on} onChange={(event) => setForm({ ...form, expires_on: event.target.value })} className={input} /></label><label>Retention policy<select value={form.retention_policy} onChange={(event) => setForm({ ...form, retention_policy: event.target.value })} className={input}><option value="contractual">Contractual</option><option value="regulatory">Regulatory</option><option value="operational">Operational</option><option value="training">Training</option><option value="legal_hold">Legal hold</option></select></label><label>PDF (1 MB maximum)<input required type="file" accept="application/pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} className={input} /></label><button className="justify-self-start bg-forest px-4 py-2 font-semibold text-white sm:col-span-2">Upload draft</button></form>}</div>;
+
+  if (loading) {
+    return (
+      <div className="space-y-3" role="status" aria-label="Loading documents">
+        <div className="auralis-skeleton h-8 w-64" />
+        <div className="auralis-skeleton h-40 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow={vendor ? "Vendor control plane" : "Customer portal"}
+        title="Document centre"
+        description="Private commercial and governance PDFs only. No patient records or raw clinical exports belong in this vault."
+      />
+      {error && (
+        <p role="alert" className="flex items-center gap-2 rounded-lg border border-risk-high/25 bg-risk-high/[0.05] px-3.5 py-2.5 text-sm text-risk-high">
+          <Icon name="alert" size={16} />
+          {error}
+        </p>
+      )}
+      {notice && (
+        <p role="status" className="flex items-center gap-2 rounded-lg border border-risk-stable/25 bg-risk-stable/[0.05] px-3.5 py-2.5 text-sm text-risk-stable">
+          <Icon name="check" size={16} />
+          {notice}
+        </p>
+      )}
+
+      <section className="auralis-panel">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-ink">Registered documents</h2>
+          <span className="text-xs text-muted">{documents.length} accessible</span>
+        </div>
+        {!documents.length ? (
+          <EmptyState
+            icon="doc"
+            title="No accessible documents"
+            body={vendor ? "Register a PDF below. It stays a draft until it is scanned and approved." : "Documents shared with your organisation appear here after vendor approval."}
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="auralis-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Scope</th>
+                  <th>Version</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Retention</th>
+                  <th className="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documents.map((d) => (
+                  <tr key={d.id}>
+                    <td>
+                      <span className="font-medium text-ink">{d.title}</span>
+                      <small className="block font-mono text-[11px] text-muted">SHA-256 {d.sha256.slice(0, 16)}…</small>
+                    </td>
+                    <td className="text-muted">
+                      {d.organization_id}
+                      {d.site_id ? ` / ${d.site_id}` : ""}
+                    </td>
+                    <td className="tabular-nums">v{d.version}</td>
+                    <td className="capitalize">{d.document_type.replaceAll("_", " ")}</td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        <Pill tone={approvalTone(d.approval_status)}>{d.approval_status.replaceAll("_", " ")}</Pill>
+                        <Pill>{(d.lifecycle_status || "draft").replaceAll("_", " ")}</Pill>
+                      </div>
+                    </td>
+                    <td className="text-muted">
+                      {d.retention_until || "—"}
+                      {(d.review_due || d.retention_due) && <span className="ml-1 font-medium text-risk-watch">· due</span>}
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-end gap-2">
+                        {d.approval_status === "approved" && d.lifecycle_status !== "destroyed" ? (
+                          <a href={`/api/account/v1/documents/${encodeURIComponent(d.id)}/download`} className="auralis-btn-secondary auralis-btn-sm">
+                            <Icon name="file" size={15} />
+                            Download
+                          </a>
+                        ) : vendor && d.approval_status === "draft" ? (
+                          <button type="button" onClick={() => void approve(d)} className="auralis-btn-secondary auralis-btn-sm">
+                            Approve
+                          </button>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                        {vendor && d.approval_status === "approved" && d.lifecycle_status !== "destroyed" && (
+                          <select
+                            aria-label={`Lifecycle for ${d.title}`}
+                            defaultValue=""
+                            onChange={(event) => {
+                              if (event.target.value) void updateLifecycle(d, event.target.value);
+                              event.target.value = "";
+                            }}
+                            className="auralis-input h-9 w-auto py-0 text-[13px]"
+                          >
+                            <option value="">Lifecycle</option>
+                            <option value="under_review">Under review</option>
+                            <option value="archived">Archive</option>
+                            <option value="destroyed">Destroy</option>
+                            <option value="active">Active</option>
+                          </select>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {vendor && (
+        <form onSubmit={(event) => void upload(event)} className="auralis-panel grid gap-4 text-sm sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <h2 className="text-base font-semibold text-ink">Register a PDF</h2>
+            <p className="mt-1 text-sm text-muted">
+              Production uploads fail closed unless encryption and an approved malware scanner are configured. Legal approval is a separate human decision.
+            </p>
+          </div>
+          <label className="auralis-label">
+            Organization
+            <select required value={form.organization_id} onChange={(event) => setForm({ ...form, organization_id: event.target.value, site_id: "" })} className={input}>
+              <option value="">Select organization</option>
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          </label>
+          <label className="auralis-label">
+            Site (optional)
+            <select value={form.site_id} onChange={(event) => setForm({ ...form, site_id: event.target.value })} className={input}>
+              <option value="">Organization wide</option>
+              {sites
+                .filter((s) => s.organization_id === form.organization_id)
+                .map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+            </select>
+          </label>
+          <label className="auralis-label">
+            Stable document key
+            <input required pattern="[a-z0-9][a-z0-9-]{2,79}" value={form.document_key} onChange={(event) => setForm({ ...form, document_key: event.target.value })} className={input} placeholder="e.g. master-services-agreement" />
+          </label>
+          <label className="auralis-label">
+            Version
+            <input required type="number" min="1" value={form.version} onChange={(event) => setForm({ ...form, version: Number(event.target.value) })} className={input} />
+          </label>
+          <label className="auralis-label">
+            Title
+            <input required minLength={3} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} className={input} />
+          </label>
+          <label className="auralis-label">
+            Type
+            <select value={form.document_type} onChange={(event) => setForm({ ...form, document_type: event.target.value })} className={input}>
+              {types.map((type) => (
+                <option key={type} value={type}>{type.replaceAll("_", " ")}</option>
+              ))}
+            </select>
+          </label>
+          <label className="auralis-label">
+            Audience
+            <select value={form.access} onChange={(event) => setForm({ ...form, access: event.target.value })} className={input}>
+              <option value="customer_visible">Customer visible after approval</option>
+              <option value="vendor_only">Vendor only</option>
+            </select>
+          </label>
+          <label className="auralis-label">
+            Owner role
+            <input required minLength={2} value={form.owner_role} onChange={(event) => setForm({ ...form, owner_role: event.target.value })} className={input} />
+          </label>
+          <label className="auralis-label">
+            Expiry (if applicable)
+            <input type="date" value={form.expires_on} onChange={(event) => setForm({ ...form, expires_on: event.target.value })} className={input} />
+          </label>
+          <label className="auralis-label">
+            Retention policy
+            <select value={form.retention_policy} onChange={(event) => setForm({ ...form, retention_policy: event.target.value })} className={input}>
+              <option value="contractual">Contractual</option>
+              <option value="regulatory">Regulatory</option>
+              <option value="operational">Operational</option>
+              <option value="training">Training</option>
+              <option value="legal_hold">Legal hold</option>
+            </select>
+          </label>
+          <div className="sm:col-span-2">
+            <FileDrop label="PDF document" accept="application/pdf,.pdf" acceptLabel="PDF" maxBytes={MAX_DOCUMENT_BYTES} limitLabel="1 MB" file={file} onFile={setFile} required />
+          </div>
+          <button type="submit" disabled={!file} className="auralis-btn-primary justify-self-start sm:col-span-2">
+            <Icon name="upload" size={16} />
+            Upload draft
+          </button>
+        </form>
+      )}
+    </div>
+  );
 }

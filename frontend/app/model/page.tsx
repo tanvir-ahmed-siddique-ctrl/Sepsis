@@ -216,21 +216,23 @@ export default function ModelPage() {
           {Object.entries(data.subgroups_internal_test ?? {}).map(([gname, groups]) => (
             <div key={gname}>
               <p className="mb-1 text-xs font-medium uppercase tracking-wide text-ink/50">{gname.replace("_", " ")}</p>
-              <table className="w-full text-left text-sm">
-                <thead className="text-xs text-ink/45">
-                  <tr><th className="font-medium">Group</th><th className="font-medium">AUROC</th><th className="font-medium">AUPRC</th><th className="font-medium">Sensitivity</th></tr>
-                </thead>
-                <tbody>
-                  {Object.entries(groups).map(([g, m]) => (
-                    <tr key={g} className="border-t border-ink/5">
-                      <td className="py-1">{g}</td>
-                      <td className="tabular-nums">{num(m.auroc)}</td>
-                      <td className="tabular-nums">{num(m.auprc)}</td>
-                      <td className="tabular-nums">{pct(m.sensitivity, 1)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="auralis-table-scroll">
+                <table className="w-full min-w-[28rem] text-left text-sm">
+                  <thead className="text-xs text-ink/45">
+                    <tr><th className="font-medium">Group</th><th className="font-medium">AUROC</th><th className="font-medium">AUPRC</th><th className="font-medium">Sensitivity</th></tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(groups).map(([g, m]) => (
+                      <tr key={g} className="border-t border-ink/5">
+                        <td className="py-1">{g}</td>
+                        <td className="tabular-nums">{num(m.auroc)}</td>
+                        <td className="tabular-nums">{num(m.auprc)}</td>
+                        <td className="tabular-nums">{pct(m.sensitivity, 1)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ))}
         </div>

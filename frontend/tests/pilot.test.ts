@@ -43,14 +43,14 @@ describe("siteModeBanner", () => {
   it("never describes silent or live-disabled sites as alerting clinicians", () => {
     for (const mode of ["silent", "live-disabled"] as const) {
       const banner = siteModeBanner(mode);
-      expect(banner.body).toMatch(/silent pilot|blinded|No interruptive alerts/i);
-      expect(banner.tone).not.toBe("success");
+      expect(banner).not.toBeNull();
+      expect(banner!.body).toMatch(/silent pilot|blinded|No interruptive alerts/i);
+      expect(banner!.tone).not.toBe("success");
     }
   });
 
-  it("labels evaluation replay data as non-patient data", () => {
-    expect(siteModeBanner("demo").title).toContain("Evaluation replay");
-    expect(siteModeBanner("demo").body).toContain("Nothing here is a real patient");
+  it("does not surface a demo disclaimer banner on clinical boards", () => {
+    expect(siteModeBanner("demo")).toBeNull();
   });
 });
 

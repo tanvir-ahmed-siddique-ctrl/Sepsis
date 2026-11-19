@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function PortalPage() {
-  return <div className="mx-auto max-w-5xl py-10"><CustomerWorkspace /></div>;
+  return <div className="mx-auto max-w-6xl py-10"><CustomerWorkspace /></div>;
 }

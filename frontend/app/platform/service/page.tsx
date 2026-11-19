@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { ServiceWorkspace } from "@/components/ServiceWorkspace";
+import { BackLink } from "@/components/ui";
 
 export const metadata = { title: "Deployment & service operations | Auralis", robots: { index: false, follow: false } };
 
 export default function VendorServicePage() {
-  return <div className="mx-auto max-w-6xl py-10"><Link href="/platform/accounts" className="mb-7 inline-block text-sm font-semibold text-forest underline underline-offset-2">← Organization registry</Link><ServiceWorkspace vendor /></div>;
+  return <div className="mx-auto max-w-6xl py-10"><BackLink href="/platform/accounts" label="Organization registry" className="mb-6" /><ServiceWorkspace vendor /></div>;
 }

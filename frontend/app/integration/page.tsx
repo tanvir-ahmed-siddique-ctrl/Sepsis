@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { MappingCopilot } from "@/components/MappingCopilot";
-import { ApiError, KeyValue, Panel, Pill, SiteModeBanner, Stat } from "@/components/ui";
+import { ApiError, FileDrop, KeyValue, Panel, Pill, SiteModeBanner, Stat } from "@/components/ui";
 import { api, isStatus, pct, type ConnectorHealth, type SiteMode } from "@/lib/api";
 import { connectorTone, humanize, minutesLabel } from "@/lib/pilot";
 import { usePoll } from "@/lib/usePoll";
+
+const INTEGRATION_MAX_BYTES = 10 * 1024 * 1024;
 
 type IntegrationStatus = {
   site: { effective_mode: SiteMode; soft_landing?: boolean };
@@ -309,12 +311,12 @@ export default function IntegrationPage() {
             Unknown codes, units or timestamps go to quarantine.
           </p>
           <div className="space-y-3 text-sm">
-            <input type="file" accept=".csv,text/csv" onChange={(event) => setCsvFile(event.target.files?.[0] ?? null)} />
+            <FileDrop label="Lab results file" accept=".csv,text/csv" acceptLabel="CSV" maxBytes={INTEGRATION_MAX_BYTES} file={csvFile} onFile={setCsvFile} compact />
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={csvBackfill} onChange={(event) => setCsvBackfill(event.target.checked)} />
               Retrospective backfill (shadow alerts only)
             </label>
-            <button type="button" disabled={!csvFile} onClick={() => void uploadCsv()} className="border border-ink/20 px-3 py-1.5 disabled:opacity-40">
+            <button type="button" disabled={!csvFile} onClick={() => void uploadCsv()} className="auralis-btn-primary auralis-btn-sm">
               Validate and import
             </button>
           </div>
@@ -325,8 +327,8 @@ export default function IntegrationPage() {
             Use de-identified commissioning messages until the hospital signs off its interface profile.
           </p>
           <div className="space-y-3 text-sm">
-            <input type="file" accept=".hl7,.txt,text/plain" onChange={(event) => setAdtFile(event.target.files?.[0] ?? null)} />
-            <button type="button" disabled={!adtFile} onClick={() => void uploadAdt()} className="border border-ink/20 px-3 py-1.5 disabled:opacity-40">
+            <FileDrop label="ADT message" accept=".hl7,.txt,text/plain" acceptLabel="HL7 v2 (.hl7 or .txt)" maxBytes={INTEGRATION_MAX_BYTES} file={adtFile} onFile={setAdtFile} compact />
+            <button type="button" disabled={!adtFile} onClick={() => void uploadAdt()} className="auralis-btn-primary auralis-btn-sm">
               Validate and apply ADT
             </button>
           </div>
@@ -341,12 +343,12 @@ export default function IntegrationPage() {
             Unknown codes quarantine until mapped.
           </p>
           <div className="space-y-3 text-sm">
-            <input type="file" accept=".json,application/json" onChange={(event) => setVendorFile(event.target.files?.[0] ?? null)} />
+            <FileDrop label="Adapter batch" accept=".json,application/json" acceptLabel="JSON" maxBytes={INTEGRATION_MAX_BYTES} file={vendorFile} onFile={setVendorFile} compact />
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={vendorBackfill} onChange={(event) => setVendorBackfill(event.target.checked)} />
               Retrospective backfill (shadow alerts only)
             </label>
-            <button type="button" disabled={!vendorFile} onClick={() => void uploadVendorAdapter()} className="border border-ink/20 px-3 py-1.5 disabled:opacity-40">
+            <button type="button" disabled={!vendorFile} onClick={() => void uploadVendorAdapter()} className="auralis-btn-primary auralis-btn-sm">
               Validate and import adapter batch
             </button>
           </div>

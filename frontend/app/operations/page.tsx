@@ -45,7 +45,13 @@ export default function OperationsPage() {
   );
 
   if (!me) return <p className="text-sm text-ink/60">Sign in as a hospital administrator or platform operator.</p>;
-  if (!allowed) return <ApiError error="Operations console requires the admin or operator role." />;
+  if (!allowed) {
+    return (
+      <ApiError
+        error="Site operations require the hospital admin or platform operator role. Clinical IT can use Integrations and Connectivity; readiness gates and ops metadata stay with admin/operator."
+      />
+    );
+  }
   const error = ops.error ?? feeds.error ?? gates.error;
   if (error) return <ApiError error={error} />;
   if (!ops.data || !feeds.data) return <p className="text-sm text-ink/60">Loading deployment health…</p>;

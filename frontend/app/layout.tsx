@@ -1,9 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource/instrument-serif/400.css";
-import "@fontsource/instrument-serif/400-italic.css";
-import "@fontsource/manrope/500.css";
-import "@fontsource/manrope/600.css";
-import "@fontsource/manrope/700.css";
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
@@ -21,11 +16,17 @@ export const metadata: Metadata = {
   title: "Auralis",
   description: "Auralis hospital-local ICU sepsis-risk review with accountable clinician oversight",
   manifest: "/manifest.webmanifest",
-  icons: { icon: "/app-icon.svg", apple: "/app-icon.svg" },
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/app-icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/app-icon.png", sizes: "512x512", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#087E83",
+  themeColor: "#0B1422",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

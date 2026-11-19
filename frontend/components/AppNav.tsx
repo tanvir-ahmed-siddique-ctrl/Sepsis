@@ -19,9 +19,10 @@ const clinicalViewer = [
   { href: "/app/handoff", label: "Handoff" }, { href: "/app/staff", label: "Staff" },
 ];
 const clinicalIt = [
-  { href: "/app/admin/integrations", label: "Integrations" }, { href: "/connection", label: "Connection ladder" },
-  { href: "/integration", label: "Integration hub" }, { href: "/app/admin/readiness", label: "Readiness" },
-  { href: "/app/admin/operations", label: "Site operations" }, { href: "/app/staff", label: "Staff" },
+  { href: "/deploy", label: "Deployment home" },
+  { href: "/app/admin/integrations", label: "Integrations" },
+  { href: "/connection", label: "Connection ladder" },
+  { href: "/integration", label: "Integration hub" },
 ];
 const admin = [
   { href: "/app/admin/overview", label: "Admin home" }, { href: "/app/admin/users", label: "Users" },
@@ -70,7 +71,12 @@ export function AppNav() {
       ? clinicalIt
       : clinical.filter((item) => me?.role !== "integration");
   const links = !me ? [] : isOperator
-    ? [{ href: "/platform/overview", label: "Control plane" }, { href: "/app/admin/operations", label: "Site diagnostics" }, { href: "/business", label: "Commercial model" }]
+    ? [
+        { href: "/platform/overview", label: "Control plane" },
+        { href: "/operations", label: "Site diagnostics" },
+        { href: "/readiness", label: "Readiness gates" },
+        { href: "/business", label: "Commercial model" },
+      ]
     : [...hospitalLinks, { href: "/workflows", label: "Workflow guide" }];
   const accountLinks = account?.vendor
     ? [

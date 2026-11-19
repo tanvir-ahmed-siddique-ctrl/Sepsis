@@ -35,10 +35,26 @@ function renderValue(value: unknown): string {
 const LONG_TEXT = new Set(["description", "finding", "interpretation", "evidence"]);
 
 export default function ReadinessPage() {
-  const { isAdmin: admin, isOperator } = useSession();
-  const isAdmin = admin || isOperator;
-  const { data, error } = usePoll(() => api<Passport>("/v1/model/passport"), 30000);
-  const site = usePoll(() => (isAdmin ? api<Readiness>("/v1/site/readiness") : Promise.resolve(null)), 30000, [isAdmin]);
+  const { me, isAdmin: admin, isOperator, loading } = useSession();
+  const canSeePassport = Boolean(me && (admin || isOperator || me.role === "clinician" || me.role === "nurse"));
+  const canSeeSiteGates = Boolean(admin || isOperator);
+  const { data, error } = usePoll(
+    () => (canSeePassport ? api<Passport>("/v1/model/passport") : Promise.resolve(null)),
+    30000,
+    [canSeePassport],
+  );
+  const site = usePoll(
+    () => (canSeeSiteGates ? api<Readiness>("/v1/site/readiness") : Promise.resolve(null)),
+    30000,
+    [canSeeSiteGates],
+  );
+  if (loading) return <p className="text-sm text-ink/60">Checking access…</p>;
+  if (!me) return <p className="text-sm text-ink/60">Sign in as a hospital administrator or platform operator to open readiness gates.</p>;
+  if (!canSeePassport) {
+    return (
+      <ApiError error="Readiness passport and live site gates require hospital admin, clinician, nurse, or platform operator. Clinical IT uses Integrations and Connectivity instead." />
+    );
+  }
   if (error) return <ApiError error={error} />;
   if (!data) return <p className="text-sm text-ink/60">Loading hospital readiness passport…</p>;
 
@@ -61,8 +77,8 @@ export default function ReadinessPage() {
       </Panel>
 
       {site.data && <GatesPanel gates={site.data.gates} policy={site.data.policy} />}
-      {!isAdmin && (
-        <p className="text-xs text-ink/55">Live site gates (silent-pilot evidence) are visible to pilot administrators.</p>
+      {!canSeeSiteGates && (
+        <p className="text-xs text-ink/55">Live site gates (silent-pilot evidence) are visible to hospital administrators and platform operators.</p>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">

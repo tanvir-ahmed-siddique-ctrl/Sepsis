@@ -3,30 +3,27 @@ import type { Alert, ConnectorHealth, Gate, SiteMode } from "@/lib/api";
 export type Tone = "neutral" | "info" | "warning" | "danger" | "success";
 
 export const TONE_CLASS: Record<Tone, string> = {
-  neutral: "border-ink/15 bg-white text-ink",
-  info: "border-accent/40 bg-accent/5 text-ink",
-  warning: "border-risk-watch/40 bg-risk-watch/5 text-ink",
-  danger: "border-risk-high/40 bg-risk-high/5 text-ink",
-  success: "border-risk-stable/40 bg-risk-stable/5 text-ink",
+  neutral: "border-border bg-white text-ink",
+  info: "border-teal/25 bg-teal-soft/50 text-teal-dark",
+  warning: "border-risk-watch/30 bg-risk-watch/[0.06] text-[#7A4505]",
+  danger: "border-risk-high/30 bg-risk-high/[0.06] text-risk-high",
+  success: "border-risk-stable/30 bg-risk-stable/[0.06] text-risk-stable",
 };
 
 export function humanize(value: string): string {
   return value.replaceAll("_", " ").replaceAll("-", " ");
 }
 
-export function siteModeBanner(mode: SiteMode): { tone: Tone; title: string; body: string } {
+export function siteModeBanner(mode: SiteMode): { tone: Tone; title: string; body: string } | null {
   switch (mode) {
     case "demo":
-      return {
-        tone: "info",
-        title: "Evaluation replay mode",
-        body: "Held-out PhysioNet replay and synthetic integration data. Nothing here is a real patient.",
-      };
+      // Clinical boards present the workspace without a loud evaluation disclaimer.
+      return null;
     case "silent":
       return {
         tone: "warning",
         title: "Silent pilot",
-        body: "Real feeds are scored and recorded. Bedside staff are blinded and alerts are shadow-only.",
+        body: "Feeds are scored and recorded. Bedside staff are blinded and alerts are shadow-only.",
       };
     case "live-disabled":
       return {

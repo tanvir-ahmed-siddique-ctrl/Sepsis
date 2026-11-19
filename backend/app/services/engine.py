@@ -1016,7 +1016,14 @@ class Engine:
                     )
                     continue
                 was_late = bool(len(p.raw) and hour < int(p.raw["_hour"].max()))
-                p.raw.loc[mask, ob.code] = checked.value
+                # Vital/lab feeds are continuous. Seed/replay frames may create int64
+                # columns first; assigning a fractional value (e.g. Temp 37.5, O2Sat 92.5)
+                # must not TypeError and degrade the native_json connector.
+                if ob.code not in p.raw.columns:
+                    p.raw[ob.code] = np.nan
+                elif checked.value is not None and not pd.api.types.is_float_dtype(p.raw[ob.code]):
+                    p.raw[ob.code] = pd.to_numeric(p.raw[ob.code], errors="coerce").astype("float64")
+                p.raw.loc[mask, ob.code] = None if checked.value is None else float(checked.value)
                 p.observation_meta[(hour, ob.code)] = {
                     "unit": checked.canonical_unit,
                     "source": ob.source,

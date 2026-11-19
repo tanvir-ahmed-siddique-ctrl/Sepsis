@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ApiError, KeyValue, Panel, Pill, Stat } from "@/components/ui";
+import { ApiError, KeyValue, PageHeader, Panel, Pill, Stat } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 import { api } from "@/lib/api";
 import { humanize } from "@/lib/pilot";
 import { useSession } from "@/lib/session";
@@ -105,20 +106,16 @@ export default function EvidencePage() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <header className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Evidence centre</p>
-        <h1 className="font-display text-4xl">Every claim, its proof, and what is still missing.</h1>
-        <p className="max-w-3xl text-ink/65">
-          Auralis is a hospital-local ICU intelligence layer that must earn the right to alert.
-          This page separates what is built, what has been measured, and what still requires external proof —
-          so nothing here needs to be taken on trust.
-        </p>
-      </header>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <PageHeader
+        eyebrow="Evidence centre"
+        title="Every claim, its proof, and what is still missing"
+        description="Auralis is a hospital-local ICU intelligence layer that must earn the right to alert. This page separates what is built, what has been measured, and what still requires external proof — so nothing here needs to be taken on trust."
+      />
 
       {(ready.error || model.error) && <ApiError error={(ready.error ?? model.error) as Error} />}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <Stat label="Site mode" value={ready.data ? humanize(ready.data.site_mode) : "…"} />
         <Stat label="Model frozen" value={model.data ? (model.data.frozen ? "Yes" : "No") : "…"} />
         <Stat
@@ -152,7 +149,7 @@ export default function EvidencePage() {
             />
             <KeyValue label="CPU latency / prediction" value={model.data.cpu_latency_ms_per_prediction ? `≈ ${model.data.cpu_latency_ms_per_prediction} ms` : "—"} />
           </dl>
-          <p className="mt-3 text-sm text-ink/60">
+          <p className="mt-3 text-sm text-muted">
             Dataset B is a geographically distinct public cohort scored once after freezing. It is retrospective
             evidence, not Bangladesh validation and not proof of clinical benefit.
           </p>
@@ -160,24 +157,30 @@ export default function EvidencePage() {
       )}
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl">Judging criteria — claim → proof → measurement → gap</h2>
+        <div>
+          <p className="auralis-eyebrow">Judging criteria</p>
+          <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-ink">Claim → proof → measurement → gap</h2>
+        </div>
         {CRITERIA.map((item) => (
           <Panel key={item.name} title={item.name}>
-            <div className="space-y-3 text-sm">
-              <p><strong>Claim.</strong> {item.claim}</p>
+            <div className="space-y-3 text-sm leading-6">
+              <p><strong className="text-ink">Claim.</strong> <span className="text-muted">{item.claim}</span></p>
               <p>
-                <strong>Live proof.</strong>{" "}
+                <strong className="text-ink">Live proof.</strong>{" "}
                 {item.proof.map(([href, label], index) => (
                   <span key={href}>
                     {index > 0 && " · "}
-                    <Link href={href} className="font-medium text-accent underline">{label}</Link>
+                    <Link href={href} className="inline-flex items-center gap-1 font-medium text-teal hover:text-teal-dark">
+                      {label}
+                      <Icon name="arrow-right" size={13} />
+                    </Link>
                   </span>
                 ))}
               </p>
-              <p><strong>Measured.</strong> {item.measured}</p>
+              <p><strong className="text-ink">Measured.</strong> <span className="text-muted">{item.measured}</span></p>
               <p className="flex flex-wrap items-center gap-2">
                 <Pill tone={item.status === "Measured" ? "success" : item.status === "Built" ? "info" : "warning"}>{item.status}</Pill>
-                <span className="text-ink/60"><strong>Still missing:</strong> {item.gap}</span>
+                <span className="text-muted"><strong className="text-ink">Still missing:</strong> {item.gap}</span>
               </p>
             </div>
           </Panel>
@@ -186,65 +189,68 @@ export default function EvidencePage() {
 
       <Panel title="Why this is not a score-only dashboard">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="text-ink/50">
+          <table className="auralis-table min-w-[640px]">
+            <thead>
               <tr>
-                <th className="py-2 pr-3">Situation</th>
-                <th className="py-2 pr-3">Rule-based EHR alert</th>
-                <th className="py-2 pr-3">Score-only ML</th>
-                <th className="py-2">Auralis</th>
+                <th>Situation</th>
+                <th>Rule-based EHR alert</th>
+                <th>Score-only ML</th>
+                <th>Auralis</th>
               </tr>
             </thead>
             <tbody>
               {COMPARISON.map(([situation, rule, scoreOnly, ours]) => (
-                <tr key={situation} className="border-t border-ink/5 align-top">
-                  <td className="py-2 pr-3 font-medium">{situation}</td>
-                  <td className="py-2 pr-3 text-ink/65">{rule}</td>
-                  <td className="py-2 pr-3 text-ink/65">{scoreOnly}</td>
-                  <td className="py-2 text-ink/85">{ours}</td>
+                <tr key={situation} className="align-top">
+                  <td className="font-medium text-ink">{situation}</td>
+                  <td className="text-muted">{rule}</td>
+                  <td className="text-muted">{scoreOnly}</td>
+                  <td className="text-ink">{ours}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-ink/50">
+        <p className="mt-3 auralis-help">
           Generic archetypes for mechanism comparison — not claims about any named product.
         </p>
       </Panel>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl">Impact &amp; ethics — the sourced case</h2>
-        <div className="flex flex-wrap gap-3">
+        <div>
+          <p className="auralis-eyebrow">Impact &amp; ethics</p>
+          <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-ink">The sourced case</h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
           <Stat label="Sepsis cases / deaths, 2017 (global)" value="48.9M / 11.0M" />
           <Stat label="Of all deaths worldwide" value="19.7%" />
           <Stat label="Severe-sepsis mortality, 14 BD ICUs" value="49.2%" />
           <Stat label="Critical-care beds per 100k (BD)" value="1.8" />
           <Stat label="Survival lost per hour of antibiotic delay (shock)" value="≈7.6%" />
         </div>
-        <p className="text-xs text-ink/50">
+        <p className="auralis-help">
           Sources: Rudd et al., The Lancet 2020 (GBD); Bangladesh Crit Care J 2013 (complete bundle compliance was zero);
           Lancet Regional Health – Western Pacific 2023 and BCCJ 2022 (2,177 ICU beds; 38 of 64 districts have none);
           Kumar et al., Critical Care Medicine 2006. Full dossier: <code>docs/impact-evidence.md</code>.
         </p>
 
         <Panel title="Why the field's own evidence shaped this design">
-          <div className="space-y-3 text-sm text-ink/80">
+          <div className="space-y-3 text-sm leading-6 text-muted">
             <p>
-              <strong>The failure mode.</strong> The proprietary Epic Sepsis Model, deployed in hundreds of US
+              <strong className="text-ink">The failure mode.</strong> The proprietary Epic Sepsis Model, deployed in hundreds of US
               hospitals, externally validated at AUROC 0.63: it alerted on 18% of hospitalizations, missed 67% of
               sepsis cases, and had a positive predictive value of 12% (Wong et al., JAMA Internal Medicine 2021).
               Clinicians override 49–96% of computerised safety alerts (van der Sijs 2006). Unvalidated,
               unexplained alerting at scale is itself a patient-safety hazard.
             </p>
             <p>
-              <strong>The plausible benefit.</strong> In the prospective five-hospital TREWS study, alert
+              <strong className="text-ink">The plausible benefit.</strong> In the prospective five-hospital TREWS study, alert
               confirmation within 3 hours was associated with 3.34 percentage points lower adjusted mortality
               and antibiotics 1.85 hours faster (Adams et al., Nature Medicine 2022 — observational, not an RCT).
               PredictRx claims none of that effect: it is the reason the product measures review time first, and
               why alerting stays off until a site has silently proven its own data and workflow.
             </p>
             <p>
-              <strong>Our measured position.</strong> On a geographically distinct public cohort scored once after
+              <strong className="text-ink">Our measured position.</strong> On a geographically distinct public cohort scored once after
               freezing: AUROC 0.808 with 2.05 false alerts per 100 patient-hours and hour-level specificity 0.839 —
               reported with calibration slope 0.80 (local recalibration mandatory), subgroup sensitivity gaps
               above 10 percentage points disclosed rather than hidden, and TrustGate&apos;s false-alert benefit
@@ -255,12 +261,12 @@ export default function EvidencePage() {
 
         <Panel title="The KPI contract — benefit must appear here before any outcome claim">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="text-ink/50">
+            <table className="auralis-table min-w-[640px]">
+              <thead>
                 <tr>
-                  <th className="py-2 pr-3">KPI</th>
-                  <th className="py-2 pr-3">Measured in the product</th>
-                  <th className="py-2">Pilot target (not yet achieved)</th>
+                  <th>KPI</th>
+                  <th>Measured in the product</th>
+                  <th>Pilot target (not yet achieved)</th>
                 </tr>
               </thead>
               <tbody>
@@ -272,16 +278,16 @@ export default function EvidencePage() {
                   ["Override discipline", "Dismissals require a recorded reason", "100% reasoned; rising overrides trigger gate review"],
                   ["Subgroup parity", "Sensitivity by sex, age, unit, missingness", "No subgroup >10 pp below overall without a governance decision"],
                 ].map(([kpi, how, target]) => (
-                  <tr key={kpi} className="border-t border-ink/5 align-top">
-                    <td className="py-2 pr-3 font-medium">{kpi}</td>
-                    <td className="py-2 pr-3 text-ink/65">{how}</td>
-                    <td className="py-2 text-ink/85">{target}</td>
+                  <tr key={kpi} className="align-top">
+                    <td className="font-medium text-ink">{kpi}</td>
+                    <td className="text-muted">{how}</td>
+                    <td className="text-ink">{target}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-ink/50">
+          <p className="mt-3 auralis-help">
             Mortality, length of stay and cost are recorded during a pilot as outcomes under study — never as
             marketing claims. Safeguards are mapped to WHO&apos;s six AI-in-health ethics principles (2021) in
             the dossier; alignment is claimed, certification is not.
@@ -290,13 +296,13 @@ export default function EvidencePage() {
 
         <Panel title="Fairness, audited from the scored artefacts (Dataset B holdout)">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="text-ink/50">
+            <table className="auralis-table min-w-[640px]">
+              <thead>
                 <tr>
-                  <th className="py-2 pr-3">Dimension</th>
-                  <th className="py-2 pr-3">Subgroup sensitivities (high-risk band)</th>
-                  <th className="py-2 pr-3">Gap</th>
-                  <th className="py-2">Weakest group</th>
+                  <th>Dimension</th>
+                  <th>Subgroup sensitivities (high-risk band)</th>
+                  <th>Gap</th>
+                  <th>Weakest group</th>
                 </tr>
               </thead>
               <tbody>
@@ -306,17 +312,17 @@ export default function EvidencePage() {
                   ["ICU type", "MICU 0.264 · SICU 0.384 · Unknown 0.360", "12.0 pp", "MICU"],
                   ["Missingness", "Low 0.371 · Medium 0.281 · High 0.295", "9.0 pp", "Medium"],
                 ].map(([dim, values, gap, weakest]) => (
-                  <tr key={dim} className="border-t border-ink/5 align-top">
-                    <td className="py-2 pr-3 font-medium">{dim}</td>
-                    <td className="py-2 pr-3 text-ink/65">{values}</td>
-                    <td className="py-2 pr-3 text-ink/85">{gap}</td>
-                    <td className="py-2 text-ink/85">{weakest}</td>
+                  <tr key={dim} className="align-top">
+                    <td className="font-medium text-ink">{dim}</td>
+                    <td className="text-muted">{values}</td>
+                    <td className="text-ink">{gap}</td>
+                    <td className="text-ink">{weakest}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-sm text-ink/70">
+          <p className="mt-3 text-sm leading-6 text-muted">
             Pre-committed rule: in a local pilot, any subgroup more than 10 percentage points below overall keeps
             interruptive alerting off for that pathway until the site&apos;s owners record a governance decision.
             On Dataset A validation the system also declined to present a confident actionable score in 11.6% of
@@ -326,7 +332,7 @@ export default function EvidencePage() {
         </Panel>
 
         <Panel title="Global corroboration — independent published alignment (NRB-smart path)">
-          <div className="space-y-3 text-sm text-ink/80">
+          <div className="space-y-3 text-sm leading-6 text-muted">
             <p>
               We do not invent a named reviewer. Independent work already converges on this design:
               Wong et al. (JAMA 2021) showed unvalidated score-only sepsis alerts fail in the field;
@@ -346,19 +352,19 @@ export default function EvidencePage() {
         </Panel>
 
         <Panel title="International hospitals already ran this pathway — timeline that validates ours">
-          <p className="mb-3 text-sm text-ink/70">
+          <p className="mb-3 text-sm leading-6 text-muted">
             Pathway validation only: PredictRx is not installed at these sites. The table shows that continuous
             feeds, mapping, silent evaluation and human-gated alerts are how careful deployments actually worked —
             and that wide deploy without local proof (Epic ESM) is the failure mode we gate against.
           </p>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="text-ink/50">
+            <table className="auralis-table min-w-[720px]">
+              <thead>
                 <tr>
-                  <th className="py-2 pr-3">When</th>
-                  <th className="py-2 pr-3">System / place</th>
-                  <th className="py-2 pr-3">How they connected</th>
-                  <th className="py-2">PredictRx equivalent</th>
+                  <th>When</th>
+                  <th>System / place</th>
+                  <th>How they connected</th>
+                  <th>PredictRx equivalent</th>
                 </tr>
               </thead>
               <tbody>
@@ -394,29 +400,29 @@ export default function EvidencePage() {
                     "Standards-first connectors + measured conformance 6/6",
                   ],
                 ].map(([when, where, how, ours]) => (
-                  <tr key={when + where} className="border-t border-ink/5 align-top">
-                    <td className="py-2 pr-3 font-medium whitespace-nowrap">{when}</td>
-                    <td className="py-2 pr-3 text-ink/85">{where}</td>
-                    <td className="py-2 pr-3 text-ink/65">{how}</td>
-                    <td className="py-2 text-ink/85">{ours}</td>
+                  <tr key={when + where} className="align-top">
+                    <td className="whitespace-nowrap font-medium text-ink">{when}</td>
+                    <td className="text-ink">{where}</td>
+                    <td className="text-muted">{how}</td>
+                    <td className="text-ink">{ours}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-ink/50">
+          <p className="mt-3 auralis-help">
             Full timeline, connection patterns (A/B/C) and non-claims:{" "}
             <code>docs/international-deployment-validation.md</code>.
           </p>
         </Panel>
 
         <Panel title="What is at stake in one 20-bed Bangladeshi ICU (scenario, not a claim)">
-          <div className="space-y-3 text-sm text-ink/80">
+          <div className="space-y-3 text-sm leading-6 text-muted">
             <p>
               Under stated planning assumptions (5-day mean stay, 85% occupancy, 30% sepsis share, 48%
               mortality — bracketing the published Bangladeshi cohorts), one 20-bed ICU admits roughly{" "}
-              <strong>1,240 patients a year, of whom ≈370 have sepsis and ≈180 die</strong>. A 6-day private
-              sepsis stay at published all-in rates is roughly <strong>Tk 1.8–3.0 lakh</strong> out of pocket.
+              <strong className="text-ink">1,240 patients a year, of whom ≈370 have sepsis and ≈180 die</strong>. A 6-day private
+              sepsis stay at published all-in rates is roughly <strong className="text-ink">Tk 1.8–3.0 lakh</strong> out of pocket.
             </p>
             <p>
               Threshold framing only: <em>if</em> a local pilot reproduced even a 1-percentage-point absolute
@@ -429,13 +435,20 @@ export default function EvidencePage() {
       </section>
 
       <Panel title="Boundaries we will not cross">
-        <ul className="list-disc space-y-1 pl-5 text-sm text-ink/75">
-          <li>No diagnosis, treatment or dosing output; the evidence copilot refuses those questions.</li>
-          <li>No Bangladesh clinical validation, outcome improvement or lives-saved claim exists today.</li>
-          <li>Public evaluation data is de-identified public replay plus disclosed synthetic commissioning data — never presented as a live hospital feed.</li>
-          <li>The platform operator role cannot open patient pages; the vendor fleet console receives allowlisted, signed metadata only.</li>
-          <li>Interruptive alerts stay off until all ten readiness gates pass at a real site.</li>
-          {!me && <li>Sign in (Session) as Hospital admin or Platform operator to see live operations counters on this page.</li>}
+        <ul className="space-y-2 text-sm leading-6 text-muted">
+          {[
+            "No diagnosis, treatment or dosing output; the evidence copilot refuses those questions.",
+            "No Bangladesh clinical validation, outcome improvement or lives-saved claim exists today.",
+            "Public evaluation data is de-identified public replay plus disclosed synthetic commissioning data — never presented as a live hospital feed.",
+            "The platform operator role cannot open patient pages; the vendor fleet console receives allowlisted, signed metadata only.",
+            "Interruptive alerts stay off until all ten readiness gates pass at a real site.",
+            ...(!me ? ["Sign in (Session) as Hospital admin or Platform operator to see live operations counters on this page."] : []),
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <Icon name="check" size={14} className="mt-1 shrink-0 text-teal" />
+              <span>{item}</span>
+            </li>
+          ))}
         </ul>
       </Panel>
     </div>

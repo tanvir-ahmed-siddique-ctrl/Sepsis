@@ -1,7 +1,7 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { GatesPanel } from "@/components/pilot/PilotGovernance";
-import { Pill, SiteModeBanner } from "@/components/ui";
+import { FileDrop, Pill, SiteModeBanner } from "@/components/ui";
 
 afterEach(cleanup);
 
@@ -37,5 +37,37 @@ describe("Pill", () => {
   it("applies the tone class", () => {
     render(<Pill tone="danger">Overdue</Pill>);
     expect(screen.getByText("Overdue").className).toContain("risk-high");
+  });
+});
+
+describe("FileDrop", () => {
+  function setup(maxBytes = 1000) {
+    const onFile = vi.fn();
+    const { container } = render(
+      <FileDrop label="PDF document" accept="application/pdf,.pdf" acceptLabel="PDF" maxBytes={maxBytes} limitLabel="1 KB" file={null} onFile={onFile} />,
+    );
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    return { onFile, input };
+  }
+
+  it("accepts a file that matches type and size", () => {
+    const { onFile, input } = setup();
+    const file = new File(["%PDF-1.4"], "contract.pdf", { type: "application/pdf" });
+    fireEvent.change(input, { target: { files: [file] } });
+    expect(onFile).toHaveBeenCalledWith(file);
+  });
+
+  it("rejects the wrong type with an accessible message", () => {
+    const { onFile, input } = setup();
+    fireEvent.change(input, { target: { files: [new File(["x"], "notes.txt", { type: "text/plain" })] } });
+    expect(onFile).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain("Unsupported file type");
+  });
+
+  it("rejects files over the limit", () => {
+    const { onFile, input } = setup(4);
+    fireEvent.change(input, { target: { files: [new File(["%PDF-1.4"], "big.pdf", { type: "application/pdf" })] } });
+    expect(onFile).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain("The limit is 1 KB");
   });
 });

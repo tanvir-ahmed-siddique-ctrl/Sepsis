@@ -207,6 +207,25 @@ def test_sparse_ingest_preserves_real_hour_gaps_and_timestamps(client):
     assert points[-1]["timestamp"] == (t0 + timedelta(hours=5)).isoformat().replace("+00:00", "Z")
 
 
+def test_fractional_observation_after_integer_seed_does_not_degrade_native_json(client):
+    """Replay/seed frames may create int64 vital columns; live feeds send floats like 92.5."""
+    t0 = datetime(2026, 5, 1, tzinfo=timezone.utc)
+    first = {
+        "patient_id": "dtype-float",
+        "encounter_id": "enc-1",
+        "timestamp": t0.isoformat(),
+        "code": "O2Sat",
+        "value": 93,
+        "unit": "%",
+    }
+    second = {**first, "value": 92.5}
+    assert client.post("/v1/observations/batch", json={"observations": [first]}).status_code == 200
+    body = client.post("/v1/observations/batch", json={"observations": [second]}).json()
+    assert body["accepted"] == 1
+    assert body.get("error") is None
+    assert not any("int64" in str(item).lower() for item in body.get("quarantined", []))
+
+
 def test_invalid_units_ranges_and_unknown_codes_are_quarantined_and_audited(client):
     timestamp = datetime(2026, 3, 1, tzinfo=timezone.utc).isoformat()
     observations = [

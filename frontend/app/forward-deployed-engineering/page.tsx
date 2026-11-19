@@ -11,8 +11,13 @@ export default function FdePage() {
     <div>
       <MarketingHero
         eyebrow="Forward Deployed Engineering"
-        title="Engineers who work the hospital site with you."
-        description="FDE delivery covers site readiness, infrastructure improvement, equipment connectivity, clinical platform integration, evaluation support and managed technology services — scoped per hospital."
+        title={
+          <>
+            The people who get the model{" "}
+            <span className="text-teal">onto the ward.</span>
+          </>
+        }
+        description="We bring a holdout-proven sepsis model — then stay for readiness, connectivity, integration, silent evaluation and handover. FDE exists because a good model still needs people who wire the hospital."
       />
       <MarketingSection eyebrow="Delivery workspace" title="What an FDE project tracks.">
         <FeatureGrid items={[

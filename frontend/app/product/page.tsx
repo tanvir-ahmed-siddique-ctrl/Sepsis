@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
 import { ProductShowcaseCarousel } from "@/components/marketing/ProductShowcaseCarousel";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "Platform | Auralis",
@@ -16,7 +17,7 @@ export default function ProductPage() {
         title={
           <>
             ICU early warning that stays{" "}
-            <span className="font-serif italic font-normal text-teal">clear at the bedside.</span>
+            <span className="text-teal">clear at the bedside.</span>
           </>
         }
         description="Auralis brings vitals freshness, 6-hour sepsis risk trends, and accountable alert review into one clean hospital-local workspace."
@@ -66,11 +67,13 @@ export default function ProductPage() {
           ]}
         />
         <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
-          <Link href="/signin?next=/app/icu" className="hover:underline">
-            Open Live ICU Dashboard →
+          <Link href="/signin?next=/app/icu" className="auralis-link">
+            Open the live ICU board
+            <Icon name="arrow-right" size={16} />
           </Link>
-          <Link href="/model" className="hover:underline">
-            Read Model Card →
+          <Link href="/model" className="auralis-link">
+            Read the model card
+            <Icon name="arrow-right" size={16} />
           </Link>
         </div>
       </MarketingSection>

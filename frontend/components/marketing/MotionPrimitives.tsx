@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+type RevealVariant = "up" | "left" | "right" | "scale" | "blur";
+
 /**
  * Progressive-enhancement scroll reveal:
  * - Content renders visible by default (SSR & no-JS safe).
@@ -13,11 +15,13 @@ export function Reveal({
   className = "",
   delayMs = 0,
   as: Tag = "div",
+  variant = "up",
 }: {
   children: ReactNode;
   className?: string;
   delayMs?: number;
   as?: "div" | "section" | "article" | "header" | "aside";
+  variant?: RevealVariant;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
@@ -31,11 +35,13 @@ export function Reveal({
       return;
     }
     const rect = node.getBoundingClientRect();
-    const inInitialView = rect.top < window.innerHeight * 0.92;
+    const inInitialView = rect.top < window.innerHeight * 0.9;
     if (inInitialView) {
       setReady(true);
-      setRevealed(true);
-      return;
+      // Soft hero entrance even when already in view
+      setRevealed(false);
+      const t = window.setTimeout(() => setRevealed(true), 40 + delayMs);
+      return () => window.clearTimeout(t);
     }
     setReady(true);
     setRevealed(false);
@@ -50,17 +56,18 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.14, rootMargin: "0px 0px -48px 0px" },
+      { threshold: 0.12, rootMargin: "0px 0px -10% 0px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [delayMs]);
 
   return (
     <Tag
       ref={ref as never}
       data-reveal-ready={ready ? "true" : "false"}
       data-revealed={revealed ? "true" : "false"}
+      data-reveal-variant={variant}
       style={delayMs ? { transitionDelay: `${delayMs}ms` } : undefined}
       className={`auralis-reveal ${className}`}
     >

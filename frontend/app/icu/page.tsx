@@ -2,43 +2,91 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { RiskBadge, TrustBadge } from "@/components/RiskBadge";
 import { ReplayControls } from "@/components/ReplayControls";
-import { ApiError, BAND_COLOR, Pill, SiteModeBanner, Sparkline, Stat } from "@/components/ui";
+import { ApiError, BAND_COLOR, EmptyState, PageHeader, Pill, Sparkline, Stat } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 import { api, API_UNIT, DEMO_UNIT, pct, type PatientOverview, type UnitOverview } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
 import { minutesLabel } from "@/lib/pilot";
 import { useSession } from "@/lib/session";
 import { usePoll } from "@/lib/usePoll";
 
-const UNIT_KEY = "predictrx-unit-v2";
+const UNIT_KEY = "predictrx-unit-v3";
+
+function readStoredUnit() {
+  try {
+    return window.localStorage.getItem(UNIT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function useStoredUnitPreference() {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("storage", onStoreChange);
+      return () => window.removeEventListener("storage", onStoreChange);
+    },
+    readStoredUnit,
+    () => null,
+  );
+}
 
 export default function OverviewPage() {
   const { t } = useLocale();
   const { me, isOperator } = useSession();
   const router = useRouter();
-  const [unit, setUnit] = useState<string | null>(null);
+  const storedUnit = useStoredUnitPreference();
+  const [unit, setUnit] = useState<string | null>(storedUnit);
   useEffect(() => {
     if (isOperator) router.replace("/operations");
   }, [isOperator, router]);
   const units = usePoll(() => api<{ units: string[]; default_unit: string | null }>("/v1/units"), 15000);
 
   useEffect(() => {
-    if (unit || !units.data) return;
-    const stored = window.localStorage.getItem(UNIT_KEY);
+    if (storedUnit && !unit) setUnit(storedUnit);
+  }, [storedUnit, unit]);
+
+  useEffect(() => {
+    if (!units.data) return;
     const available = units.data.units;
-    setUnit(stored && available.includes(stored) ? stored : available.includes(API_UNIT) ? API_UNIT : units.data.default_unit ?? DEMO_UNIT);
-  }, [unit, units.data]);
+    const fallback = units.data.default_unit ?? DEMO_UNIT;
+    setUnit((current) => {
+      let next = current;
+      if (!(current && available.includes(current))) {
+        const stored = readStoredUnit();
+        if (stored && available.includes(stored)) next = stored;
+        else if (available.includes(DEMO_UNIT)) next = DEMO_UNIT;
+        else if (fallback && available.includes(fallback)) next = fallback;
+        else next = available.includes(API_UNIT) ? API_UNIT : available[0] ?? DEMO_UNIT;
+      }
+      if (next) {
+        try {
+          window.localStorage.setItem(UNIT_KEY, next);
+        } catch {
+          /* private mode */
+        }
+      }
+      return next;
+    });
+  }, [units.data]);
 
   const { data, error, updatedAt, refresh } = usePoll(
-    () => (unit ? api<UnitOverview>(`/v1/units/${encodeURIComponent(unit)}/overview`) : Promise.resolve(null)),
+    () => api<UnitOverview>(`/v1/units/${encodeURIComponent(unit!)}/overview`),
     3000,
     [unit],
+    { enabled: Boolean(unit), cacheKey: unit ? `unit-overview:${unit}` : undefined },
   );
 
   function chooseUnit(next: string) {
-    window.localStorage.setItem(UNIT_KEY, next);
+    try {
+      window.localStorage.setItem(UNIT_KEY, next);
+      window.dispatchEvent(new Event("storage"));
+    } catch {
+      /* ignore */
+    }
     setUnit(next);
   }
 
@@ -51,61 +99,76 @@ export default function OverviewPage() {
     await refresh();
   }
 
+  const description = `${data?.patients.length ?? "…"} ${t.icu.beds} · ${t.icu.model} ${data?.model_version ?? "…"} · ${t.icu.liveBoard}`;
+
   return (
-    <div className="space-y-5">
-      <section className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-ink">ICU command centre</h1>
-          <p className="mt-1 text-sm text-ink/65">
-            {data?.site_mode === "demo"
-              ? `${data?.patients.length ?? 0} ${me?.evaluation_runtime ? "synthetic evaluation encounters" : "de-identified replay/scored encounters"} in this unit · model ${data?.model_version ?? "…"}`
-              : `Hospital-local live feed · model ${data?.model_version ?? "…"}`}
-          </p>
-          <p className="mt-2 font-mono text-xs text-ink/55" aria-live="polite">
-            {error ? "Feed refresh failed · showing last received state" : updatedAt ? `View refreshed ${updatedAt.toLocaleTimeString()} · polling every 3 seconds` : "Connecting to local feed…"}
-          </p>
-          {units.data && units.data.units.length > 1 && (
-            <label className="mt-2 flex items-center gap-2 text-sm">
-              <span className="text-ink/55">Unit</span>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow={t.icu.eyebrow}
+        title={t.icu.title}
+        description={description}
+        actions={
+          units.data && units.data.units.length > 1 ? (
+            <label className="flex max-w-full items-center gap-2 text-sm">
+              <span className="shrink-0 text-xs font-medium text-muted">{t.icu.unit}</span>
               <select
                 value={unit ?? ""}
                 onChange={(event) => chooseUnit(event.target.value)}
-                className="border border-ink/20 bg-white px-2 py-1"
+                className="auralis-input !h-10 w-full max-w-[14rem] min-w-0 sm:w-auto sm:min-w-[10rem]"
               >
                 {units.data.units.map((value) => (
-                  <option key={value} value={value}>{value}</option>
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
                 ))}
               </select>
             </label>
-          )}
-        </div>
-        {data && (
-          <div className="flex flex-wrap gap-3 text-sm">
-            <Stat label="Alert" value={data.high_risk_count} color="text-risk-high" />
-            <Stat label="Watch" value={data.watch_count} color="text-risk-watch" />
-            <Stat label="Verify" value={data.verify_count} color="text-accent" />
-            <Stat label="Abstain" value={data.abstain_count} color="text-ink/70" />
-            <Stat label="Open alerts" value={data.open_alerts} />
-            <Stat label="Past SLA" value={data.overdue_reviews} color={data.overdue_reviews ? "text-risk-high" : "text-ink"} />
-          </div>
-        )}
-      </section>
+          ) : undefined
+        }
+      />
+
+      <p className="auralis-help -mt-3" aria-live="polite">
+        {error
+          ? t.icu.refreshFailed
+          : updatedAt
+            ? `${t.icu.refreshed} ${updatedAt.toLocaleTimeString()} · ${t.icu.polling}`
+            : unit
+              ? t.icu.connecting
+              : t.icu.selecting}
+      </p>
 
       {data && (
-        <SiteModeBanner
-          mode={data.site_mode}
-          detail={data.blinded_encounters > 0 ? `${data.blinded_encounters} live-feed encounter(s) hidden from bedside view.` : undefined}
-        />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+          <Stat label="Alert" value={data.high_risk_count} color="text-risk-high" />
+          <Stat label="Watch" value={data.watch_count} color="text-risk-watch" />
+          <Stat label="Verify" value={data.verify_count} color="text-teal" />
+          <Stat label="Abstain" value={data.abstain_count} color="text-muted" />
+          <Stat label="Open alerts" value={data.open_alerts} />
+          <Stat label="Past SLA" value={data.overdue_reviews} color={data.overdue_reviews ? "text-risk-high" : "text-ink"} />
+        </div>
       )}
+
       {data?.site_mode === "demo" && unit === DEMO_UNIT && <ReplayControls onChange={refresh} />}
       {(error || units.error) && <ApiError error={(error ?? units.error) as Error} />}
 
+      {!data && !error && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="auralis-skeleton h-40 rounded-xl" />
+          ))}
+        </div>
+      )}
+
       {data && data.patients.length === 0 && (
-        <p className="border border-ink/10 bg-white/70 px-4 py-6 text-sm text-ink/60">
-          {data.bedside_blinded
-            ? "Silent pilot: live-feed scores are blinded to bedside staff by design."
-            : "No scored encounters in this unit yet."}
-        </p>
+        <EmptyState
+          icon="grid"
+          title={data.bedside_blinded ? "Scores blinded for bedside staff" : "No scored encounters"}
+          body={
+            data.bedside_blinded
+              ? "Silent pilot: live-feed scores are blinded to bedside staff by design."
+              : "No scored encounters in this unit yet."
+          }
+        />
       )}
 
       {data && data.patients.length > 0 && (
@@ -113,26 +176,32 @@ export default function OverviewPage() {
           {data.patients.map((p) => (
             <article
               key={p.patient_id}
-              className={`border bg-white/85 p-4 ${p.review_overdue ? "border-risk-high" : p.unresolved_alerts ? "border-risk-high/50" : "border-ink/10"}`}
+              className={`rounded-xl border bg-white p-4 shadow-soft ${
+                p.review_overdue
+                  ? "border-risk-high"
+                  : p.unresolved_alerts
+                    ? "border-risk-high/40"
+                    : "border-border"
+              }`}
             >
-              <Link href={`/patient/${encodeURIComponent(p.patient_id)}`} className="block hover:text-accent">
+              <Link href={`/patient/${encodeURIComponent(p.patient_id)}`} className="block group">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium">{p.display_name}</p>
-                    <p className="text-xs text-ink/55">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-ink transition-colors group-hover:text-teal">{p.display_name}</p>
+                    <p className="mt-0.5 text-xs text-muted">
                       {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} ·{" "}
-                      {p.source_mode === "api" ? (data.site_mode === "demo" ? "generated feed" : "hospital connector") : me?.evaluation_runtime ? "synthetic evaluation replay" : "de-identified PhysioNet replay"}
+                      {p.source_mode === "api" ? "hospital connector" : "scored encounter"}
                     </p>
                   </div>
                   <RiskBadge band={p.risk_band} />
                 </div>
                 <div className="mt-3 flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-xs text-ink/50">{t.scoreLabel}</p>
-                    <p className="text-2xl font-semibold tabular-nums" style={{ color: BAND_COLOR[p.risk_band] }}>
+                    <p className="text-xs font-medium text-muted">{t.scoreLabel}</p>
+                    <p className="text-2xl font-semibold tabular-nums tracking-tight" style={{ color: BAND_COLOR[p.risk_band] }}>
                       {pct(p.probability)}
                       {p.uncertainty != null && p.probability != null && (
-                        <span className="ml-1 text-xs font-normal text-ink/45">±{pct(p.uncertainty)}</span>
+                        <span className="ml-1 text-xs font-normal text-muted">±{pct(p.uncertainty)}</span>
                       )}
                     </p>
                   </div>
@@ -150,14 +219,16 @@ export default function OverviewPage() {
                   </Pill>
                 )}
                 {p.missing_required_signals.map((signal) => (
-                  <Pill key={signal} tone="warning">{signal} missing/stale</Pill>
+                  <Pill key={signal} tone="warning">
+                    {signal} missing/stale
+                  </Pill>
                 ))}
               </div>
               {p.open_alert_id && me && (me.role === "clinician" || me.role === "admin") && (
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="border border-accent bg-accent px-2 py-1 text-xs text-white"
+                    className="auralis-btn-primary auralis-btn-sm"
                     onClick={() =>
                       void api(`/v1/alerts/${p.open_alert_id}/acknowledge`, {
                         method: "POST",
@@ -169,7 +240,7 @@ export default function OverviewPage() {
                   </button>
                   <button
                     type="button"
-                    className="border border-ink/20 px-2 py-1 text-xs"
+                    className="auralis-btn-secondary auralis-btn-sm"
                     onClick={() =>
                       void api(`/v1/alerts/${p.open_alert_id}/acknowledge`, {
                         method: "POST",
@@ -185,28 +256,29 @@ export default function OverviewPage() {
                   </button>
                 </div>
               )}
-              <div className="mt-3 flex items-center justify-between text-xs text-ink/55">
-                <span>
+              <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted">
+                <span className="min-w-0 truncate">
                   Vitals age {p.data_freshness_minutes == null ? "—" : `${p.data_freshness_minutes} min`} · owner{" "}
-                  <strong className="font-medium text-ink/75">{p.owner ?? "unassigned"}</strong>
+                  <strong className="font-medium text-ink">{p.owner ?? "unassigned"}</strong>
                 </span>
                 {me && (
-                  <button
-                    type="button"
-                    onClick={() => void toggleOwnership(p)}
-                    className="border border-ink/20 px-2 py-0.5 text-ink/70 hover:text-ink"
-                  >
+                  <button type="button" onClick={() => void toggleOwnership(p)} className="auralis-btn-ghost auralis-btn-sm shrink-0">
                     {p.owner === me.user_id ? "Release" : p.owner ? "Take over" : "Claim"}
                   </button>
                 )}
               </div>
-              {p.scored_at && <p className="mt-2 text-xs text-ink/50">Model processed {new Date(p.scored_at).toLocaleTimeString()}</p>}
+              {p.scored_at && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-muted">
+                  <Icon name="clock" size={12} />
+                  Model processed {new Date(p.scored_at).toLocaleTimeString()}
+                </p>
+              )}
             </article>
           ))}
         </section>
       )}
       {data && (
-        <p className="text-xs text-ink/50">
+        <p className="auralis-help">
           Thresholds set on validation patients: Watch ≥ {pct(data.thresholds.watch, 1)} · High risk ≥{" "}
           {pct(data.thresholds.high_risk, 1)} · review SLA {data.review_sla_minutes} min.
         </p>

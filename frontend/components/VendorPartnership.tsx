@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { accountApi, AccountRequestError } from "@/lib/account-api";
+import { PageHeader } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 
 type Organization = { id: string; name: string };
 type Site = { id: string; organization_id: string; name: string };
@@ -25,8 +27,7 @@ type Proposal = { id: string; title: string; status: string; organization_id: st
 type PartnershipPlan = { id: string; organization_id: string; horizon_years: number; status: string; year_1_focus: string };
 type OrgProfile = { organization: Organization; profile: Record<string, string | null> | null; sites: Site[] };
 
-const input = "mt-1 block w-full border border-[#C6CECA] bg-white p-2";
-const section = "border-t border-[#D6DCD8] pt-6";
+const input = "auralis-input mt-1.5";
 
 export function VendorPartnership() {
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -123,43 +124,48 @@ export function VendorPartnership() {
     }
   }
 
-  if (loading) return <p className="text-sm text-slate">Loading partnership workspace…</p>;
+  if (loading) {
+    return (
+      <div className="space-y-3" role="status" aria-label="Loading partnership workspace">
+        <div className="auralis-skeleton h-8 w-64" />
+        <div className="auralis-skeleton h-40 w-full" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-10">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[.18em] text-forest">Vendor Control Plane</p>
-        <h1 className="mt-3 font-display text-4xl">Hospital partnership & FDE</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate">
-          Consultation requests, opportunity pipeline, organisation profiles, readiness checklists, equipment coordination, education events and internal partnership plans. Empty state is expected until records exist. Pricing hypotheses remain internal and unpublished.
-        </p>
-      </header>
-      {error && <p role="alert" className="border-l-2 border-risk-watch p-3 text-sm">{error}</p>}
-      {notice && <p role="status" className="border-l-2 border-forest p-3 text-sm">{notice}</p>}
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Vendor control plane"
+        title="Hospital partnership & FDE"
+        description="Consultation requests, opportunity pipeline, organisation profiles, readiness checklists, equipment coordination, education events and internal partnership plans. Empty state is expected until records exist. Pricing hypotheses remain internal and unpublished."
+      />
+      {error && <p role="alert" className="flex items-center gap-2 rounded-lg border border-risk-watch/25 bg-risk-watch/[0.05] px-3.5 py-2.5 text-sm text-risk-watch"><Icon name="alert" size={16} />{error}</p>}
+      {notice && <p role="status" className="flex items-center gap-2 rounded-lg border border-risk-stable/25 bg-risk-stable/[0.05] px-3.5 py-2.5 text-sm text-risk-stable"><Icon name="check" size={16} />{notice}</p>}
 
-      <section className={section}>
+      <section className="auralis-panel space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-xl font-semibold">Consultation requests</h2>
-          <span className="text-xs text-slate">{consultations.length} pending/managed · not auto-booked</span>
+          <h2 className="text-base font-semibold text-ink">Consultation requests</h2>
+          <span className="text-xs text-muted">{consultations.length} pending/managed · not auto-booked</span>
         </div>
         {consultations.length === 0 ? (
-          <p className="mt-4 text-sm text-slate">No consultation requests yet.</p>
+          <p className="mt-4 text-sm text-muted">No consultation requests yet.</p>
         ) : (
-          <div className="mt-4 divide-y divide-[#D6DCD8] border-y border-[#D6DCD8]">
+          <div className="mt-4 divide-y divide-border border-y border-border">
             {consultations.map((item) => (
               <article key={item.id} className="grid gap-3 py-4 lg:grid-cols-[1.2fr_1fr_auto]">
                 <div>
-                  <h3 className="font-semibold">{item.organization_name}</h3>
-                  <p className="mt-1 text-sm text-slate">{item.contact_name} · {item.email}</p>
-                  <p className="mt-1 text-xs text-slate">{item.purpose} · {item.modality} · {item.preferred_dates}</p>
+                  <h3 className="text-sm font-semibold text-ink">{item.organization_name}</h3>
+                  <p className="mt-1 text-sm text-muted">{item.contact_name} · {item.email}</p>
+                  <p className="mt-1 text-xs text-muted">{item.purpose} · {item.modality} · {item.preferred_dates}</p>
                 </div>
                 <div className="text-sm">
                   <p>Status: <strong>{item.status}</strong></p>
-                  <p className="text-slate">Owner: {item.assigned_to || "unassigned"}</p>
+                  <p className="text-muted">Owner: {item.assigned_to || "unassigned"}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {["assigned", "confirmed", "declined", "rescheduled", "completed"].map((status) => (
-                    <button key={status} type="button" className="border border-[#C6CECA] px-3 py-1 text-xs font-semibold" onClick={() => void submit(`/v1/vendor/consultations/${item.id}`, { status, assigned_to: "vendor-owner", confirmed_at: status === "confirmed" ? new Date().toISOString() : null, reason: `Marked ${status}` }, `Consultation ${status}`, "PATCH")}>{status}</button>
+                    <button key={status} type="button" className="auralis-btn-secondary auralis-btn-sm" onClick={() => void submit(`/v1/vendor/consultations/${item.id}`, { status, assigned_to: "vendor-owner", confirmed_at: status === "confirmed" ? new Date().toISOString() : null, reason: `Marked ${status}` }, `Consultation ${status}`, "PATCH")}>{status}</button>
                   ))}
                 </div>
               </article>
@@ -168,15 +174,15 @@ export function VendorPartnership() {
         )}
       </section>
 
-      <section className={section}>
+      <section className="auralis-panel space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-xl font-semibold">Opportunity pipeline</h2>
-          <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="border border-[#C6CECA] bg-white p-2 text-sm">
+          <h2 className="text-base font-semibold text-ink">Opportunity pipeline</h2>
+          <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="auralis-input h-9 w-auto py-0 text-[13px]">
             <option value="all">All stages</option>
             {stages.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
           </select>
         </div>
-        <form className="mt-4 grid gap-3 border border-[#D6DCD8] bg-warm p-4 sm:grid-cols-2 lg:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/opportunities", { ...oppForm, organization_id: oppForm.organization_id || null, site_id: oppForm.site_id || null }, "Opportunity created"); }}>
+        <form className="mt-4 grid gap-3 rounded-xl border border-border bg-muted-surface/60 p-4 sm:grid-cols-2 lg:grid-cols-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/opportunities", { ...oppForm, organization_id: oppForm.organization_id || null, site_id: oppForm.site_id || null }, "Opportunity created"); }}>
           <input required placeholder="Opportunity name" value={oppForm.name} onChange={(e) => setOppForm({ ...oppForm, name: e.target.value })} className={input} />
           <input required placeholder="Primary contact" value={oppForm.primary_contact} onChange={(e) => setOppForm({ ...oppForm, primary_contact: e.target.value })} className={input} />
           <input required placeholder="Owner" value={oppForm.owner} onChange={(e) => setOppForm({ ...oppForm, owner: e.target.value })} className={input} />
@@ -195,19 +201,19 @@ export function VendorPartnership() {
           <select value={oppForm.readiness_tier} onChange={(e) => setOppForm({ ...oppForm, readiness_tier: e.target.value })} className={input}>
             {["unspecified", "foundation", "connected", "advanced"].map((v) => <option key={v} value={v}>{v}</option>)}
           </select>
-          <button className="bg-forest px-4 py-2 text-sm font-semibold text-white sm:col-span-2 lg:col-span-4">Create opportunity</button>
+          <button className="auralis-btn-primary sm:col-span-2 lg:col-span-4">Create opportunity</button>
         </form>
-        {filteredOpps.length === 0 ? <p className="mt-4 text-sm text-slate">No opportunities in this view.</p> : (
-          <div className="mt-4 divide-y divide-[#D6DCD8] border-y border-[#D6DCD8]">
+        {filteredOpps.length === 0 ? <p className="mt-4 text-sm text-muted">No opportunities in this view.</p> : (
+          <div className="mt-4 divide-y divide-border border-y border-border">
             {filteredOpps.map((item) => (
               <article key={item.id} className="grid gap-3 py-4 lg:grid-cols-[1.4fr_1fr_auto]">
                 <div>
-                  <h3 className="font-semibold">{item.name}</h3>
-                  <p className="mt-1 text-sm text-slate">{item.stage} · {item.organization_size}/{item.readiness_tier}</p>
-                  <p className="text-xs text-slate">Next: {item.next_action}</p>
+                  <h3 className="text-sm font-semibold text-ink">{item.name}</h3>
+                  <p className="mt-1 text-sm text-muted">{item.stage} · {item.organization_size}/{item.readiness_tier}</p>
+                  <p className="text-xs text-muted">Next: {item.next_action}</p>
                 </div>
-                <p className="text-sm text-slate">Owner {item.owner}</p>
-                <select className="border border-[#C6CECA] bg-white p-2 text-xs" defaultValue={item.stage} onChange={(e) => void submit(`/v1/vendor/opportunities/${item.id}`, { stage: e.target.value, next_action: item.next_action, reason: `Stage → ${e.target.value}` }, "Stage updated", "PATCH")}>
+                <p className="text-sm text-muted">Owner {item.owner}</p>
+                <select className="auralis-input h-9 w-auto py-0 text-[13px]" defaultValue={item.stage} onChange={(e) => void submit(`/v1/vendor/opportunities/${item.id}`, { stage: e.target.value, next_action: item.next_action, reason: `Stage → ${e.target.value}` }, "Stage updated", "PATCH")}>
                   {stages.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
                 </select>
               </article>
@@ -216,8 +222,8 @@ export function VendorPartnership() {
         )}
       </section>
 
-      <section className={section}>
-        <h2 className="text-xl font-semibold">Hospital organisation profile</h2>
+      <section className="auralis-panel space-y-4">
+        <h2 className="text-base font-semibold text-ink">Hospital organisation profile</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <select value={selectedOrg} onChange={(e) => setSelectedOrg(e.target.value)} className={input}>
             <option value="">Select organisation</option>
@@ -245,15 +251,15 @@ export function VendorPartnership() {
                 {["prospect", "discovery", "assessment", "technical_feasibility", "proposal", "contracted", "implementing", "evaluating", "governed_production", "managed_services", "suspended", "closed"].map((v) => <option key={v} value={v}>{v}</option>)}
               </select>
               <input placeholder="Country" value={profileForm.country} onChange={(e) => setProfileForm({ ...profileForm, country: e.target.value })} className={input} />
-              <button className="bg-forest px-4 py-2 text-sm font-semibold text-white">Save profile</button>
+              <button className="auralis-btn-primary">Save profile</button>
             </form>
           </div>
         )}
       </section>
 
-      <section className={section}>
-        <h2 className="text-xl font-semibold">FDE delivery projects</h2>
-        <form className="mt-4 grid gap-3 border border-[#D6DCD8] bg-warm p-4 sm:grid-cols-2 lg:grid-cols-3" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/fde-projects", fdeForm, "FDE project created"); }}>
+      <section className="auralis-panel space-y-4">
+        <h2 className="text-base font-semibold text-ink">FDE delivery projects</h2>
+        <form className="mt-4 grid gap-3 rounded-xl border border-border bg-muted-surface/60 p-4 sm:grid-cols-2 lg:grid-cols-3" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/fde-projects", fdeForm, "FDE project created"); }}>
           <select required value={fdeForm.organization_id} onChange={(e) => setFdeForm({ ...fdeForm, organization_id: e.target.value })} className={input}>
             <option value="">Organisation</option>
             {orgs.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
@@ -268,30 +274,30 @@ export function VendorPartnership() {
           </select>
           <input required placeholder="Deployment lead" value={fdeForm.deployment_lead} onChange={(e) => setFdeForm({ ...fdeForm, deployment_lead: e.target.value })} className={input} />
           <input required placeholder="Scope" value={fdeForm.scope} onChange={(e) => setFdeForm({ ...fdeForm, scope: e.target.value })} className={input} />
-          <button className="bg-forest px-4 py-2 text-sm font-semibold text-white lg:col-span-3">Create FDE project</button>
+          <button className="auralis-btn-primary lg:col-span-3">Create FDE project</button>
         </form>
         <div className="mt-4 space-y-3">
-          {projects.length === 0 ? <p className="text-sm text-slate">No FDE projects yet.</p> : projects.map((project) => (
-            <article key={project.id} className="border border-[#D6DCD8] p-4">
+          {projects.length === 0 ? <p className="text-sm text-muted">No FDE projects yet.</p> : projects.map((project) => (
+            <article key={project.id} className="rounded-xl border border-border bg-white p-4 shadow-soft">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="font-semibold">{project.title}</h3>
-                  <p className="text-sm text-slate">{project.category} · {project.status} · lead {project.deployment_lead}</p>
+                  <h3 className="text-sm font-semibold text-ink">{project.title}</h3>
+                  <p className="text-sm text-muted">{project.category} · {project.status} · lead {project.deployment_lead}</p>
                 </div>
-                <button type="button" className="border border-[#C6CECA] px-3 py-1 text-xs font-semibold" onClick={() => setSelectedProject(project.id)}>Open readiness checklist</button>
+                <button type="button" className="auralis-btn-secondary auralis-btn-sm" onClick={() => setSelectedProject(project.id)}>Open readiness checklist</button>
               </div>
             </article>
           ))}
         </div>
         {selectedProject && (
-          <div className="mt-4 border border-[#D6DCD8] p-4">
-            <h3 className="font-semibold">Site readiness passport</h3>
-            <p className="mt-1 text-xs text-slate">Explicit checklist states only — no invented maturity score.</p>
-            <div className="mt-3 divide-y divide-[#D6DCD8]">
+          <div className="mt-4 border border-border p-4">
+            <h3 className="text-sm font-semibold text-ink">Site readiness passport</h3>
+            <p className="mt-1 text-xs text-muted">Explicit checklist states only — no invented maturity score.</p>
+            <div className="mt-3 divide-y divide-border">
               {readiness.map((item) => (
                 <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-2 text-sm">
                   <span>{item.label}</span>
-                  <select className="border border-[#C6CECA] bg-white p-1 text-xs" value={item.state} onChange={(e) => void submit(`/v1/vendor/fde-projects/${selectedProject}/readiness/${item.id}`, { state: e.target.value, reason: `Checklist → ${e.target.value}` }, "Checklist updated", "PATCH")}>
+                  <select className="auralis-input h-9 w-auto py-0 text-[13px]" value={item.state} onChange={(e) => void submit(`/v1/vendor/fde-projects/${selectedProject}/readiness/${item.id}`, { state: e.target.value, reason: `Checklist → ${e.target.value}` }, "Checklist updated", "PATCH")}>
                     {["not_started", "in_progress", "requires_evidence", "blocked", "submitted", "approved", "rejected"].map((v) => <option key={v} value={v}>{v}</option>)}
                   </select>
                 </div>
@@ -301,11 +307,11 @@ export function VendorPartnership() {
         )}
       </section>
 
-      <section className={section}>
-        <h2 className="text-xl font-semibold">Equipment & proposals</h2>
+      <section className="auralis-panel space-y-4">
+        <h2 className="text-base font-semibold text-ink">Equipment & proposals</h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
-          <form className="grid gap-2 border border-[#D6DCD8] p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/equipment", equipForm, "Equipment record created"); }}>
-            <h3 className="font-semibold">Equipment inventory record</h3>
+          <form className="grid gap-2 border border-border p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/equipment", equipForm, "Equipment record created"); }}>
+            <h3 className="text-sm font-semibold text-ink">Equipment inventory record</h3>
             <select required value={equipForm.organization_id} onChange={(e) => setEquipForm({ ...equipForm, organization_id: e.target.value })} className={input}>
               <option value="">Organisation</option>
               {orgs.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
@@ -318,11 +324,11 @@ export function VendorPartnership() {
             <select value={equipForm.ownership_model} onChange={(e) => setEquipForm({ ...equipForm, ownership_model: e.target.value })} className={input}>
               {["hospital_owned", "supplier_provided", "partner_managed", "unspecified"].map((v) => <option key={v} value={v}>{v}</option>)}
             </select>
-            <button className="bg-forest px-4 py-2 text-sm font-semibold text-white">Add equipment record</button>
-            <p className="text-xs text-slate">{equipment.length} recorded · not marked operational without acceptance evidence</p>
+            <button className="auralis-btn-primary">Add equipment record</button>
+            <p className="text-xs text-muted">{equipment.length} recorded · not marked operational without acceptance evidence</p>
           </form>
-          <form className="grid gap-2 border border-[#D6DCD8] p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/proposals", { ...proposalForm, scope_json: JSON.stringify({ services: ["site_readiness"], note: "Editable draft proposal" }) }, "Draft proposal created"); }}>
-            <h3 className="font-semibold">Hospital proposal (draft)</h3>
+          <form className="grid gap-2 border border-border p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/proposals", { ...proposalForm, scope_json: JSON.stringify({ services: ["site_readiness"], note: "Editable draft proposal" }) }, "Draft proposal created"); }}>
+            <h3 className="text-sm font-semibold text-ink">Hospital proposal (draft)</h3>
             <select required value={proposalForm.organization_id} onChange={(e) => setProposalForm({ ...proposalForm, organization_id: e.target.value })} className={input}>
               <option value="">Organisation</option>
               {orgs.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
@@ -334,29 +340,29 @@ export function VendorPartnership() {
             <input required placeholder="Title" value={proposalForm.title} onChange={(e) => setProposalForm({ ...proposalForm, title: e.target.value })} className={input} />
             <textarea required placeholder="Executive summary" value={proposalForm.executive_summary} onChange={(e) => setProposalForm({ ...proposalForm, executive_summary: e.target.value })} className={input} />
             <input required type="date" value={proposalForm.valid_until} onChange={(e) => setProposalForm({ ...proposalForm, valid_until: e.target.value })} className={input} />
-            <button className="bg-forest px-4 py-2 text-sm font-semibold text-white">Create draft proposal</button>
-            <p className="text-xs text-slate">{proposals.length} proposals · drafts are not contracts</p>
+            <button className="auralis-btn-primary">Create draft proposal</button>
+            <p className="text-xs text-muted">{proposals.length} proposals · drafts are not contracts</p>
           </form>
         </div>
       </section>
 
-      <section className={section}>
-        <h2 className="text-xl font-semibold">Education & internal partnership plans</h2>
+      <section className="auralis-panel space-y-4">
+        <h2 className="text-base font-semibold text-ink">Education & internal partnership plans</h2>
         <div className="mt-4 grid gap-6 lg:grid-cols-2">
-          <form className="grid gap-2 border border-[#D6DCD8] p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/education-events", { ...eventForm, organization_id: selectedOrg || null }, "Education event planned"); }}>
-            <h3 className="font-semibold">Education event</h3>
+          <form className="grid gap-2 border border-border p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/education-events", { ...eventForm, organization_id: selectedOrg || null }, "Education event planned"); }}>
+            <h3 className="text-sm font-semibold text-ink">Education event</h3>
             <input required placeholder="Title" value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} className={input} />
             <select value={eventForm.event_type} onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })} className={input}>
               {["internal_training", "hospital_hosted_training", "free_educational_seminar", "professional_workshop", "technical_workshop", "university_collaboration", "conference_participation"].map((v) => <option key={v} value={v}>{v}</option>)}
             </select>
             <textarea required placeholder="Learning objectives" value={eventForm.objectives} onChange={(e) => setEventForm({ ...eventForm, objectives: e.target.value })} className={input} />
             <input required type="date" value={eventForm.event_on} onChange={(e) => setEventForm({ ...eventForm, event_on: e.target.value })} className={input} />
-            <button className="bg-forest px-4 py-2 text-sm font-semibold text-white">Plan event</button>
-            <p className="text-xs text-slate">{events.length} planned · no fabricated past seminars</p>
+            <button className="auralis-btn-primary">Plan event</button>
+            <p className="text-xs text-muted">{events.length} planned · no fabricated past seminars</p>
           </form>
-          <form className="grid gap-2 border border-[#D6DCD8] p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/partnership-plans", { ...planForm, horizon_years: 8 }, "Internal partnership plan saved"); }}>
-            <h3 className="font-semibold">Internal 7–8 year planning horizon</h3>
-            <p className="text-xs text-slate">Strategic planning only — not a binding contract duration.</p>
+          <form className="grid gap-2 border border-border p-4" onSubmit={(e) => { e.preventDefault(); void submit("/v1/vendor/partnership-plans", { ...planForm, horizon_years: 8 }, "Internal partnership plan saved"); }}>
+            <h3 className="text-sm font-semibold text-ink">Internal 7–8 year planning horizon</h3>
+            <p className="text-xs text-muted">Strategic planning only — not a binding contract duration.</p>
             <select required value={planForm.organization_id} onChange={(e) => setPlanForm({ ...planForm, organization_id: e.target.value })} className={input}>
               <option value="">Organisation</option>
               {orgs.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
@@ -365,8 +371,8 @@ export function VendorPartnership() {
             <textarea required placeholder="Years 2–3 — Connectivity" value={planForm.years_2_3_focus} onChange={(e) => setPlanForm({ ...planForm, years_2_3_focus: e.target.value })} className={input} />
             <textarea required placeholder="Years 4–5 — Intelligence" value={planForm.years_4_5_focus} onChange={(e) => setPlanForm({ ...planForm, years_4_5_focus: e.target.value })} className={input} />
             <textarea required placeholder="Years 6–8 — Partnership" value={planForm.years_6_8_focus} onChange={(e) => setPlanForm({ ...planForm, years_6_8_focus: e.target.value })} className={input} />
-            <button className="bg-forest px-4 py-2 text-sm font-semibold text-white">Save internal plan</button>
-            <p className="text-xs text-slate">{plans.length} internal plans</p>
+            <button className="auralis-btn-primary">Save internal plan</button>
+            <p className="text-xs text-muted">{plans.length} internal plans</p>
           </form>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "For Hospitals | Auralis",
@@ -23,11 +24,11 @@ export default function ForHospitalsPage() {
         eyebrow="For Hospitals"
         title={
           <>
-            A measured, safe path into{" "}
-            <span className="font-serif italic font-normal text-teal">clinical operation.</span>
+            Getting a model into your ICU is a{" "}
+            <span className="text-teal">deployment problem.</span>
           </>
         }
-        description="Our Forward Deployed Engineers work alongside your IT and ICU teams — starting from infrastructure readiness if needed, and moving to live alerts only when proven safe."
+        description="You get a holdout-proven six-hour sepsis model — and a safe path to use it: infrastructure readiness, real feed integration, silent evaluation, then live alerts only after IT and clinical sign-off."
         specs={[
           { label: "Hospital Sizes", value: "Small, Tertiary & Multi-Site" },
           { label: "Readiness Tiers", value: "Foundation · Connected · Advanced" },
@@ -38,7 +39,7 @@ export default function ForHospitalsPage() {
 
       <MarketingSection
         eyebrow="Adoption Path"
-        title="Six clear stages from first call to live care."
+        title="Six stages that treat deployment as the product."
         tone="muted"
       >
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -80,9 +81,9 @@ export default function ForHospitalsPage() {
           ]}
         />
         <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
-          <Link href="/forward-deployed-engineering" className="hover:underline">Forward Deployed Engineering →</Link>
-          <Link href="/technology-enablement" className="hover:underline">Technology Enablement →</Link>
-          <Link href="/site-readiness" className="hover:underline">Site Readiness Checklist →</Link>
+          <Link href="/forward-deployed-engineering" className="auralis-link">Forward Deployed Engineering<Icon name="arrow-right" size={16} /></Link>
+          <Link href="/technology-enablement" className="auralis-link">Technology Enablement<Icon name="arrow-right" size={16} /></Link>
+          <Link href="/site-readiness" className="auralis-link">Site Readiness Checklist<Icon name="arrow-right" size={16} /></Link>
         </div>
       </MarketingSection>
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 
 type SlideId = "icu-board" | "bedside-chart" | "trustgate" | "handoff";
 
@@ -15,35 +16,35 @@ const SLIDES: Array<{
 }> = [
   {
     id: "icu-board",
-    badge: "01 · Live ICU Command Board",
+    badge: "ICU board",
     title: "Every adult ICU bed, sepsis risk trend & SLA timer in one view",
     caption: "Doctors and charge nurses see elevated 6-hour trajectories, vitals freshness, and bed ownership at a glance.",
     ctaHref: "/signin?next=/app/icu",
-    ctaLabel: "Open Real ICU Board →",
+    ctaLabel: "Open the ICU board",
   },
   {
     id: "bedside-chart",
-    badge: "02 · Patient Trajectory & Drivers",
+    badge: "Patient trend",
     title: "See why the risk rose — never an unexplained black-box number",
     caption: "Inspect serial MAP, heart rate, lactate slopes and Aurie AI guideline checklists right beside the trend.",
     ctaHref: "/signin?next=/app/chart",
-    ctaLabel: "Open Bedside Charting →",
+    ctaLabel: "Open bedside charting",
   },
   {
     id: "trustgate",
-    badge: "03 · TrustGate Data Safety",
+    badge: "TrustGate",
     title: "Automatically holds scores when labs are stale or units mismatch",
-    caption: "Eliminates false alarm fatigue caused by delayed LIS draws or HL7 unit mismatches.",
+    caption: "Designed to avoid scoring on delayed LIS draws or HL7 unit mismatches.",
     ctaHref: "/signin?next=/deploy",
-    ctaLabel: "Open Deployment Console →",
+    ctaLabel: "Open the deployment console",
   },
   {
     id: "handoff",
-    badge: "04 · Alert SLA & Shift Handoff",
+    badge: "Alerts & handoff",
     title: "One-tap acknowledgement and clean nurse-to-doctor shift continuity",
     caption: "Watched beds, snoozed alerts, and unresolved escalations carry automatically into the incoming shift.",
     ctaHref: "/signin?next=/app/handoff",
-    ctaLabel: "Open Shift Handoff →",
+    ctaLabel: "Open shift handoff",
   },
 ];
 
@@ -66,7 +67,7 @@ const DEMO_BEDS = [
     band: "Watch",
     bandClass: "bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]",
     score: "46%",
-    scoreColor: "#DC6803",
+    scoreColor: "#C4500A",
     freshness: "7 min ago",
     owner: "Sr. F. Akter",
     alert: "Rising HR & RR trend",
@@ -125,75 +126,66 @@ export function ProductShowcaseCarousel() {
 
   return (
     <div
-      className="rounded-3xl border border-border bg-white p-4 shadow-[0_24px_60px_-20px_rgba(15,31,38,0.10)] sm:p-7"
+      className="rounded-2xl border border-border bg-white p-3 shadow-lift sm:p-4"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Top Carousel Pill Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Product views">
-          {SLIDES.map((slide, idx) => {
-            const active = idx === index;
-            return (
-              <button
-                key={slide.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => {
-                  setIndex(idx);
-                  setPaused(true);
-                }}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                  active
-                    ? "bg-teal text-white shadow-sm"
-                    : "bg-[#F4F7F6] text-muted hover:bg-[#E9EFEE] hover:text-ink"
-                }`}
-              >
-                {slide.badge}
-              </button>
-            );
-          })}
+      <div className="flex items-center justify-between gap-2 px-1 pb-3">
+        <div className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Product views">
+          <div className="inline-flex min-w-max gap-1 rounded-lg bg-muted-surface p-1">
+            {SLIDES.map((slide, idx) => {
+              const active = idx === index;
+              return (
+                <button
+                  key={slide.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    setIndex(idx);
+                    setPaused(true);
+                  }}
+                  className={`relative min-h-10 overflow-hidden rounded-md px-3 py-2 text-xs font-medium transition-all ${
+                    active ? "bg-white text-ink shadow-soft" : "text-muted hover:text-ink"
+                  }`}
+                >
+                  {slide.badge}
+                  {active && !paused && (
+                    <span key={index} className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-teal-light" style={{ animation: "auralisProgress 5.5s linear both" }} aria-hidden="true" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={prev}
-            aria-label="Previous slide"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-white text-ink transition-colors hover:border-teal hover:text-teal"
-          >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
-              <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button type="button" onClick={prev} aria-label="Previous view" className="auralis-icon-btn h-10 w-10">
+            <Icon name="chevron-left" size={16} />
           </button>
-          <button
-            type="button"
-            onClick={next}
-            aria-label="Next slide"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-white text-ink transition-colors hover:border-teal hover:text-teal"
-          >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
-              <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <button type="button" onClick={next} aria-label="Next view" className="auralis-icon-btn h-10 w-10">
+            <Icon name="chevron-right" size={16} />
           </button>
         </div>
       </div>
 
-      {/* Active Slide Workspace Frame (Light, Authentic Medical UI) */}
-      <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-[#F8FAFA]">
+      {/* Fixed-height workspace so slide swaps never shove the hero left column */}
+      <div
+        className="min-h-[28rem] overflow-hidden rounded-xl border border-border bg-canvas sm:min-h-[30.5rem]"
+        aria-live="polite"
+      >
         {/* Simulated Browser / App Topbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-white px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-            <span className="font-display text-xs font-semibold text-ink">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-white px-3 py-3 sm:gap-3 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-teal-light" />
+            <span className="truncate text-xs font-semibold text-ink">
               Auralis Hospital Workspace · Adult ICU Unit A
             </span>
-            <span className="hidden rounded-full bg-teal/10 px-2.5 py-0.5 text-[11px] font-medium text-teal sm:inline-block">
-              Hospital-Local LAN · 0 Cloud PHI
+            <span className="hidden rounded-full border border-border bg-muted-surface px-2.5 py-0.5 text-[11px] font-medium text-muted sm:inline-block">
+              Illustrative preview
             </span>
           </div>
-          <span className="font-mono text-[11px] text-muted">Frozen Model Run-4 · Polling 3s</span>
+          <span className="shrink-0 font-mono text-[11px] text-muted">Synthetic evaluation data</span>
         </div>
 
         {/* SLIDE 1: REALISTIC ICU COMMAND BOARD */}
@@ -202,13 +194,13 @@ export function ProductShowcaseCarousel() {
             <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: "High Risk Alerts", val: "1", tone: "text-[#B42318]" },
-                { label: "Watch Trajectory", val: "1", tone: "text-[#DC6803]" },
+                { label: "Watch Trajectory", val: "1", tone: "text-[#C4500A]" },
                 { label: "TrustGate Hold", val: "1", tone: "text-muted" },
                 { label: "Review SLA Target", val: "15 min", tone: "text-teal" },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-border bg-white px-4 py-3">
                   <p className="text-[11px] font-medium text-muted">{stat.label}</p>
-                  <p className={`mt-0.5 font-display text-xl font-bold ${stat.tone}`}>{stat.val}</p>
+                  <p className={`mt-0.5 text-xl font-bold ${stat.tone}`}>{stat.val}</p>
                 </div>
               ))}
             </div>
@@ -218,7 +210,7 @@ export function ProductShowcaseCarousel() {
                 <div key={b.bed} className="rounded-xl border border-border bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-display text-sm font-semibold text-ink">{b.bed}</p>
+                      <p className="text-sm font-semibold text-ink">{b.bed}</p>
                       <p className="text-xs text-muted">{b.patient}</p>
                     </div>
                     <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${b.bandClass}`}>
@@ -229,7 +221,7 @@ export function ProductShowcaseCarousel() {
                   <div className="mt-3 flex items-end justify-between">
                     <div>
                       <p className="text-[11px] text-muted">6h Sepsis Risk</p>
-                      <p className="font-display text-2xl font-bold tabular-nums" style={{ color: b.scoreColor }}>
+                      <p className="text-2xl font-bold tabular-nums" style={{ color: b.scoreColor }}>
                         {b.score}
                       </p>
                     </div>
@@ -254,7 +246,7 @@ export function ProductShowcaseCarousel() {
             <div className="rounded-xl border border-border bg-white p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="font-display text-base font-semibold text-ink">ICU-A · Bed 04 · 6-Hour Risk Curve</p>
+                  <p className="text-base font-semibold text-ink">ICU-A · Bed 04 · 6-Hour Risk Curve</p>
                   <p className="text-xs text-muted">Serial vitals + arterial lactate · TrustGate Verified</p>
                 </div>
                 <span className="rounded-full bg-[#FEF3F2] px-3 py-1 text-xs font-semibold text-[#B42318]">
@@ -265,8 +257,8 @@ export function ProductShowcaseCarousel() {
               <svg viewBox="0 0 420 130" className="mt-4 h-36 w-full">
                 <defs>
                   <linearGradient id="cleanCurveFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#087E83" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="#087E83" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#287A88" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="#287A88" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
                 <line x1="12" y1="36" x2="408" y2="36" stroke="#FECDCA" strokeDasharray="4 4" />
@@ -279,7 +271,7 @@ export function ProductShowcaseCarousel() {
                 <path
                   d="M16 104 C 85 98, 150 86, 225 68 C 295 50, 350 32, 404 22"
                   fill="none"
-                  stroke="#087E83"
+                  stroke="#287A88"
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
@@ -290,20 +282,20 @@ export function ProductShowcaseCarousel() {
                   [325, 41],
                   [404, 22],
                 ].map(([cx, cy], idx) => (
-                  <circle key={idx} cx={cx} cy={cy} r={idx === 4 ? 5 : 3.5} fill="#FFFFFF" stroke="#087E83" strokeWidth="2.5" />
+                  <circle key={idx} cx={cx} cy={cy} r={idx === 4 ? 5 : 3.5} fill="#FFFFFF" stroke="#287A88" strokeWidth="2.5" />
                 ))}
               </svg>
 
-              <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+              <div className="mt-3 grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
                 {[
                   ["HR", "112 bpm", "+14"],
                   ["MAP", "63 mmHg", "-9"],
                   ["Lactate", "2.9 mmol/L", "+1.1"],
                   ["Resp", "26 /min", "+6"],
                 ].map(([k, v, d]) => (
-                  <div key={k} className="rounded-lg bg-[#F8FAFA] p-2">
+                  <div key={k} className="min-w-0 rounded-lg bg-[#F8FAFA] p-2">
                     <p className="text-[11px] font-medium text-muted">{k}</p>
-                    <p className="font-display text-sm font-bold text-ink">{v}</p>
+                    <p className="truncate text-sm font-bold text-ink">{v}</p>
                     <p className="text-[10px] font-semibold text-teal">{d} (4h)</p>
                   </div>
                 ))}
@@ -367,7 +359,7 @@ export function ProductShowcaseCarousel() {
                 <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${card.badge}`}>
                   {card.status}
                 </span>
-                <h4 className="mt-3 font-display text-base font-semibold text-ink">{card.title}</h4>
+                <h4 className="mt-3 text-base font-semibold text-ink">{card.title}</h4>
                 <p className="mt-2 text-xs leading-5 text-muted">{card.body}</p>
               </div>
             ))}
@@ -384,14 +376,14 @@ export function ProductShowcaseCarousel() {
                 </span>
                 <span className="text-xs text-muted">Bed 04</span>
               </div>
-              <h4 className="mt-3 font-display text-lg font-semibold text-ink">
+              <h4 className="mt-3 text-lg font-semibold text-ink">
                 Clinician review & one-tap bedside response
               </h4>
               <p className="mt-1.5 text-xs leading-5 text-muted">
                 Doctors acknowledge, snooze during active bedside resuscitation, or record diagnostic feedback in one click.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-lg bg-teal px-3 py-1.5 text-xs font-semibold text-white">✓ Acknowledge & Review</span>
+                <span className="rounded-lg bg-teal px-3 py-1.5 text-xs font-semibold text-white">Acknowledge & review</span>
                 <span className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-ink">Quiet 1h (Treating at bedside)</span>
               </div>
             </div>
@@ -400,17 +392,17 @@ export function ProductShowcaseCarousel() {
               <span className="rounded-full bg-teal/10 px-2.5 py-0.5 text-xs font-semibold text-teal">
                 Incoming Shift Summary · 08:00 Handover
               </span>
-              <h4 className="mt-3 font-display text-lg font-semibold text-ink">
+              <h4 className="mt-3 text-lg font-semibold text-ink">
                 Structured nurse & consultant handoff
               </h4>
               <ul className="mt-2.5 space-y-2 text-xs text-muted">
-                <li className="flex justify-between border-b border-border/60 pb-1.5">
+                <li className="flex flex-col gap-0.5 border-b border-border/60 pb-1.5 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="font-medium text-ink">Bed 04 · High risk (74%)</span>
-                  <span>Lactate repeat ordered · Dr. Rahman</span>
+                  <span className="sm:text-right">Lactate repeat ordered · Dr. Rahman</span>
                 </li>
-                <li className="flex justify-between">
+                <li className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="font-medium text-ink">Bed 09 · TrustGate hold</span>
-                  <span>Morning chemistry panel pending</span>
+                  <span className="sm:text-right">Morning chemistry panel pending</span>
                 </li>
               </ul>
             </div>
@@ -418,14 +410,14 @@ export function ProductShowcaseCarousel() {
         )}
       </div>
 
-      {/* Bottom Slide Caption & Direct Launch CTA */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 px-1">
+      <div className="flex min-h-[6.75rem] flex-wrap items-start justify-between gap-4 px-1 pb-1 pt-4 sm:min-h-[5.5rem]">
         <div className="max-w-2xl">
-          <h3 className="font-display text-lg font-semibold text-ink">{current.title}</h3>
+          <h3 className="text-base font-semibold text-ink">{current.title}</h3>
           <p className="mt-0.5 text-sm text-muted">{current.caption}</p>
         </div>
-        <Link href={current.ctaHref} className="auralis-btn-primary shrink-0">
+        <Link href={current.ctaHref} className="group auralis-btn-secondary auralis-btn-sm shrink-0">
           {current.ctaLabel}
+          <Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     </div>

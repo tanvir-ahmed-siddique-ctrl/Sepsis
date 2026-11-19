@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "Solutions | Auralis",
@@ -15,7 +16,7 @@ export default function SolutionsPage() {
         title={
           <>
             Clinical intelligence &{" "}
-            <span className="font-serif italic font-normal text-teal">hospital engineering.</span>
+            <span className="text-teal">hospital engineering.</span>
           </>
         }
         description="Start with infrastructure readiness, HL7/FHIR integration, or a silent ICU evaluation — scoped cleanly to what your hospital needs."
@@ -47,8 +48,8 @@ export default function SolutionsPage() {
           ]}
         />
         <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
-          <Link href="/signin" className="hover:underline">Try Live Demo →</Link>
-          <Link href="/deployment-integration" className="hover:underline">Integration Details →</Link>
+          <Link href="/signin" className="auralis-link">Open live ICU board<Icon name="arrow-right" size={16} /></Link>
+          <Link href="/deployment-integration" className="auralis-link">Integration Details<Icon name="arrow-right" size={16} /></Link>
         </div>
       </MarketingSection>
 

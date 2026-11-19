@@ -29,10 +29,11 @@ export function GuidancePanel({ features }: { features: string[] }) {
   }
 
   return (
-    <Panel title="Guideline context (cited, not patient-specific)">
+    <Panel title="Aurie · guideline context (cited, not patient-specific)">
       <p className="-mt-2 mb-3 text-xs text-ink/55">
-        Retrieved deterministically from a versioned registry and site-approved local protocols, matched to the
-        organ-system concepts of the top score drivers. Treatment and dosing questions are refused by policy.
+        Aurie retrieves passages deterministically from a versioned registry and site-approved local protocols,
+        matched to the organ-system concepts of the top score drivers. It does not change the frozen probability.
+        Treatment and dosing questions are refused by policy.
       </p>
       {guidance.error && <ApiError error={guidance.error} />}
       {guidance.data?.withheld_reason && (

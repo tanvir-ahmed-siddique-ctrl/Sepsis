@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Panel, Pill } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 
 const FLOWS = [
   {
@@ -58,8 +59,9 @@ export default function WorkflowsPage() {
             <p className="mt-3 text-sm text-ink/75">{flow.text}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {flow.links.map(([label, href]) => (
-                <Link key={href} href={href} className="border border-ink/20 px-3 py-1.5 text-sm text-accent">
-                  {label} →
+                <Link key={href} href={href} className="group auralis-btn-secondary auralis-btn-sm">
+                  {label}
+                  <Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
               ))}
             </div>

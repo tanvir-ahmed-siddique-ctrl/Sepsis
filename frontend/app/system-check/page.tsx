@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "Judge System Check | Auralis",
@@ -31,7 +32,7 @@ export default function SystemCheckPage() {
         <section className="border-l-2 border-forest bg-warm p-6">
           <p className="font-semibold">Evaluation deployment configured</p>
           <p className="mt-2 text-sm leading-6 text-slate">Continue to the separately configured evaluation environment. It does not use this site&apos;s session.</p>
-          <a href={safeEntry} rel="noopener noreferrer" className="mt-5 inline-flex bg-forest px-5 py-3 text-sm font-semibold text-white">Open isolated System Check ↗</a>
+          <a href={safeEntry} rel="noopener noreferrer" className="auralis-btn-primary mt-5">Open isolated system check<Icon name="external" size={15} /></a>
         </section>
       ) : (
         <section className="border-l-2 border-risk-watch bg-warm p-6">
@@ -39,6 +40,22 @@ export default function SystemCheckPage() {
           <p className="mt-2 text-sm leading-6 text-muted">This deployment still uses the clinical service runtime. No role-switch token will be issued here. Configure a separate synthetic evaluation runtime and set EVALUATION_SYSTEM_CHECK_URL before enabling evaluation access.</p>
         </section>
       )}
+      <section className="space-y-3 border border-[#D6DCD8] bg-white p-6">
+        <p className="font-semibold">Same-stack judge tour (this deployment)</p>
+        <p className="text-sm leading-6 text-muted">
+          Use the ordered tour on this public demo when a separate evaluation URL is not configured. Synthetic replay
+          only — no hospital patient data.
+        </p>
+        <div className="flex flex-wrap gap-3 pt-1">
+          <Link href="/judge" className="auralis-btn-primary">
+            Open judge tour
+            <Icon name="arrow-right" size={15} />
+          </Link>
+          <Link href="/presentation" className="auralis-btn-secondary">
+            Presentation
+          </Link>
+        </div>
+      </section>
       <Link href="/signin" className="text-sm font-semibold text-forest underline underline-offset-2">Return to sign-in</Link>
     </div>
   );

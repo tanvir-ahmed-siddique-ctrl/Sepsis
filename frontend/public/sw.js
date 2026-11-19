@@ -1,5 +1,5 @@
-const CACHE = "predictrx-shell-v2";
-const SHELL = ["/", "/icu", "/chart", "/ward", "/login", "/presentation", "/model", "/readiness"];
+const CACHE = "auralis-shell-v3";
+const SHELL = ["/", "/home", "/signin", "/app/icu", "/app/chart", "/app/ward", "/app/alerts", "/app/handoff", "/presentation"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
@@ -34,12 +34,12 @@ self.addEventListener("message", (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: "/app-icon.svg",
-      badge: "/app-icon.svg",
+      icon: "/app-icon.png",
+      badge: "/app-icon-192.png",
       tag: alertId,
       renotify: false,
       requireInteraction: true,
-      data: { url: url || "/alerts" },
+      data: { url: url || "/app/alerts" },
       actions: [{ action: "open", title: "Open alert queue" }],
     }),
   );
@@ -47,7 +47,7 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/alerts";
+  const url = event.notification.data?.url || "/app/alerts";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       const existing = clients.find((client) => "focus" in client);

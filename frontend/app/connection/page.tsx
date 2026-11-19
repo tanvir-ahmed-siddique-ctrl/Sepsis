@@ -220,12 +220,13 @@ export default function ConnectionPage() {
       </section>
 
       <p className="text-sm text-muted">
-        Related ops views:{" "}
+        Related views for clinical IT:{" "}
         <Link href="/app/admin/integrations" className="font-semibold text-teal hover:underline">Integrations</Link>
         {" · "}
-        <Link href="/app/admin/readiness" className="font-semibold text-teal hover:underline">Readiness</Link>
+        <Link href="/integration" className="font-semibold text-teal hover:underline">Integration hub</Link>
         {" · "}
-        <Link href="/app/admin/operations" className="font-semibold text-teal hover:underline">Operations</Link>
+        <Link href="/deploy" className="font-semibold text-teal hover:underline">Deployment home</Link>
+        . Readiness, site operations and licence stay with hospital admin or platform operator roles.
       </p>
     </div>
   );

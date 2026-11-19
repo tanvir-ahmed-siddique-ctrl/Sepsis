@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { RiskBadge, TrustBadge } from "@/components/RiskBadge";
 import { ApiError, BAND_COLOR } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
 import { api, pct, type RiskCurrent, type RiskPoint, type Thresholds } from "@/lib/api";
+import { useLocale } from "@/lib/locale";
 
 type Status = {
   model_version: string;
@@ -15,6 +17,7 @@ type Status = {
 
 /** Replay presentation using the current site's declared source provenance. */
 export default function PresentationPage() {
+  const { t, locale, setLocale } = useLocale();
   const [status, setStatus] = useState<Status | null>(null);
   const [bed, setBed] = useState<string | null>(null);
   const [current, setCurrent] = useState<RiskCurrent | null>(null);
@@ -116,10 +119,21 @@ export default function PresentationPage() {
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           <button onClick={() => void beginPitch()} className="bg-accent px-6 py-2 font-medium text-white">
-            Start 3-minute pitch
+            {t.presentation.startPitch}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale(locale === "en" ? "bn" : "en")}
+            className="border border-ink/20 px-4 py-2 text-sm font-medium text-ink/70"
+            aria-label="Toggle language"
+          >
+            {locale === "en" ? "বাংলা" : "EN"}
           </button>
           {pitchSeconds != null && (
-            <span className={`min-w-24 border px-4 py-2 font-mono text-lg ${pitchSeconds === 0 ? "border-risk-high text-risk-high" : "border-ink/20"}`}>
+            <span
+              className={`min-w-24 border px-4 py-2 font-mono text-lg ${pitchSeconds === 0 ? "border-risk-high text-risk-high" : "border-ink/20"}`}
+              aria-label={t.presentation.pitchLabel}
+            >
               {Math.floor(pitchSeconds / 60)}:{String(pitchSeconds % 60).padStart(2, "0")}
             </span>
           )}
@@ -141,13 +155,23 @@ export default function PresentationPage() {
         ))}
       </div>
 
+      <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-ink/45">{t.presentation.pipelineTitle}</p>
       <div className="grid gap-px overflow-hidden border border-ink/10 bg-ink/10 md:grid-cols-4">
-        {[
-          ["1 · Connect", "FHIR, HL7, lab CSV, monitor relay or offline bedside chart"],
-          ["2 · Verify", "Map units and codes; quarantine unknown or impossible data"],
-          ["3 · Reason", "Past-only features, frozen Run 4 and inspectable drivers"],
-          ["4 · Govern", "TrustGate may Alert, Watch, Verify data or Abstain"],
-        ].map(([title, detail]) => (
+        {(
+          locale === "bn"
+            ? [
+                [`1 · ${t.presentation.connect}`, "FHIR, HL7, ল্যাব CSV, মনিটর বা অফলাইন বেডসাইড চার্ট"],
+                [`2 · ${t.presentation.verify}`, "ইউনিট ও কোড ম্যাপ; অজানা/অসম্ভব ডেটা কোয়ারেন্টাইন"],
+                [`3 · ${t.presentation.reason}`, "অতীত-শুধু ফিচার, ফ্রোজেন Run 4, দেখার যোগ্য ড্রাইভার"],
+                [`4 · ${t.presentation.govern}`, "TrustGate: Alert, Watch, Verify বা Abstain"],
+              ]
+            : [
+                [`1 · ${t.presentation.connect}`, "FHIR, HL7, lab CSV, monitor relay or offline bedside chart"],
+                [`2 · ${t.presentation.verify}`, "Map units and codes; quarantine unknown or impossible data"],
+                [`3 · ${t.presentation.reason}`, "Past-only features, frozen Run 4 and inspectable drivers"],
+                [`4 · ${t.presentation.govern}`, "TrustGate may Alert, Watch, Verify data or Abstain"],
+              ]
+        ).map(([title, detail]) => (
           <div key={title} className="bg-paper p-4">
             <p className="font-medium">{title}</p>
             <p className="mt-1 text-sm text-ink/55">{detail}</p>
@@ -198,7 +222,7 @@ export default function PresentationPage() {
         <ul className="mt-2 grid gap-2 text-lg sm:grid-cols-2">
           {current.contributing_factors.slice(0, 4).map((f) => (
             <li key={f.feature}>
-              <span className={f.direction === "raises" ? "text-risk-high" : "text-risk-stable"}>{f.direction === "raises" ? "▲" : "▼"}</span>{" "}
+              <span className={`inline-flex align-[-2px] ${f.direction === "raises" ? "text-risk-high" : "text-risk-stable"}`} aria-label={f.direction === "raises" ? "Raises risk" : "Lowers risk"}><Icon name={f.direction === "raises" ? "trend-up" : "trend-down"} size={16} /></span>{" "}
               {f.plain_language}
             </li>
           ))}

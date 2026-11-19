@@ -5,14 +5,15 @@ import { ApiError, PageHeader, Stat } from "@/components/ui";
 import { api, DEMO_UNIT, type UnitOverview } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { usePoll } from "@/lib/usePoll";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
-const quickLinks = [
-  { href: "/app/admin/users", title: "Staff & access", body: "Named accounts, roles and unit scope." },
-  { href: "/app/admin/setup", title: "Unit settings", body: "Care units, readiness snapshot and blockers." },
-  { href: "/app/admin/pilot", title: "Silent evaluation", body: "Shadow scoring burden before live alerts." },
-  { href: "/app/icu", title: "ICU board", body: "Live six-hour risk board for the adult ICU." },
-  { href: "/app/staff", title: "Shift roster", body: "On-duty ownership for the current shift." },
-  { href: "/deploy", title: "Deployment console", body: "Feeds, mapping and commissioning (IT)." },
+const quickLinks: Array<{ href: string; title: string; body: string; icon: IconName }> = [
+  { href: "/app/admin/users", title: "Staff & access", body: "Named accounts, roles and unit scope.", icon: "users" },
+  { href: "/app/admin/setup", title: "Unit settings", body: "Care units, readiness snapshot and blockers.", icon: "settings" },
+  { href: "/app/admin/pilot", title: "Silent evaluation", body: "Shadow scoring burden before live alerts.", icon: "shield" },
+  { href: "/app/icu", title: "ICU board", body: "Live six-hour risk board for the adult ICU.", icon: "grid" },
+  { href: "/app/staff", title: "Shift roster", body: "On-duty ownership for the current shift.", icon: "clock" },
+  { href: "/deploy", title: "Deployment console", body: "Feeds, mapping and commissioning (IT).", icon: "server" },
 ];
 
 export default function HospitalAdminPage() {
@@ -41,14 +42,14 @@ export default function HospitalAdminPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Hospital Admin"
+        eyebrow="Hospital administration"
         title="Hospital overview"
         description="Live site pulse for administrators — staffing, ICU burden and readiness. Deployment tools stay in the IT console."
       />
 
       {(overview.error || alerts.error) && <ApiError error={overview.error || alerts.error || "Unable to load hospital pulse"} />}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="ICU beds scored" value={beds || "—"} />
         <Stat label="Elevated risk" value={highRisk} color={highRisk ? "text-risk-high" : "text-risk-low"} />
         <Stat label="Open alerts" value={openAlerts} color={openAlerts ? "text-risk-high" : undefined} />
@@ -60,11 +61,14 @@ export default function HospitalAdminPage() {
           <Link
             key={item.href}
             href={item.href}
-            className="rounded-2xl border border-border bg-[#FAFBFA] p-5 transition-all hover:border-teal hover:bg-white hover:shadow-sm"
+            className="group auralis-card-link"
           >
-            <h2 className="font-display text-lg font-semibold">{item.title}</h2>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
+              <Icon name={item.icon} size={17} />
+            </span>
+            <h2 className="mt-4 text-base font-semibold text-ink">{item.title}</h2>
             <p className="mt-2 text-sm text-muted">{item.body}</p>
-            <span className="mt-4 inline-flex text-xs font-semibold text-teal">Open →</span>
+            <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal">Open<Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" /></span>
           </Link>
         ))}
       </div>

@@ -44,7 +44,20 @@ def preflight(api: str, web: str) -> int:
     except (OSError, URLError, ValueError, RuntimeError) as error:
         failures.append(f"API readiness: {error}")
 
-    for path in ("/", "/judge-guide", "/presentation", "/chart", "/ward", "/readiness"):
+    for path in (
+        "/",
+        "/judge",
+        "/presentation",
+        "/evidence",
+        "/connection",
+        "/integration",
+        "/model",
+        "/docs",
+        "/chart",
+        "/ward",
+        "/readiness",
+        "/signin",
+    ):
         try:
             check_url(f"{web}{path}")
         except (OSError, URLError, RuntimeError) as error:
@@ -58,6 +71,7 @@ def preflight(api: str, web: str) -> int:
     print("CONGRESS PREFLIGHT PASSED")
     print(f"- frozen model: {EXPECTED_MODEL_SHA256}")
     print(f"- API: {ready.get('status')} ({ready.get('site_mode')})")
+    print(f"- judge tour: {web}/judge")
     print(f"- open presentation: {web}/presentation")
     print("- internet connection is not required for the running demo")
     return 0

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FeatureGrid, MarketingCta, MarketingHero, MarketingSection } from "@/components/marketing/MarketingPage";
 import { Reveal } from "@/components/marketing/MotionPrimitives";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "Aurie AI | Auralis",
@@ -16,13 +17,13 @@ export default function AuriePage() {
         title={
           <>
             Clinical context that{" "}
-            <span className="font-serif italic font-normal text-teal">never overrides the doctor.</span>
+            <span className="text-teal">never overrides the doctor.</span>
           </>
         }
-        description="Aurie summarizes recent vital changes and surfaces hospital sepsis checklists beside an alert — without ever modifying the mathematical risk score."
+        description="Aurie is the bedside context track: deterministic guideline retrieval matched to SHAP drivers. It never modifies the frozen sepsis probability and never writes orders."
         specs={[
           { label: "Risk Engine", value: "Frozen Run-4 Classifier" },
-          { label: "Context Layer", value: "Protocol & Trend Summary" },
+          { label: "Context Layer", value: "Cited guideline retrieval" },
           { label: "Safety Rule", value: "Text Never Changes Score" },
           { label: "Autonomy", value: "Zero Automated Orders" },
         ]}
@@ -70,8 +71,22 @@ export default function AuriePage() {
           ]}
         />
         <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
-          <Link href="/model" className="hover:underline">Model transparency →</Link>
-          <Link href="/evidence" className="hover:underline">Validation summary →</Link>
+          <Link href="/signin?next=/app/icu" className="auralis-link">
+            See Aurie on a patient chart
+            <Icon name="arrow-right" size={16} />
+          </Link>
+          <Link href="/model" className="auralis-link">
+            Model transparency
+            <Icon name="arrow-right" size={16} />
+          </Link>
+          <Link href="/evidence" className="auralis-link">
+            Validation summary
+            <Icon name="arrow-right" size={16} />
+          </Link>
+          <Link href="/judge" className="auralis-link">
+            Judge tour
+            <Icon name="arrow-right" size={16} />
+          </Link>
         </div>
       </MarketingSection>
 

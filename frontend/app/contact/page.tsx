@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/marketing/MotionPrimitives";
+import { Icon } from "@/components/ui/Icon";
 
 const PURPOSES = [
   { value: "site_readiness", label: "Site-readiness assessment" },
@@ -90,7 +91,7 @@ export default function ContactPage() {
                 <li>
                   • Want to try the software right now?{" "}
                   <Link href="/signin" className="font-semibold text-teal hover:underline">
-                    Open the 1-click Live Demo →
+                    Open the live ICU board
                   </Link>
                 </li>
               </ul>
@@ -181,7 +182,8 @@ export default function ContactPage() {
                 </label>
 
                 <button disabled={state === "sending"} className="auralis-btn-primary justify-self-start px-7 disabled:opacity-50 sm:col-span-2">
-                  {state === "sending" ? "Submitting…" : "Request Consultation →"}
+                  {state === "sending" ? "Submitting…" : "Request consultation"}
+                  {state !== "sending" && <Icon name="arrow-right" size={16} />}
                 </button>
               </form>
             )}

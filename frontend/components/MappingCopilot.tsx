@@ -84,6 +84,31 @@ export function MappingCopilot() {
         candidates; an optional model—on-premises by default, or an API the site approves—may choose among them or
         answer &quot;none&quot;. Nothing changes until an analyst edits the registry and signs the new SHA.
       </p>
+      <div className="mb-3 flex flex-wrap gap-2 text-xs">
+        <span className="text-ink/55">Judge presets:</span>
+        {[
+          { code: "LAB-SPO2-BN", display: "অক্সিজেন স্যাচুরেশন", unit: "%" },
+          { code: "LAB-HR-BN", display: "নাড়ি", unit: "/min" },
+          { code: "LAB-CREAT", display: "S. Creatinine", unit: "µmol/L" },
+        ].map((preset) => (
+          <button
+            type="button"
+            key={preset.code}
+            className="rounded-md border border-teal/30 bg-teal-soft/40 px-2 py-0.5 font-medium text-teal-dark"
+            onClick={() =>
+              setForm({
+                local_code: preset.code,
+                local_display: preset.display,
+                local_unit: preset.unit,
+                sample_min: "",
+                sample_max: "",
+              })
+            }
+          >
+            {preset.display}
+          </button>
+        ))}
+      </div>
       {unmapped.data && unmapped.data.unmapped.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2 text-xs">
           <span className="text-ink/55">Unmapped in quarantine:</span>
@@ -133,11 +158,16 @@ export function MappingCopilot() {
                 {result.llm.external ? `External API · ${result.llm.host}` : `On-premises · ${result.llm.host}`}
               </Pill>
             )}
-            <Pill tone="neutral">
+            <Pill tone={result.retrieval.mode === "hybrid" ? "success" : "neutral"}>
               Retrieval {result.retrieval.mode}
-              {result.retrieval.embedding_model ? ` · ${result.retrieval.embedding_model}` : ""}
+              {result.retrieval.embedding_model ? ` · ${result.retrieval.embedding_model}` : " · lexical / synonym"}
             </Pill>
           </div>
+          <p className="text-xs text-ink/55">
+            {result.retrieval.mode === "hybrid"
+              ? "Hybrid RAG: lexical + embedding fusion (RRF). Proposal only — registry unchanged until an analyst signs."
+              : "Lexical / synonym retrieval active (embeddings optional when the site configures an embed model). Proposal only."}
+          </p>
           {result.cautions.map((text) => <p key={text} className="border-l-2 border-risk-watch pl-2 text-xs">{text}</p>)}
           {result.llm.status === "ok" && (
             <p className="text-xs text-ink/70">

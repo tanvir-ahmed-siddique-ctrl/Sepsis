@@ -39,7 +39,7 @@ export function AlertNotifier() {
             alertId: alert.alert_id,
             title: `Auralis · ${alert.display_name || alert.patient_id}`,
             body: alert.reason,
-            url: `/alerts?alert=${encodeURIComponent(alert.alert_id)}`,
+            url: `/app/alerts?alert=${encodeURIComponent(alert.alert_id)}`,
           });
           seen.add(alert.alert_id);
         }

@@ -5,28 +5,43 @@ import { PageHeader, Stat } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { usePoll } from "@/lib/usePoll";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
-const modules = [
-  { href: "/app/admin/setup", title: "Site & environment", body: "Provisioning, unit setup and local configuration." },
-  { href: "/app/admin/integrations", title: "HIS / LIS / monitors", body: "Interface status, mapping and quarantine." },
-  { href: "/app/admin/connections", title: "Connectivity diagnostics", body: "Live ladder, feed state and Transfer Shield." },
-  { href: "/app/admin/readiness", title: "Readiness gates", body: "Silent-to-live controls and blocking evidence." },
-  { href: "/app/admin/operations", title: "Ops, backup & TLS", body: "Operational health and recovery visibility." },
-  { href: "/app/admin/licence", title: "Licence & release", body: "Local licence package for this site." },
+type DeployModule = { href: string; title: string; body: string; icon: IconName; roles: Array<"admin" | "clinical_it" | "operator"> };
+
+const modules: DeployModule[] = [
+  { href: "/app/admin/setup", title: "Site & environment", body: "Provisioning, unit setup and local configuration.", icon: "settings", roles: ["admin"] },
+  { href: "/app/admin/integrations", title: "HIS / LIS / monitors", body: "Interface status, mapping and quarantine.", icon: "plug", roles: ["admin", "clinical_it"] },
+  { href: "/app/admin/connections", title: "Connectivity diagnostics", body: "Live ladder, feed state and Transfer Shield.", icon: "activity", roles: ["admin", "clinical_it"] },
+  { href: "/app/admin/readiness", title: "Readiness gates", body: "Silent-to-live controls and blocking evidence.", icon: "check", roles: ["admin"] },
+  { href: "/app/admin/operations", title: "Ops, backup & TLS", body: "Operational health and recovery visibility.", icon: "server", roles: ["admin"] },
+  { href: "/app/admin/licence", title: "Licence & release", body: "Local licence package for this site.", icon: "key", roles: ["admin"] },
+  { href: "/operations", title: "Site diagnostics", body: "Writer lease, connectors, gates and audit integrity (metadata only).", icon: "server", roles: ["operator"] },
+  { href: "/readiness", title: "Readiness passport", body: "Site readiness passport and live gate status for operators.", icon: "check", roles: ["operator"] },
 ];
 
 export default function DeployHomePage() {
   const { me, isAdmin, loading } = useSession();
+  const canPollIntegrations = Boolean(me && (isAdmin || me.role === "clinical_it" || me.role === "operator"));
+  const canPollReadiness = Boolean(me && (isAdmin || me.role === "operator"));
   const status = usePoll(
     () =>
-      api<{
-        connectors: Array<{ connector: string; state: string }>;
-        quarantined_last_24h: number;
-        mapping_registry: { status: string };
-      }>("/v1/integrations/status"),
+      canPollIntegrations
+        ? api<{
+            connectors: Array<{ connector: string; state: string }>;
+            simulation_mode?: boolean;
+            quarantined_last_24h: number;
+            mapping_registry: { status: string };
+          }>("/v1/integrations/status")
+        : Promise.resolve(null),
     15000,
+    [canPollIntegrations],
   );
-  const readiness = usePoll(() => api<{ gates: Array<{ passed: boolean }> }>("/v1/site/readiness"), 20000);
+  const readiness = usePoll(
+    () => (canPollReadiness ? api<{ gates: Array<{ passed: boolean }> }>("/v1/site/readiness") : Promise.resolve(null)),
+    20000,
+    [canPollReadiness],
+  );
 
   if (loading) return <p className="text-sm text-muted">Loading deployment console…</p>;
   if (!me) {
@@ -55,32 +70,63 @@ export default function DeployHomePage() {
     );
   }
 
+  const roleKey = isAdmin ? "admin" : (me.role as "clinical_it" | "operator");
+  const visibleModules = modules.filter((item) => item.roles.includes(roleKey));
   const healthy = status.data?.connectors.filter((c) => c.state === "healthy").length ?? 0;
   const total = status.data?.connectors.length ?? 0;
   const gatesPassed = readiness.data?.gates.filter((g) => g.passed).length ?? 0;
   const gatesTotal = readiness.data?.gates.length ?? 0;
+  const [registryState = "", ...registryRest] = (status.data?.mapping_registry.status ?? "").split(" — ");
+  const registryDetail = registryRest.join(" — ");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Hospital Deployment Console"
+        eyebrow="Hospital deployment console"
         title="Commission and monitor the site"
-        description="Integration, readiness and operational evidence — separate from clinical charting."
+        description={
+          me.role === "clinical_it"
+            ? "HIS interfaces and connectivity for clinical IT. Readiness, site operations and licence remain hospital-admin or operator roles."
+            : me.role === "operator"
+              ? "Metadata diagnostics for the platform operator. Hospital-admin pages under /app stay unavailable to this role."
+              : "Integration, readiness and operational evidence — separate from clinical charting."
+        }
       />
 
-      <div className="flex flex-wrap gap-3">
-        <Stat label="Healthy feeds" value={total ? `${healthy}/${total}` : "—"} />
+      {status.data?.simulation_mode && (
+        <p role="status" className="flex items-start gap-2 rounded-lg border border-risk-watch/30 bg-risk-watch/[0.06] px-3.5 py-2.5 text-sm text-[#7A4505]">
+          <Icon name="info" size={16} className="mt-0.5" />
+          Commissioning simulation is running. Feed activity is generated for this simulation; no hospital system is connected.
+        </p>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat
+          label={status.data?.simulation_mode ? "Simulated feeds running" : "Healthy feeds"}
+          value={total ? `${healthy}/${total}` : "—"}
+          hint={status.data?.simulation_mode ? "Simulated relay, not a hospital interface" : undefined}
+        />
         <Stat label="Quarantine (24h)" value={status.data?.quarantined_last_24h ?? "—"} />
-        <Stat label="Mapping registry" value={status.data?.mapping_registry.status ?? "—"} />
-        <Stat label="Readiness gates" value={gatesTotal ? `${gatesPassed}/${gatesTotal}` : "—"} />
+        <Stat label="Mapping registry" value={<span className="capitalize">{registryState || "—"}</span>} hint={registryDetail || undefined} />
+        <Stat
+          label="Readiness gates"
+          value={canPollReadiness && gatesTotal ? `${gatesPassed}/${gatesTotal}` : "—"}
+          hint={!canPollReadiness ? "Visible to hospital admin and operator" : undefined}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {modules.map((item) => (
-          <Link key={item.href} href={item.href} className="rounded-2xl border border-border bg-[#FAFBFA] p-5 transition-all hover:border-teal hover:bg-white hover:shadow-sm">
-            <h2 className="font-display text-lg font-semibold text-ink">{item.title}</h2>
+        {visibleModules.map((item) => (
+          <Link key={item.href} href={item.href} className="group auralis-card-link">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
+              <Icon name={item.icon} size={17} />
+            </span>
+            <h2 className="mt-4 text-base font-semibold text-ink">{item.title}</h2>
             <p className="mt-2 text-sm leading-6 text-muted">{item.body}</p>
-            <span className="mt-4 inline-flex text-xs font-semibold text-teal">Open →</span>
+            <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal">
+              Open
+              <Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
           </Link>
         ))}
       </div>

@@ -15,7 +15,7 @@ export default function SecurityPage() {
         title={
           <>
             Engineered around{" "}
-            <span className="font-serif italic font-normal text-teal">hospital data sovereignty.</span>
+            <span className="text-teal">hospital data sovereignty.</span>
           </>
         }
         description="Patient identifiers and clinical observations stay inside your hospital's local server. Vendor billing and support run on a completely separate metadata plane."
