@@ -46,7 +46,7 @@ export default function HospitalAdminPage() {
         description="Live site pulse for administrators — staffing, ICU burden and readiness. Deployment tools stay in the IT console."
       />
 
-      {(overview.error || alerts.error) && <ApiError error={overview.error || alerts.error} />}
+      {(overview.error || alerts.error) && <ApiError error={overview.error || alerts.error || "Unable to load hospital pulse"} />}
 
       <div className="flex flex-wrap gap-3">
         <Stat label="ICU beds scored" value={beds || "—"} />
