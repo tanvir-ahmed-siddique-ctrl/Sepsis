@@ -161,17 +161,21 @@ export function ProductShowcaseCarousel() {
             type="button"
             onClick={prev}
             aria-label="Previous slide"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-ink transition-colors hover:border-teal hover:text-teal"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-white text-ink transition-colors hover:border-teal hover:text-teal"
           >
-            ←
+            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
+              <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
           <button
             type="button"
             onClick={next}
             aria-label="Next slide"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-ink transition-colors hover:border-teal hover:text-teal"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-white text-ink transition-colors hover:border-teal hover:text-teal"
           >
-            →
+            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
+              <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         </div>
       </div>

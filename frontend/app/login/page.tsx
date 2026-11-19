@@ -92,10 +92,30 @@ function LoginPageContent() {
     };
   }, []);
 
+  function destinationForRole(role?: string | null) {
+    if (nextPath) return nextPath;
+    switch (role) {
+      case "nurse":
+        return "/app/chart";
+      case "admin":
+        return "/app/admin/overview";
+      case "clinical_it":
+        return "/deploy";
+      case "operator":
+        return "/platform/overview";
+      default:
+        return "/app/icu";
+    }
+  }
+
   async function destinationForIdentity() {
     if (nextPath) return nextPath;
-    const result = await api<{ default_path: string | null }>("/v1/auth/workspaces");
-    return result.default_path || "/app/icu";
+    try {
+      const result = await api<{ default_path: string | null }>("/v1/auth/workspaces");
+      return result.default_path || destinationForRole(me?.role);
+    } catch {
+      return destinationForRole(me?.role);
+    }
   }
 
   async function run(action: () => Promise<string | void>) {
@@ -263,17 +283,46 @@ function LoginPageContent() {
                       Signed in as <strong>{me.display_name || me.user_id}</strong> ({me.role})
                     </p>
                     <div className="mt-4 flex flex-wrap gap-3">
-                      <Link href={nextPath || "/app/icu"} className="auralis-btn-primary rounded-lg">
-                        Open ICU Dashboard →
+                      <Link href={destinationForRole(me.role)} className="auralis-btn-primary rounded-lg">
+                        {me.role === "operator"
+                          ? "Open fleet overview →"
+                          : me.role === "clinical_it"
+                            ? "Open deployment console →"
+                            : me.role === "admin"
+                              ? "Open hospital overview →"
+                              : me.role === "nurse"
+                                ? "Open charting →"
+                                : "Open ICU dashboard →"}
                       </Link>
-                      <button type="button" onClick={signOut} className="auralis-btn-secondary rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          signOut();
+                          router.push("/signin");
+                          router.refresh();
+                        }}
+                        className="auralis-btn-secondary rounded-lg"
+                      >
                         Sign out
                       </button>
                     </div>
+                    {me.role === "operator" && (
+                      <p className="mt-3 text-xs text-muted">
+                        Fleet overview uses the hospital operator session. For Tenants / CRM / Documents, sign out and
+                        use <code className="rounded bg-white px-1">vendor@auralis.demo</code>.
+                      </p>
+                    )}
                   </Panel>
                   {["password", "pin"].includes(me.auth_mode) && (
                     <div className="mt-4">
-                      <AccountSecurity onDone={signOut} mustChange={me.must_change_password} />
+                      <AccountSecurity
+                        onDone={() => {
+                          signOut();
+                          router.push("/signin");
+                          router.refresh();
+                        }}
+                        mustChange={me.must_change_password}
+                      />
                     </div>
                   )}
                 </>

@@ -117,7 +117,7 @@ export function PublicHeader() {
                   {item.children ? (
                     <button
                       type="button"
-                      className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 font-display text-[13px] font-semibold tracking-tight transition-colors ${
                         isCurrent || isOpen
                           ? "bg-muted-surface text-ink"
                           : "text-muted hover:bg-muted-surface/70 hover:text-ink"
@@ -139,7 +139,7 @@ export function PublicHeader() {
                   ) : (
                     <Link
                       href={item.href}
-                      className={`inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                      className={`inline-flex items-center rounded-xl px-3.5 py-2 font-display text-[13px] font-semibold tracking-tight transition-colors ${
                         isCurrent
                           ? "bg-muted-surface text-ink"
                           : "text-muted hover:bg-muted-surface/70 hover:text-ink"

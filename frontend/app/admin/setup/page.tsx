@@ -34,7 +34,7 @@ export default function SiteSetupPage() {
   const snapshot = usePoll<SetupSnapshot>(async () => {
     const [ready, users, units, integration, readiness] = await Promise.all([
       api<SetupSnapshot["ready"]>("/ready"),
-      api<{ users: LocalUser[] }>("/v1/auth/users"),
+      api<{ users: LocalUser[] }>("/v1/auth/users").catch(() => ({ users: [] as LocalUser[] })),
       api<{ units: CareUnit[] }>("/v1/care/units"),
       api<SetupSnapshot["integration"]>("/v1/integrations/status"),
       api<Readiness>("/v1/site/readiness"),

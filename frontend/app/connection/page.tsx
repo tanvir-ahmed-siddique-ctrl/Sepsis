@@ -63,14 +63,13 @@ export default function ConnectionPage() {
   const softOn = ladder.data?.L5?.enabled ?? ehr.data?.soft_landing.enabled ?? false;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="space-y-8">
       <header className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Innovation — adoption unlock</p>
-        <h1 className="font-display text-4xl">Why sepsis ML is not everywhere — and how we unlock it.</h1>
-        <p className="max-w-3xl text-ink/65">
-          Two barriers stop hospitals: EHR/HIS lock-in, and unsafe transfer of a model trained elsewhere.
-          PredictRx does not hand our model to Epic. We climb a Connection Ladder into whatever system the
-          hospital already has, and we refuse to alert until Transfer Shield clears locally.
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal">Site connectivity</p>
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Live feed status & connection ladder</h1>
+        <p className="max-w-3xl text-sm leading-6 text-muted">
+          Operational view for Clinical IT: which ingress path is active on this hospital site, feed health,
+          and Transfer Shield gates that must clear before interruptive alerts.
         </p>
       </header>
 
@@ -115,14 +114,14 @@ export default function ConnectionPage() {
         </Panel>
       )}
 
-      <Panel title="Presentation spine — six layers from hospital data to governed alert">
+      <Panel title="Data path — source to governed alert">
         <ol className="space-y-2 text-sm">
           {LAYERS.map(([title, body], i) => (
-            <li key={title} className="flex gap-3 border-t border-ink/5 py-2 first:border-0">
-              <span className="font-display text-lg text-accent">{i + 1}</span>
+            <li key={title} className="flex gap-3 border-t border-border py-2 first:border-0">
+              <span className="font-display text-lg text-teal">{i + 1}</span>
               <div>
                 <p className="font-medium">{title}</p>
-                <p className="text-ink/65">{body}</p>
+                <p className="text-muted">{body}</p>
               </div>
             </li>
           ))}
@@ -130,12 +129,10 @@ export default function ConnectionPage() {
       </Panel>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl">Barrier 1 — Connection Ladder (we keep the IP)</h2>
-        <p className="text-sm text-ink/65">
-          US Epic sites get AI easily when it is Epic’s built-in model — that makes the hospital dependent and
-          leaves nothing for an independent company. Our answer: sell PredictRx to the hospital; use SMART on FHIR
-          / CDS Hooks or an interface-engine feed so Epic is only the shell. Bangladesh / LMIC sites often lack one
-          EHR — they get the same ladder from paper chart up through HL7/FHIR and a Vendor Adapter Pack.
+        <h2 className="font-display text-2xl font-semibold">Connection ladder for this site</h2>
+        <p className="text-sm text-muted">
+          Supported ingress paths from bedside charting through HL7/FHIR and vendor adapters. Use the live feed
+          column to see what is actually connected on this instance.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -183,11 +180,9 @@ export default function ConnectionPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl">Barrier 2 — Transfer Shield (calibration & measurement habits)</h2>
-        <p className="text-sm text-ink/65">
-          Another hospital’s AUROC can fail here because case-mix changes calibration (our Dataset B slope is
-          already 0.80) and because much of the model’s signal is measurement habit — how often vitals are charted.
-          Transfer Shield makes mismatch visible and blocking; it does not quietly retrain on live PHI.
+        <h2 className="font-display text-2xl font-semibold">Transfer Shield gates</h2>
+        <p className="text-sm text-muted">
+          Local calibration and measurement-habit checks that block unsafe go-live. These are site controls, not marketing copy.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-sm">
@@ -224,19 +219,14 @@ export default function ConnectionPage() {
         </p>
       </section>
 
-      <Panel title="One sentence for the jury">
-        <p className="text-sm text-ink/80">
-          Sepsis ML is missing from most hospitals because of lock-in and unsafe transfer — not because prediction
-          is impossible. PredictRx keeps the company alive by never giving the model to the EHR vendor, reaches
-          Bangladesh through a standards-first ladder down to paper, and refuses to alert until local calibration
-          and measurement habits clear Transfer Shield.
-        </p>
-        <p className="mt-2 text-xs text-ink/50">
-          Full write-up: <code>docs/innovation-adoption-barriers.md</code>
-          {" · "}
-          Commercial/legal path: <code>docs/business/ehr-partnership-and-commercial-strategy.md</code>
-        </p>
-      </Panel>
+      <p className="text-sm text-muted">
+        Related ops views:{" "}
+        <Link href="/app/admin/integrations" className="font-semibold text-teal hover:underline">Integrations</Link>
+        {" · "}
+        <Link href="/app/admin/readiness" className="font-semibold text-teal hover:underline">Readiness</Link>
+        {" · "}
+        <Link href="/app/admin/operations" className="font-semibold text-teal hover:underline">Operations</Link>
+      </p>
     </div>
   );
 }

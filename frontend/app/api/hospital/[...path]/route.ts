@@ -7,7 +7,12 @@ async function forward(request: NextRequest, context: Context) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   if (!token) return NextResponse.json({ detail: "Sign in required" }, { status: 401 });
   const { path } = await context.params;
-  if (!path.length || path[0] !== "v1" || path.some((part) => part === "." || part === "..")) return NextResponse.json({ detail: "Not found" }, { status: 404 });
+  if (!path.length || path.some((part) => part === "." || part === "..")) {
+    return NextResponse.json({ detail: "Not found" }, { status: 404 });
+  }
+  // Allow readiness probes used by site setup; everything else stays under /v1.
+  const allowedRoot = path.length === 1 && ["ready", "health"].includes(path[0]);
+  if (path[0] !== "v1" && !allowedRoot) return NextResponse.json({ detail: "Not found" }, { status: 404 });
   if (request.method !== "GET" && !sameOriginWrite(request)) return NextResponse.json({ detail: "Same-origin request required" }, { status: 403 });
   const url = hospitalApiUrl(path.map(encodeURIComponent).join("/")) + request.nextUrl.search;
   const headers = new Headers({ Authorization: `Bearer ${token}` });

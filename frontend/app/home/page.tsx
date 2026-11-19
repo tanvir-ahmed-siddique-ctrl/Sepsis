@@ -7,7 +7,7 @@ import { ProductShowcaseCarousel } from "@/components/marketing/ProductShowcaseC
 export const metadata: Metadata = {
   title: "Auralis | Hospital-Local ICU Early Warning & Technology Partner",
   description:
-    "Early six-hour ICU sepsis risk detection, bedside clinical workflows, and on-site hospital integration engineering.",
+    "Six-hour-ahead ICU sepsis risk, bedside workflows, TrustGate safety, and on-site Forward Deployed Engineering.",
 };
 
 const PIPELINE = [
@@ -15,25 +15,58 @@ const PIPELINE = [
     step: "01",
     name: "Acquire",
     summary: "Connect monitors, LIS labs & flowsheets.",
-    detail: "Supports HL7v2, FHIR R4, CSV or bedside entry — deployed inside your hospital network.",
+    detail: "HL7v2, FHIR R4, CSV or bedside entry — inside your hospital network.",
   },
   {
     step: "02",
     name: "Qualify",
-    summary: "Filter out stale labs & wrong units.",
-    detail: "TrustGate checks timestamps and scales first, holding scores rather than firing false alarms.",
+    summary: "Hold stale labs & wrong units.",
+    detail: "TrustGate checks timestamps and scales before any score is shown.",
   },
   {
     step: "03",
     name: "Score",
-    summary: "6-hour sepsis risk with clear drivers.",
-    detail: "Runs our frozen model locally and shows the exact vital and lab trends behind every rise.",
+    summary: "Six-hour-ahead sepsis risk.",
+    detail: "Frozen local model with probability, trend and explainable drivers.",
   },
   {
     step: "04",
     name: "Respond",
-    summary: "Clinician review & shift handoff.",
-    detail: "Routes alerts to named ICU doctors with SLA timers and one-click shift continuity.",
+    summary: "Review, alert SLA & handoff.",
+    detail: "Named ownership, acknowledgment timers and shift continuity.",
+  },
+];
+
+const SURFACES = [
+  {
+    title: "ICU board",
+    body: "Every adult ICU bed with six-hour risk, freshness and open alerts — live polling.",
+    href: "/signin?next=/app/icu",
+  },
+  {
+    title: "Charting & Ward NEWS2",
+    body: "Bedside vitals entry plus general-ward NEWS2 surveillance for non-ICU units.",
+    href: "/signin?next=/app/ward",
+  },
+  {
+    title: "Alerts & handoff",
+    body: "Open alert queue with SLA timers and a clean outgoing/incoming shift board.",
+    href: "/signin?next=/app/handoff",
+  },
+  {
+    title: "Deployment console",
+    body: "Clinical IT view for connectors, quarantine, readiness and site operations.",
+    href: "/signin?next=/deploy",
+  },
+  {
+    title: "Hospital admin",
+    body: "Staff access, unit settings and silent evaluation — without vendor CRM clutter.",
+    href: "/signin?next=/app/admin/overview",
+  },
+  {
+    title: "Vendor control plane",
+    body: "Tenants, commercial and FDE projects via vendor@auralis.demo (separate identity).",
+    href: "/signin?next=/platform/accounts",
   },
 ];
 
@@ -41,93 +74,106 @@ const HOSPITAL_TIERS = [
   {
     badge: "Foundation",
     title: "Servers, networking & device readiness",
-    body: "Need local IT infrastructure or monitor connectivity first? Our engineers assess networks, servers, and medical devices before any AI software is introduced.",
+    body: "On-site assessment of networks, servers and medical devices before any AI software.",
     href: "/technology-enablement",
-    linkText: "Technology enablement →",
+    linkText: "Technology enablement",
   },
   {
     badge: "Connected",
-    title: "HL7 / FHIR integration & data mapping",
-    body: "Have digital labs or monitors with integration gaps? Forward Deployed Engineers build local connectors, align units, and verify feed quality.",
+    title: "HL7 / FHIR integration & mapping",
+    body: "Forward Deployed Engineers build connectors, align units and verify feed quality.",
     href: "/deployment-integration",
-    linkText: "Integration engineering →",
+    linkText: "Integration engineering",
   },
   {
-    badge: "Advanced",
-    title: "Silent pilot & live ICU deployment",
-    body: "Ready for clinical evaluation? Run a non-interruptive silent pilot to verify alert burden, then go live only after hospital governance sign-off.",
+    badge: "Governed",
+    title: "Silent evaluation then go-live",
+    body: "Shadow-mode pilot, hospital sign-off gates, then interruptive alerts only when ready.",
     href: "/for-hospitals",
-    linkText: "Hospital adoption path →",
+    linkText: "Hospital adoption path",
   },
 ];
+
+function Chevron({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} fill="none" aria-hidden>
+      <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export default function HomePage() {
   return (
     <div className="bg-white text-ink">
-      {/* 1. CLEAN, BREATHABLE WHITE HERO + INTERACTIVE PRODUCT CAROUSEL */}
-      <section className="pt-12 pb-16 sm:pt-16 lg:pb-24">
-        <div className="auralis-container-public">
-          <Reveal className="mx-auto max-w-3xl text-center">
-            <span className="auralis-eyebrow">
-              <span className="h-2 w-2 rounded-full bg-teal" />
-              Hospital-Local Clinical Intelligence
-            </span>
-            <h1 className="mt-5 font-display text-4xl font-bold leading-[1.08] tracking-tight text-ink sm:text-6xl">
-              Spot ICU sepsis risk{" "}
-              <span className="font-serif italic font-normal text-teal">hours earlier.</span>
+      <section className="relative overflow-hidden border-b border-border bg-[radial-gradient(1200px_600px_at_80%_-10%,rgba(8,126,131,0.12),transparent_60%),linear-gradient(180deg,#ffffff_0%,#F7FAFA_100%)]">
+        <div className="auralis-container-public grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
+          <Reveal>
+            <p className="font-display text-sm font-semibold uppercase tracking-[0.22em] text-teal">Auralis</p>
+            <h1 className="mt-4 max-w-xl font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+              Six-hour-ahead ICU sepsis risk —{" "}
+              <span className="font-serif italic font-normal text-teal">inside your hospital.</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">
-              Auralis gives ICU teams a 6-hour early-warning radar, transparent vital drivers, and seamless shift handoffs — running 100% inside your hospital with on-site engineering support.
+            <p className="mt-5 max-w-lg text-base leading-7 text-muted sm:text-lg">
+              Probability, trends and explainable drivers for ICU teams. TrustGate validates data. Forward Deployed
+              Engineers connect FHIR, HL7 and vendor feeds on-site.
             </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/signin" className="auralis-btn-primary px-7">
-                Open Live ICU Dashboard →
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/signin?next=/app/icu" className="auralis-btn-primary gap-2 px-7">
+                Open live ICU board
+                <Chevron />
               </Link>
               <Link href="/contact" className="auralis-btn-secondary px-6">
-                Book Hospital Consultation
+                Book hospital consultation
               </Link>
             </div>
+            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-border/80 pt-6 text-sm">
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-muted">Horizon</dt>
+                <dd className="mt-1 font-display text-lg font-semibold">6 hours</dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-muted">Runtime</dt>
+                <dd className="mt-1 font-display text-lg font-semibold">On-prem</dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-muted">Feeds</dt>
+                <dd className="mt-1 font-display text-lg font-semibold">HL7 · FHIR</dd>
+              </div>
+            </dl>
           </Reveal>
 
-          {/* Interactive 4-Slide Product Carousel */}
-          <Reveal delayMs={120} className="mt-12 lg:mt-14">
+          <Reveal delayMs={100} className="lg:pl-4">
             <ProductShowcaseCarousel />
           </Reveal>
         </div>
       </section>
 
-      {/* 2. HOW IT WORKS: CLEAN 4-STEP SIGNAL FLOW */}
-      <section className="border-y border-border bg-[#F8FAFA] py-18 lg:py-24">
+      <section className="border-b border-border bg-white py-16 lg:py-20">
         <div className="auralis-container-public">
           <Reveal className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-xl">
-              <span className="auralis-eyebrow">How Auralis Works</span>
-              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-                From bedside monitor to clinician decision.
+              <span className="auralis-eyebrow">How it works</span>
+              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+                From bedside signal to clinician decision.
               </h2>
             </div>
-            <Link href="/product" className="text-sm font-semibold text-teal hover:underline">
-              Explore full platform →
+            <Link href="/product" className="inline-flex items-center gap-1 text-sm font-semibold text-teal hover:underline">
+              Full platform
+              <Chevron className="h-3.5 w-3.5" />
             </Link>
           </Reveal>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PIPELINE.map((item, idx) => (
               <Reveal
                 key={item.step}
-                delayMs={idx * 65}
+                delayMs={idx * 60}
                 as="article"
-                className="relative rounded-2xl border border-border bg-white p-6 shadow-[0_1px_3px_rgba(15,31,38,0.03)] transition-all hover:-translate-y-0.5 hover:border-teal/40 hover:shadow-md"
+                className="rounded-2xl border border-border bg-[#FAFBFA] p-6 transition-all hover:-translate-y-0.5 hover:border-teal/35 hover:bg-white hover:shadow-sm"
               >
-                <div className="flex items-center justify-between">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal/10 font-display text-xs font-bold text-teal">
-                    {item.step}
-                  </span>
-                  {idx < 3 && <span className="hidden text-muted/40 lg:inline">→</span>}
-                </div>
-                <h3 className="mt-5 font-display text-xl font-semibold text-ink">{item.name}</h3>
-                <p className="mt-1 text-sm font-medium text-ink/85">{item.summary}</p>
+                <span className="font-display text-xs font-bold text-teal">{item.step}</span>
+                <h3 className="mt-4 font-display text-xl font-semibold">{item.name}</h3>
+                <p className="mt-1 text-sm font-medium text-ink/90">{item.summary}</p>
                 <p className="mt-2 text-xs leading-5 text-muted">{item.detail}</p>
               </Reveal>
             ))}
@@ -135,36 +181,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. BUILT FOR EVERY HOSPITAL'S STARTING POINT */}
-      <section className="bg-white py-18 lg:py-24">
+      <section className="border-b border-border bg-[#F7FAFA] py-16 lg:py-20">
         <div className="auralis-container-public">
           <Reveal className="max-w-2xl">
-            <span className="auralis-eyebrow">Forward Deployed Partnership</span>
-            <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-              We work with the hospital infrastructure you have today.
+            <span className="auralis-eyebrow">Product surfaces</span>
+            <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              Clinical, admin, deployment and vendor planes — clearly separated.
             </h2>
-            <p className="mt-3 text-base leading-7 text-muted">
-              Not every hospital starts with a modern FHIR server. Our engineers assess your rooms, monitors, and IT capacity on-site and build the right path forward.
-            </p>
           </Reveal>
-
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {HOSPITAL_TIERS.map((tier, idx) => (
-              <Reveal
-                key={tier.badge}
-                delayMs={idx * 75}
-                as="article"
-                className="flex flex-col justify-between rounded-2xl border border-border bg-[#FAFBFA] p-7 transition-all hover:border-teal/40 hover:bg-white hover:shadow-sm"
-              >
-                <div>
-                  <span className="inline-block rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal shadow-sm ring-1 ring-border">
-                    {tier.badge}
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {SURFACES.map((item, idx) => (
+              <Reveal key={item.title} delayMs={idx * 50}>
+                <Link
+                  href={item.href}
+                  className="group flex h-full flex-col rounded-2xl border border-border bg-white p-6 transition-all hover:border-teal hover:shadow-sm"
+                >
+                  <h3 className="font-display text-lg font-semibold group-hover:text-teal">{item.title}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-muted">{item.body}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-teal">
+                    Enter demo
+                    <Chevron className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </span>
-                  <h3 className="mt-4 font-display text-xl font-semibold text-ink">{tier.title}</h3>
-                  <p className="mt-2.5 text-sm leading-6 text-muted">{tier.body}</p>
-                </div>
-                <Link href={tier.href} className="mt-6 inline-block text-sm font-semibold text-teal hover:underline">
-                  {tier.linkText}
                 </Link>
               </Reveal>
             ))}
@@ -172,75 +209,96 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. DIRECT WORKSPACE ACCESS + CLINICAL INTEGRITY */}
-      <section className="border-t border-border bg-[#F8FAFA] py-18 lg:py-24">
-        <div className="auralis-container-public grid gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-center">
+      <section className="border-b border-border bg-white py-16 lg:py-20">
+        <div className="auralis-container-public">
+          <Reveal className="max-w-2xl">
+            <span className="auralis-eyebrow">Forward Deployed Engineering</span>
+            <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              We meet the hospital infrastructure you have today.
+            </h2>
+            <p className="mt-3 text-base leading-7 text-muted">
+              Assess rooms and networks, connect devices, deploy locally, then support silent evaluation, governance and
+              ongoing operations.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {HOSPITAL_TIERS.map((tier, idx) => (
+              <Reveal
+                key={tier.badge}
+                delayMs={idx * 70}
+                as="article"
+                className="flex flex-col rounded-2xl border border-border bg-[#FAFBFA] p-7 transition-all hover:border-teal/40 hover:bg-white"
+              >
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-teal">{tier.badge}</span>
+                <h3 className="mt-4 font-display text-xl font-semibold">{tier.title}</h3>
+                <p className="mt-2.5 flex-1 text-sm leading-6 text-muted">{tier.body}</p>
+                <Link href={tier.href} className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-teal hover:underline">
+                  {tier.linkText}
+                  <Chevron className="h-3.5 w-3.5" />
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#F7FAFA] py-16 lg:py-20">
+        <div className="auralis-container-public grid gap-10 lg:grid-cols-2 lg:items-center">
           <Reveal>
-            <span className="auralis-eyebrow">Privacy & Clinical Safety</span>
-            <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-              Patient data never leaves your hospital. Doctors stay in command.
+            <span className="auralis-eyebrow">Safety & privacy</span>
+            <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              Patient data stays in the hospital. Clinicians stay in command.
             </h2>
             <p className="mt-4 text-base leading-7 text-muted">
-              Auralis separates the hospital clinical system from vendor billing and support by design. Aurie AI surfaces protocol checklists beside each alert without changing the frozen model probability or issuing autonomous orders.
+              TrustGate abstains on bad inputs. Aurie AI shows protocol context without changing the frozen probability
+              or writing orders. Vendor billing never shares the clinical plane.
             </p>
-
-            <div className="mt-6 flex flex-wrap gap-5 text-sm font-semibold text-teal">
-              <Link href="/aurie" className="hover:underline">
-                How Aurie AI assists →
+            <div className="mt-6 flex flex-wrap gap-4 text-sm font-semibold text-teal">
+              <Link href="/security" className="inline-flex items-center gap-1 hover:underline">
+                Security
+                <Chevron className="h-3.5 w-3.5" />
               </Link>
-              <Link href="/security" className="hover:underline">
-                Security architecture →
+              <Link href="/aurie" className="inline-flex items-center gap-1 hover:underline">
+                Aurie AI
+                <Chevron className="h-3.5 w-3.5" />
               </Link>
-              <Link href="/evidence" className="hover:underline">
-                Validation & limits →
+              <Link href="/evidence" className="inline-flex items-center gap-1 hover:underline">
+                Evidence
+                <Chevron className="h-3.5 w-3.5" />
               </Link>
             </div>
           </Reveal>
-
-          <Reveal delayMs={90} className="grid gap-3 sm:grid-cols-2">
-            {[
-              {
-                title: "ICU Clinical Dashboard",
-                desc: "Live beds, 6h risk curves, alerts & shift handoff.",
-                href: "/signin?next=/app/icu",
-              },
-              {
-                title: "Ward NEWS2 View",
-                desc: "General ward vitals & deterioration tracking.",
-                href: "/signin?next=/app/ward",
-              },
-              {
-                title: "Deployment Console",
-                desc: "HL7/FHIR feed health, quarantine & readiness.",
-                href: "/signin?next=/deploy",
-              },
-              {
-                title: "Vendor & FDE Plane",
-                desc: "Hospital CRM, readiness checklists & licences.",
-                href: "/signin?next=/platform/accounts",
-              },
-            ].map((ws) => (
-              <Link
-                key={ws.title}
-                href={ws.href}
-                className="group rounded-2xl border border-border bg-white p-5 transition-all hover:border-teal hover:shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-display text-base font-semibold text-ink group-hover:text-teal">
-                    {ws.title}
-                  </h3>
-                  <span className="text-xs font-semibold text-teal transition-transform group-hover:translate-x-0.5">
-                    Open →
-                  </span>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-muted">{ws.desc}</p>
-              </Link>
-            ))}
+          <Reveal delayMs={80} className="rounded-2xl border border-border bg-white p-7 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal">Live demo credentials</p>
+            <p className="mt-3 text-sm text-muted">
+              Password for all hospital demo roles:{" "}
+              <code className="rounded bg-muted-surface px-1.5 py-0.5 font-mono text-ink">auralis-demo-2026</code>
+            </p>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li>
+                <span className="font-mono text-xs text-muted">demo-clinician</span> · ICU board
+              </li>
+              <li>
+                <span className="font-mono text-xs text-muted">demo-nurse</span> · Charting / ward
+              </li>
+              <li>
+                <span className="font-mono text-xs text-muted">demo-admin</span> · Hospital admin
+              </li>
+              <li>
+                <span className="font-mono text-xs text-muted">demo-it</span> · Deployment console
+              </li>
+              <li>
+                <span className="font-mono text-xs text-muted">vendor@auralis.demo</span> · Vendor CRM
+              </li>
+            </ul>
+            <Link href="/signin" className="auralis-btn-primary mt-6 gap-2">
+              Go to sign-in
+              <Chevron />
+            </Link>
           </Reveal>
         </div>
       </section>
 
-      {/* 5. CLEAN CLOSING CTA */}
       <MarketingCta />
     </div>
   );

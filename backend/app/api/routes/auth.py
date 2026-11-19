@@ -23,7 +23,9 @@ from app.schemas import (
 from app.services.engine import get_engine
 
 router = APIRouter(tags=["auth"], prefix="/auth")
-HUMAN_ROLES = (*CLINICAL_ROLES, "operator")
+# clinical_it / clinical_viewer must authenticate and call /me like other humans;
+# excluding them caused "Identity validation failed" after a successful password login.
+HUMAN_ROLES = (*CLINICAL_ROLES, "clinical_it", "clinical_viewer", "operator")
 AUTHENTICATED = require_roles(*HUMAN_ROLES, "integration", allow_temporary_password=True)
 CLINICAL = require_roles(*CLINICAL_ROLES)
 HUMAN = require_roles(*HUMAN_ROLES)

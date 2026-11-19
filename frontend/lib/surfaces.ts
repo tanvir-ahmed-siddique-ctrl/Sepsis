@@ -35,16 +35,30 @@ const PUBLIC_PREFIXES = [
   "/api-reference",
 ];
 
+/** Integration / commissioning surfaces — not general hospital-admin pages. */
 const DEPLOY_PREFIXES = [
   "/deploy",
-  "/app/admin",
+  "/app/admin/integrations",
+  "/app/admin/connections",
+  "/app/admin/readiness",
+  "/app/admin/operations",
+  "/app/admin/pilot",
+  "/app/admin/licence",
   "/hospital-admin",
-  "/admin",
+  "/admin/setup",
   "/integration",
   "/connection",
   "/pilot",
   "/readiness",
   "/operations",
+];
+
+/** Hospital-admin product pages stay in the hospital shell. */
+const HOSPITAL_ADMIN_PREFIXES = [
+  "/app/admin/overview",
+  "/app/admin/users",
+  "/app/admin/setup",
+  "/admin/users",
 ];
 
 export function resolveSurface(pathname: string): ProductSurface {
@@ -53,6 +67,7 @@ export function resolveSurface(pathname: string): ProductSurface {
   if (EVAL.has(pathname) || pathname.startsWith("/evaluator")) return "evaluation";
   if (pathname.startsWith("/platform") || pathname.startsWith("/super-admin")) return "vendor";
   if (pathname.startsWith("/portal")) return "customer";
+  if (HOSPITAL_ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) return "hospital";
   if (DEPLOY_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) return "deployment";
   if (
     pathname.startsWith("/app") ||
@@ -64,7 +79,8 @@ export function resolveSurface(pathname: string): ProductSurface {
     pathname.startsWith("/staff") ||
     pathname.startsWith("/profile") ||
     pathname.startsWith("/patient") ||
-    pathname.startsWith("/dashboard")
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin")
   ) {
     return "hospital";
   }
