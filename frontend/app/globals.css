@@ -272,6 +272,160 @@
   will-change: transform, opacity;
 }
 
+/* Homepage: unique soft living green (not teal, not mint-candy) */
+.auralis-mist-green {
+  background:
+    radial-gradient(ellipse 68% 52% at 10% 16%, rgba(91, 184, 138, 0.26), transparent 58%),
+    radial-gradient(ellipse 52% 48% at 90% 10%, rgba(168, 217, 190, 0.42), transparent 54%),
+    radial-gradient(ellipse 58% 42% at 72% 90%, rgba(47, 138, 99, 0.10), transparent 55%),
+    linear-gradient(165deg, #eef8f1 0%, #ffffff 44%, #e8f5ee 100%);
+}
+
+.auralis-home-green .auralis-btn-primary {
+  background: #2f8a63;
+  border-color: #2f8a63;
+}
+
+.auralis-home-green .auralis-btn-primary:hover {
+  background: #267352;
+  border-color: #267352;
+}
+
+.auralis-home-green .auralis-link {
+  color: #2f8a63;
+}
+
+.auralis-home-green .text-teal {
+  color: #2f8a63;
+}
+
+.auralis-home-green h2 .text-teal,
+.auralis-home-green .text-teal-dark {
+  color: #267352;
+}
+
+/* ---------- Domain splash (icon + wordmark → cloud dissolve) ---------- */
+@keyframes auralisSplashCloudOut {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+  35% {
+    opacity: 0.9;
+    filter: blur(3px);
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(22px);
+    transform: scale(1.06);
+  }
+}
+
+@keyframes auralisSplashMarkIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.96);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes auralisSplashCloudDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2%, -2%, 0) scale(1.05); }
+}
+
+.auralis-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(255, 255, 255, 0.92), transparent 70%),
+    linear-gradient(165deg, #eef8f1 0%, #f7fbf8 48%, #e8f5ee 100%);
+  overflow: hidden;
+}
+
+.auralis-splash.is-out {
+  animation: auralisSplashCloudOut 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+.auralis-splash-cloud {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(28px);
+  opacity: 0.55;
+  animation: auralisSplashCloudDrift 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.auralis-splash-cloud-a {
+  width: min(42vw, 28rem);
+  height: min(28vw, 16rem);
+  left: 8%;
+  top: 18%;
+  background: rgba(168, 217, 190, 0.7);
+}
+
+.auralis-splash-cloud-b {
+  width: min(48vw, 32rem);
+  height: min(30vw, 18rem);
+  right: 6%;
+  bottom: 16%;
+  background: rgba(91, 184, 138, 0.35);
+  animation-delay: -2s;
+}
+
+.auralis-splash-cloud-c {
+  width: min(36vw, 22rem);
+  height: min(22vw, 12rem);
+  left: 38%;
+  bottom: 28%;
+  background: rgba(255, 255, 255, 0.75);
+  animation-delay: -3.5s;
+}
+
+.auralis-splash-mark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(201, 230, 214, 0.9);
+  box-shadow: 0 18px 50px -28px rgba(11, 20, 34, 0.35);
+  animation: auralisSplashMarkIn 700ms var(--ease-out) both;
+}
+
+.auralis-splash-glyph {
+  border-radius: 0.9rem;
+}
+
+.auralis-splash-word {
+  max-width: min(58vw, 14rem);
+}
+
+@media (min-width: 640px) {
+  .auralis-splash-mark {
+    gap: 1.15rem;
+    padding: 1.4rem 1.75rem;
+  }
+  .auralis-splash-word {
+    max-width: none;
+  }
+}
+
 /* ---------- Hero entry + headline crossfade ---------- */
 @keyframes auralisHeroVeilLift {
   0% { opacity: 1; }
@@ -324,7 +478,7 @@
   inset: 0;
   z-index: 2;
   background:
-    linear-gradient(180deg, rgba(247, 251, 252, 0.92) 0%, rgba(247, 251, 252, 0.55) 42%, rgba(247, 251, 252, 0.15) 100%);
+    linear-gradient(180deg, rgba(244, 250, 246, 0.94) 0%, rgba(244, 250, 246, 0.55) 42%, rgba(244, 250, 246, 0.12) 100%);
   opacity: 0;
 }
 
@@ -367,13 +521,21 @@
   will-change: opacity, transform, filter;
 }
 
+.auralis-hero-line.is-steady {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
 .auralis-hero-line.is-out {
-  animation: auralisHeroLineOut 720ms var(--ease-out) both;
+  animation: auralisHeroLineOut 780ms var(--ease-out) both;
   pointer-events: none;
+  z-index: 1;
 }
 
 .auralis-hero-line.is-in {
-  animation: auralisHeroLineIn 720ms var(--ease-out) both;
+  animation: auralisHeroLineIn 780ms var(--ease-out) both;
+  z-index: 2;
 }
 
 @keyframes auralisProgress {
@@ -652,10 +814,16 @@
   .auralis-hero-stage .auralis-hero-copy [data-hero-slot],
   .auralis-hero-stage .auralis-hero-board,
   .auralis-hero-line.is-out,
-  .auralis-hero-line.is-in {
+  .auralis-hero-line.is-in,
+  .auralis-splash,
+  .auralis-splash-mark,
+  .auralis-splash-cloud {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
+  }
+  .auralis-splash {
+    display: none !important;
   }
 }

@@ -106,10 +106,17 @@ export function ProductShowcaseCarousel() {
   useEffect(() => {
     if (paused) return;
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => {
-      setIndex((cur) => (cur + 1) % SLIDES.length);
-    }, 5500);
-    return () => window.clearInterval(timer);
+    // Start later + slower cadence than the left headline (~6s) so both never swap together.
+    let interval = 0;
+    const start = window.setTimeout(() => {
+      interval = window.setInterval(() => {
+        setIndex((cur) => (cur + 1) % SLIDES.length);
+      }, 7800);
+    }, 3200);
+    return () => {
+      window.clearTimeout(start);
+      if (interval) window.clearInterval(interval);
+    };
   }, [paused]);
 
   const current = SLIDES[index];
@@ -151,7 +158,7 @@ export function ProductShowcaseCarousel() {
                 >
                   {slide.badge}
                   {active && !paused && (
-                    <span key={index} className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-teal-light" style={{ animation: "auralisProgress 5.5s linear both" }} aria-hidden="true" />
+                    <span key={index} className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-[#5BB88A]" style={{ animation: "auralisProgress 7.8s linear both" }} aria-hidden="true" />
                   )}
                 </button>
               );

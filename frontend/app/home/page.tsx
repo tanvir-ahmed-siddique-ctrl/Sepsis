@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandSplash } from "@/components/marketing/BrandSplash";
 import { HeroEntrance } from "@/components/marketing/HeroEntrance";
 import { HeroHeadline } from "@/components/marketing/HeroHeadline";
 import { IntegrationOrbit } from "@/components/marketing/IntegrationOrbit";
@@ -101,18 +102,19 @@ const DEMO_ROLES = [
 
 export default function HomePage() {
   return (
-    <div className="bg-[#F7FBFC] text-ink">
+    <div className="auralis-home-green bg-[#F4FAF6] text-ink">
+      <BrandSplash />
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="auralis-mist pointer-events-none absolute inset-0" aria-hidden="true" />
+      <section className="relative overflow-hidden border-b border-[#C9E6D6]/80">
+        <div className="auralis-mist auralis-mist-green pointer-events-none absolute inset-0" aria-hidden="true" />
         <HeroEntrance
           copy={
             <>
               <div data-hero-slot="1">
                 <HeroHeadline />
               </div>
-              <p data-hero-slot="2" className="mt-6 max-w-md text-[16px] leading-7 text-muted">
-                Six-hour sepsis risk. Strong model. Feeds that reach the bed.
+              <p data-hero-slot="2" className="mt-8 max-w-md text-[16px] leading-7 text-[#4A6356]">
+                Hospital-local intelligence. Explainable drivers. Clinician still in command.
               </p>
               <div data-hero-slot="3" className="mt-9 flex flex-wrap items-center gap-3">
                 <Link href="/signin?next=/app/icu" className="group auralis-btn-primary h-11 px-5">
@@ -142,7 +144,7 @@ export default function HomePage() {
       </section>
 
       {/* Model + deployment — short */}
-      <section className="relative overflow-hidden border-b border-border/60 bg-[#F7FBFC] py-16 lg:py-20">
+      <section className="relative overflow-hidden border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-16 lg:py-20">
         <div className="auralis-container-public relative">
           <Reveal className="max-w-2xl" variant="left">
             <h2 className="text-3xl font-semibold tracking-[-0.03em] text-navy sm:text-[2.25rem]">
@@ -169,7 +171,7 @@ export default function HomePage() {
       </section>
 
       {/* Pipeline */}
-      <section className="border-b border-border/60 bg-[#EEF6F7] py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-[#EAF6EF] py-16 lg:py-20">
         <div className="auralis-container-public">
           <Reveal className="flex flex-wrap items-end justify-between gap-4" variant="up">
             <div className="max-w-xl">
@@ -190,8 +192,8 @@ export default function HomePage() {
       </section>
 
       {/* Connection story — mid page, wide, flat scroll-lit */}
-      <section className="relative overflow-hidden border-b border-border/60 bg-white py-16 lg:py-24">
-        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[#B8DCE3]/40 blur-3xl" aria-hidden="true" />
+      <section className="relative overflow-hidden border-b border-[#C9E6D6]/70 bg-white py-16 lg:py-24">
+        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[#A8D9BE]/45 blur-3xl" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[110rem] px-4 sm:px-8 lg:px-12 xl:px-16">
           <Reveal className="mx-auto max-w-3xl text-center" variant="up">
             <h2 className="text-3xl font-semibold tracking-[-0.03em] text-navy sm:text-[2.35rem]">
@@ -218,8 +220,8 @@ export default function HomePage() {
       </section>
 
       {/* Score anatomy */}
-      <section className="relative overflow-hidden border-b border-border/60 bg-[#F7FBFC] py-16 lg:py-20">
-        <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-[#C5E4E9]/40 blur-3xl" aria-hidden="true" />
+      <section className="relative overflow-hidden border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-16 lg:py-20">
+        <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 rounded-full bg-[#B7E0C8]/40 blur-3xl" aria-hidden="true" />
         <div className="auralis-container-public relative grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
           <Reveal variant="left">
             <h2 className="text-3xl font-semibold tracking-[-0.03em] text-navy sm:text-[2.25rem]">
@@ -252,7 +254,7 @@ export default function HomePage() {
       </section>
 
       {/* Product surfaces */}
-      <section className="border-b border-border/60 bg-[#F3FAFB] py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-[#EEF7F1] py-16 lg:py-20">
         <div className="auralis-container-public">
           <Reveal className="max-w-xl">
             <h2 className="text-3xl font-semibold tracking-[-0.03em] text-navy sm:text-[2.25rem]">
@@ -267,7 +269,7 @@ export default function HomePage() {
                   className="group flex h-full flex-col rounded-2xl border border-[#D5E8EC] bg-white/90 p-5 transition-colors hover:border-teal/35 hover:bg-white"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E5F3F5] text-teal-dark">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#D8EFE3] text-[#267352]">
                       <Icon name={item.icon} size={17} />
                     </span>
                     <span className="text-xs text-muted">{item.audience}</span>
@@ -320,7 +322,7 @@ export default function HomePage() {
       </section>
 
       {/* Safety + sign-in */}
-      <section className="border-b border-border/60 bg-white py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-white py-16 lg:py-20">
         <div className="auralis-container-public grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
           <Reveal>
             <h2 className="text-3xl font-semibold tracking-[-0.03em] text-navy sm:text-[2.25rem]">
@@ -333,7 +335,7 @@ export default function HomePage() {
                 ["lock", "Separate planes", "Vendor tooling never shares the clinical data path."],
               ].map(([icon, title, body]) => (
                 <li key={title} className="flex gap-3.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E5F3F5] text-teal-dark">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#D8EFE3] text-[#267352]">
                     <Icon name={icon as IconName} size={16} />
                   </span>
                   <div>

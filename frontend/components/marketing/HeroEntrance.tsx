@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { splashAlreadySeen } from "@/components/marketing/BrandSplash";
 
 /**
- * First-paint hero choreography: soft veil lifts, then copy / CTAs / board
- * rise into place so landing on the domain feels composed — not already there.
- * SSR / no-JS stays fully visible; motion only arms after hydration.
+ * First-paint hero choreography — waits for BrandSplash (if any), then
+ * soft veil lifts and copy / board rise into place.
  */
 export function HeroEntrance({
   copy,
@@ -23,15 +23,30 @@ export function HeroEntrance({
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setReduced(prefersReduced);
     setReady(true);
-    if (prefersReduced) {
-      setArmed(true);
+
+    const arm = () => {
+      if (prefersReduced) {
+        setArmed(true);
+        return;
+      }
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setArmed(true));
+      });
+    };
+
+    if (prefersReduced || splashAlreadySeen()) {
+      arm();
       return;
     }
-    // One frame hidden, then lift — creates a deliberate domain entrance.
-    const frame = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => setArmed(true));
-    });
-    return () => window.cancelAnimationFrame(frame);
+
+    const onSplash = () => arm();
+    window.addEventListener("auralis:splash-done", onSplash);
+    // Safety: never block hero forever if splash fails to fire
+    const fallback = window.setTimeout(arm, 2800);
+    return () => {
+      window.removeEventListener("auralis:splash-done", onSplash);
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   return (
