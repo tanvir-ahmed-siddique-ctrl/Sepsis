@@ -7,6 +7,18 @@
         "PREDICTRX_API_URL": "http://127.0.0.1:8000",
         "PREDICTRX_DEMO": "1"
       }
+    },
+    "predictrx-docs": {
+      "command": "python",
+      "args": ["mcp-server/predictrx_docs_mcp.py"]
+    },
+    "predictrx-mapping": {
+      "command": "python",
+      "args": ["mcp-server/predictrx_mapping_mcp.py"],
+      "env": {
+        "PREDICTRX_API_URL": "http://127.0.0.1:8000",
+        "PREDICTRX_DEMO": "1"
+      }
     }
   }
 }
