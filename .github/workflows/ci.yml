@@ -44,11 +44,14 @@ jobs:
           alembic current | grep -q "(head)"
       - name: Run API tests
         working-directory: backend
+        env:
+          PYTHONPATH: .
         run: pytest -q
       - name: Check site configuration tooling
         working-directory: backend
         env:
           DEMO_MODE: "false"
+          PYTHONPATH: .
         # A default configuration must be reported as unsafe for a hospital site (exit code 1).
         run: |
           set +e
