@@ -1,14 +1,44 @@
-# PredictRx Sentinel
+# Auralis (PredictRx Sentinel)
 
-Hospital-facing research decision support for **early ICU sepsis warning**.
+Hospital-local ICU early-warning software with **forward deployed engineering**.  
+Public brand: **Auralis** · Research track name: PredictRx Sentinel.
 
-> Research prototype — not approved for clinical use. The risk score supports, but does not replace, clinical judgment.
+> Research prototype — **not approved for clinical use**. Synthetic / PhysioNet replay on the public demo. The risk score supports, but does not replace, clinical judgment.
+
+**Live demo:** https://predictrx-sentinel-demo.onrender.com  
+**Layers (visual):** [docs/LAYERS.md](docs/LAYERS.md) — open this first for judges  
+**Submission wrap-up:** [docs/submission/WRAP_UP_CHECKLIST.md](docs/submission/WRAP_UP_CHECKLIST.md)
 
 ## Challenge
 
 - **Domain:** HealthSphere AI  
 - **Track:** PredictRx  
 - **Event:** International AI Builders Congress 2026  
+
+---
+
+## System at a glance (layers)
+
+```mermaid
+flowchart LR
+  SRC["Hospital feeds<br/>FHIR · HL7 · CSV"] --> MAP["Map + quarantine<br/>Bangla → LOINC RAG"]
+  MAP --> ML["Frozen LightGBM<br/>TreeSHAP"]
+  ML --> TG["TrustGate"]
+  TG --> UI["ICU · Alerts · Handoff"]
+  TG --> AUD["Local audit DB"]
+```
+
+| Layer | Job |
+|-------|-----|
+| **Connect** | FHIR R4 · HL7 v2 · CSV · vendor adapter · quarantine |
+| **Score** | Past-only features · frozen LightGBM Run 4 · AUROC ~0.81 on Dataset B (once) |
+| **Guard** | TrustGate Verify / Abstain before interruptive alerts |
+| **Work** | Role-separated doctor · nurse · admin · clinical IT · vendor |
+| **Deploy** | FDE: assess → integrate → silent eval → train → support · worldwide site-by-site |
+
+Full stack diagrams (safety, roles, packages, evidence, Congress map): **[docs/LAYERS.md](docs/LAYERS.md)**.
+
+---
 
 ## What V1 does
 
@@ -31,12 +61,13 @@ multi-horizon hazard challengers (research only).
 ## Repo layout
 
 ```
-docs/           Product, architecture, ethics, cards
+docs/           Product, architecture, LAYERS.md, ethics, cards
 ml/             Data pipeline, training, evaluation
-backend/        FastAPI inference + alert APIs
-frontend/       Next.js ICU dashboard
+backend/        FastAPI inference + TrustGate + connectors
+frontend/       Next.js hospital + public site (Auralis)
 demo/           Held-out patient replay assets
 knowledge/      Versioned non-causal evidence graph
+control-plane/  Vendor fleet (patient-free)
 infra/          Docker helpers
 .github/        CI checks
 ```
@@ -139,7 +170,9 @@ Details: [model card](docs/model-card.md) and
 - [Locked decisions](docs/DECISIONS.md)
 - [Product brief](docs/product-brief.md)
 - [Production operating model](docs/product-operating-model.md)
+- [Visual layers (Mermaid)](docs/LAYERS.md)
 - [Architecture](docs/architecture.md)
+- [Submission wrap-up checklist](docs/submission/WRAP_UP_CHECKLIST.md)
 - [Hospital data integration](docs/integration.md)
 - [Hospital onboarding and data operations](docs/hospital-onboarding.md)
 - [AI Congress demo runbook](docs/congress-demo-runbook.md)

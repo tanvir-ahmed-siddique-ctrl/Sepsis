@@ -1,4 +1,6 @@
-# Architecture — PredictRx Sentinel
+# Architecture — PredictRx Sentinel (Auralis)
+
+**Judge-facing visual layers (Mermaid):** [LAYERS.md](LAYERS.md)
 
 ## High-level flow
 

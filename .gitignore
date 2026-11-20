@@ -76,3 +76,13 @@ tmp_frontend*
 tmp_login*
 tmp_matrix*
 tmp_roles*
+
+# Video production intermediates (keep final MP4 + scripts + frames)
+docs/submission/video/export/clips/
+docs/submission/video/export/pad.wav
+docs/submission/video/export/vo_*.wav
+docs/submission/video/export/video_only.mp4
+docs/submission/video/export/concat.txt
+docs/submission/video/export/vo_concat.txt
+docs/submission/video/audio/*.wav
+docs/submission/video/audio/*.mp3
