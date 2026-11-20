@@ -182,7 +182,7 @@ flowchart LR
 | Problem / users | Pitch VO + product brief |
 | AI architecture | **This page** + [architecture](architecture.md) |
 | Data & sovereignty | [data card](data-card.md) · [DPIA](data-protection-impact-assessment.md) · on-prem boundary |
-| Demo | Live site + [video package](submission/video/README.md) |
+| Demo | Live Render site (pitch video local only — not in Git) |
 | Scalability | [scalability](scalability.md) · FDE packages · worldwide site-by-site |
 | Ethical safeguards | [safety-ethics](safety-ethics.md) · TrustGate · frozen model |
 
