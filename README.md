@@ -80,8 +80,9 @@ Set-Location "C:\Users\Tanvir Ahmed\Downloads\PredictRx Sentinel 2\PredictRx Sen
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r ml\requirements.txt -r backend\requirements.txt
+pip install -r ml\requirements.txt
 pip install -e .\ml
+pip install -r backend\requirements.txt
 
 # Terminal 1
 Set-Location backend

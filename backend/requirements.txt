@@ -16,5 +16,7 @@ PyJWT>=2.9
 # RS256/ES256 verification of hospital IdP (OIDC) tokens
 cryptography>=42
 pyyaml>=6.0
-# Shared feature pipeline, explanations and model wrapper
--e ../ml
+# Shared feature pipeline, explanations and model wrapper:
+# install from the repo root (not via a relative -e path — CI cwd breaks ../ml):
+#   pip install -e ./ml
+
