@@ -117,6 +117,10 @@ def test_local_account_password_pin_totp_and_revocation(client):
 
 
 def test_admin_account_lifecycle_and_last_admin_guard(client):
+    # Ensure a known unit exists even when this test runs in isolation.
+    client.post("/v1/care/units", json={
+        "unit_id": "ward-a", "label": "Medicine Ward A", "kind": "ward", "news2_scale_default": 1,
+    })
     unknown_scope = client.post("/v1/auth/users", json={
         "user_id": "bad.scope",
         "display_name": "Bad Scope",
@@ -154,6 +158,11 @@ def test_admin_account_lifecycle_and_last_admin_guard(client):
     assert client.get("/v1/auth/users", headers=bearer(stale_role_token)).status_code in {401, 403}
 
     assert client.delete("/v1/auth/users/site.admin.one").status_code == 200
+    # Demo mode seeds demo-admin / sim-admin; disable them so site.admin.two
+    # is the only remaining active administrator for the last-admin guard.
+    for seeded in ("demo-admin", "sim-admin"):
+        disabled = client.patch(f"/v1/auth/users/{seeded}", json={"disabled": True})
+        assert disabled.status_code == 200, disabled.text
     last = client.patch("/v1/auth/users/site.admin.two", json={"role": "clinician"})
     assert last.status_code == 409
 
