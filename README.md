@@ -6,9 +6,7 @@ Public brand: **Auralis** · Research track name: PredictRx Sentinel.
 > Research prototype — **not approved for clinical use**. Synthetic / PhysioNet replay on the public demo. The risk score supports, but does not replace, clinical judgment.
 
 **Live demo:** https://predictrx-sentinel-demo.onrender.com  
-**Layers (visual):** [docs/LAYERS.md](docs/LAYERS.md) — open this first for judges  
-**Full build chronicle + cleaned prompts:** [docs/PROJECT_BUILD_CHRONICLE.md](docs/PROJECT_BUILD_CHRONICLE.md)  
-**Submission wrap-up:** [docs/submission/WRAP_UP_CHECKLIST.md](docs/submission/WRAP_UP_CHECKLIST.md)
+**Layers (visual):** [docs/LAYERS.md](docs/LAYERS.md) — open this first for judges
 
 ## Challenge
 
@@ -173,9 +171,7 @@ Details: [model card](docs/model-card.md) and
 - [Product brief](docs/product-brief.md)
 - [Production operating model](docs/product-operating-model.md)
 - [Visual layers (Mermaid)](docs/LAYERS.md)
-- [Full project build chronicle + prompt archive](docs/PROJECT_BUILD_CHRONICLE.md)
 - [Architecture](docs/architecture.md)
-- [Submission wrap-up checklist](docs/submission/WRAP_UP_CHECKLIST.md)
 - [Hospital data integration](docs/integration.md)
 - [Hospital onboarding and data operations](docs/hospital-onboarding.md)
 - [AI Congress demo runbook](docs/congress-demo-runbook.md)

@@ -79,3 +79,6 @@ tmp_roles*
 
 # Pitch video package stays local only (not in GitHub)
 docs/submission/video/
+
+# Founder chronicle / prompt archive — local only (not for public GitHub)
+docs/PROJECT_BUILD_CHRONICLE.md
