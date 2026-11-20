@@ -7,6 +7,7 @@ Public brand: **Auralis** · Research track name: PredictRx Sentinel.
 
 **Live demo:** https://predictrx-sentinel-demo.onrender.com  
 **Layers (visual):** [docs/LAYERS.md](docs/LAYERS.md) — open this first for judges  
+**Full build chronicle + cleaned prompts:** [docs/PROJECT_BUILD_CHRONICLE.md](docs/PROJECT_BUILD_CHRONICLE.md)  
 **Submission wrap-up:** [docs/submission/WRAP_UP_CHECKLIST.md](docs/submission/WRAP_UP_CHECKLIST.md)
 
 ## Challenge
@@ -171,6 +172,7 @@ Details: [model card](docs/model-card.md) and
 - [Product brief](docs/product-brief.md)
 - [Production operating model](docs/product-operating-model.md)
 - [Visual layers (Mermaid)](docs/LAYERS.md)
+- [Full project build chronicle + prompt archive](docs/PROJECT_BUILD_CHRONICLE.md)
 - [Architecture](docs/architecture.md)
 - [Submission wrap-up checklist](docs/submission/WRAP_UP_CHECKLIST.md)
 - [Hospital data integration](docs/integration.md)

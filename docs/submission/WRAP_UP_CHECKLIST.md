@@ -6,7 +6,7 @@ Against `COMPETITION ALL INFO MAIN.md` §9.1–9.2, §11, §14–15.
 
 | Requirement | Status | Where |
 |-------------|--------|--------|
-| ≤ 180s structured pitch (portal ≤181s) | Ready | `docs/submission/video/export/Auralis_180s_Congress_Pitch.mp4` (~178s) |
+| ≤ 180s structured pitch (portal ≤181s) | Local file only (not in Git) | Keep MP4 on disk for portal upload; see local `docs/submission/video/` |
 | Problem + users | In VO / frames | Problem segment |
 | AI-native (ML + RAG mapping) | In VO / frames | AI segment + Bangla→LOINC |
 | Input → AI → output | In demo + AI cards | ICU → TrustGate → score |
@@ -42,7 +42,7 @@ Polish notes: `docs/submission/video/QA_CHECKLIST.md` · CapCut optional: `CAPCU
 
 - Demo: `https://predictrx-sentinel-demo.onrender.com`
 - GitHub: this repo → pin **README** + **docs/LAYERS.md**
-- Video file: `docs/submission/video/export/Auralis_180s_Congress_Pitch.mp4`
+- Video file: local only — do not commit; upload MP4 from your machine to the portal
 - Portal answers draft: `docs/submission/congress-portal-answers.md`
 
 ## Pre-submit last 30 minutes
