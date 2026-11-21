@@ -806,13 +806,13 @@ class Engine:
                             settings.evaluation_admin_password.get_secret_value(), units=None,
                             actor_id="evaluation-bootstrap", must_change_password=False)
 
-    def step(self, hours: int = 1) -> dict:
+    def step(self, hours: int = 1, *, limit: int | None = None, fast: bool = False) -> dict:
         """Advance replay beds one patient at a time.
 
-        Holding the engine lock across every bed made /overview, /alerts, ward
-        NEWS2 and handoff wait ~10s whenever auto-advance or Advance Nh ran —
-        the board sat on "Connecting to local feed…" and other pages looked hung.
-        Yield between patients so clinical reads can interleave.
+        Scoring runs outside the engine lock so /overview, /alerts, ward, handoff
+        and chart stay responsive. ``limit`` caps how many beds advance in one
+        call (auto-tick uses a small batch). ``fast`` skips TrustGate
+        perturbations — 3× cheaper inference for background ticks.
         """
         self._step_busy = True
         try:
@@ -825,6 +825,11 @@ class Engine:
                     for key, patient in self.patients.items()
                     if patient.source is not None and patient.cursor < len(patient.source)
                 ]
+                if limit is not None and limit > 0 and keys:
+                    start = int(getattr(self, "_auto_step_cursor", 0)) % len(keys)
+                    ordered = keys[start:] + keys[:start]
+                    keys = ordered[:limit]
+                    self._auto_step_cursor = start + len(keys)
             advanced = 0
             for key in keys:
                 for _ in range(hours):
@@ -838,10 +843,8 @@ class Engine:
                         row = patient.source.iloc[[patient.cursor]]
                         patient.raw = pd.concat([patient.raw, row], ignore_index=True)
                         patient.cursor += 1
-                        # Feature build + LightGBM must not hold the lock — that is what
-                        # froze ward / alerts / handoff / chart for the whole request timeout.
                         frame = patient.raw.copy()
-                    pred = self._score_inner(patient, None, frame)
+                    pred = self._score_inner(patient, None, frame, fast=fast)
                     with self.lock:
                         current = self.patients.get(key)
                         if current is None:
@@ -1293,7 +1296,14 @@ class Engine:
             self._maybe_alert(p, pred, previous)
         return pred
 
-    def _score_inner(self, p: Patient, upto: int | None, raw_frame: pd.DataFrame | None) -> dict:
+    def _score_inner(
+        self,
+        p: Patient,
+        upto: int | None,
+        raw_frame: pd.DataFrame | None,
+        *,
+        fast: bool = False,
+    ) -> dict:
         source_frame = raw_frame if raw_frame is not None else p.raw
         selected = source_frame.iloc[:upto].copy()
         source_hour = (
@@ -1336,13 +1346,15 @@ class Engine:
                 quality = "stale_required_vitals"
             else:
                 quality = "ok"
+            # Auto ticks skip SHAP — the board needs the probability, not drivers every 90s.
+            factors = [] if fast else explain_rows(self.model, last)[0]
             pred = {"probability": prob, "uncertainty": unc, "risk_band": band, "data_quality": quality,
-                    "factors": explain_rows(self.model, last)[0]}
+                    "factors": factors}
 
         perturbations = (
-            self._perturbed_probabilities(raw)
-            if pred["risk_band"] == "high_risk"
-            else []
+            []
+            if fast or pred["risk_band"] != "high_risk"
+            else self._perturbed_probabilities(raw)
         )
         trustgate = assess_prediction(
             probability=pred["probability"],

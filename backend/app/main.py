@@ -64,7 +64,9 @@ async def lifespan(_: FastAPI):
                 # Skip overlapping auto ticks while a long Advance Nh is running.
                 if getattr(engine, "_step_busy", False):
                     return
-                engine.step(1)
+                # Small fast batch — full-cohort scoring every 30s OOMed the Render demo (503).
+                batch = max(1, settings.demo_replay_auto_batch_size)
+                engine.step(1, limit=batch, fast=True)
 
             while True:
                 await asyncio.sleep(interval)

@@ -354,9 +354,9 @@ export async function api<T = unknown>(path: string, init?: RequestInit): Promis
   if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  // Reads must fail fast. A 45s wait is what made ward/alerts/handoff/chart feel stuck.
+  // Reads fail sooner than writes. Keep GET short so a busy tick never hangs the UI.
   const method = (init?.method || "GET").toUpperCase();
-  const timeoutMs = method === "GET" ? 8000 : 45000;
+  const timeoutMs = method === "GET" ? 12000 : 45000;
   const controller = new AbortController();
   const outer = init?.signal;
   const onAbort = () => controller.abort();

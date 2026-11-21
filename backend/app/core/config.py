@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     public_simulation_interval_seconds: int = 30
     # Demo ICU board: advance PhysioNet replay one hour on this cadence (0 = off).
     demo_replay_auto_interval_seconds: int = 0
+    # Auto ticks only advance this many replay beds per cycle (round-robin). Keeps
+    # free-host demos responsive instead of scoring the full ICU every interval.
+    demo_replay_auto_batch_size: int = 4
     evaluation_runtime: bool = False
     evaluation_admin_password: SecretStr | None = None
     database_url: str = f"sqlite:///{(REPO_ROOT / 'backend' / 'predictrx.db').as_posix()}"

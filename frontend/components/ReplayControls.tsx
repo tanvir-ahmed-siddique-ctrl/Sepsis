@@ -39,8 +39,8 @@ export function ReplayControls({
         {modeBlocked
           ? `Site mode is ${siteMode}. Switch back to demo operating mode to advance the Main ICU timeline.`
           : `Main ICU timeline · auto ~${
-              Number.isFinite(AUTO_HINT_SECONDS) && AUTO_HINT_SECONDS > 0 ? AUTO_HINT_SECONDS : 30
-            }s · board polls every 3s`}
+              Number.isFinite(AUTO_HINT_SECONDS) && AUTO_HINT_SECONDS > 0 ? AUTO_HINT_SECONDS : 90
+            }s (few beds/tick) · board polls every 3s`}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <button
