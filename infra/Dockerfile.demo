@@ -30,7 +30,11 @@ COPY backend/requirements.txt ./
 # Upgrade the base image's pip first: pip-audit flagged pip 25.0.1 itself
 # (docs/evidence/vulnerability-disposition.md). pip is build tooling, but the
 # shipped installer should not carry known advisories.
-RUN pip install --no-cache-dir --upgrade "pip>=26.2" && pip install --no-cache-dir -r requirements.txt
+# Install the local ML package explicitly: backend/requirements.txt no longer
+# carries `-e ../ml` (that path breaks GitHub Actions install from repo root).
+RUN pip install --no-cache-dir --upgrade "pip>=26.2" \
+    && pip install --no-cache-dir /app/ml \
+    && pip install --no-cache-dir -r requirements.txt
 COPY backend /app/backend
 COPY knowledge /app/knowledge
 COPY demo/cases /app/demo/cases

@@ -7,7 +7,9 @@ COPY ml /app/ml
 COPY backend /app/backend
 COPY knowledge /app/knowledge
 WORKDIR /app/backend
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the local ML package explicitly: backend/requirements.txt no longer
+# carries `-e ../ml` (that path breaks GitHub Actions install from repo root).
+RUN pip install --no-cache-dir /app/ml && pip install --no-cache-dir -r requirements.txt
 
 # Replay cases are mounted at runtime (demo mode only); they are never baked into the image.
 RUN useradd --system --uid 10001 --home-dir /app predictrx \
