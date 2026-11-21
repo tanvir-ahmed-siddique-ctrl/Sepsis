@@ -929,11 +929,18 @@ class Engine:
                 if not settings.demo_mode and unit_id not in self.units:
                     quarantined.append(self._quarantine(ob, "unknown_care_unit", connector))
                     continue
-                # Replay beds are keyed by bed id (e.g. BED-01), not patient--encounter.
-                p = self.patients.get(encounter_key) or self.patients.get(ob.patient_id)
+                # Prefer the encounter-scoped key. Replay beds are also keyed by bed id
+                # (e.g. BED-01). Never collapse two API encounters that share a patient_id
+                # — that leaves earliest[] pointing at a missing patients[] key and the
+                # connector spools the batch as HTTP 202 processing_error.
+                p = self.patients.get(encounter_key)
+                if p is None:
+                    by_bed = self.patients.get(ob.patient_id)
+                    if by_bed is not None and by_bed.source_mode == "replay":
+                        p = by_bed
                 if p is None:
                     resolved = self.resolve_patient(ob.patient_id)
-                    if resolved is not None:
+                    if resolved is not None and resolved.encounter_id == ob.encounter_id:
                         p = resolved
                 if p is None:
                     kind = self.unit_kind(unit_id)

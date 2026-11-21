@@ -62,7 +62,7 @@ def test_deterministic_mode_without_llm(monkeypatch):
 
 
 def _fake_llm(answer: dict):
-    def fake(provider, url, model, payload):
+    def fake(provider, url, model, payload, api_key=""):
         request = json.loads(payload)
         assert request["options"]["temperature"] == 0
         assert request["format"]["properties"]["choice_code"]["enum"][-1] == "none"
