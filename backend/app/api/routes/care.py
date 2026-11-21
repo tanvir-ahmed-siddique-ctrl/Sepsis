@@ -36,16 +36,9 @@ CHART_FIELDS = {
 WARD_REQUIRED = ("Resp", "O2Sat", "OxygenTherapy", "SBP", "HR", "AVPU", "Temp")
 
 
-def _patient(engine: Engine, actor: Actor, identifier: str, *, allow_replay: bool = False) -> Patient:
+def _patient(engine: Engine, actor: Actor, identifier: str) -> Patient:
     patient = engine.resolve_patient(identifier)
-    if patient is None:
-        raise HTTPException(status_code=404, detail="Encounter not found")
-    if patient.source_mode == "replay" and not allow_replay:
-        raise HTTPException(
-            status_code=409,
-            detail="Replay ICU beds share the board timeline. Advance or wait for auto-replay; manual chart writes stay on live/API encounters.",
-        )
-    if patient.source_mode not in {"api", "replay"}:
+    if patient is None or patient.source_mode not in {"api", "replay"}:
         raise HTTPException(status_code=404, detail="Encounter not found")
     ensure_unit(actor, patient.unit_id)
     return patient
@@ -74,8 +67,6 @@ def _census_row(patient: Patient) -> dict:
         and latest_news2.get("due_at")
         and datetime.fromisoformat(latest_news2["due_at"]) < now
     )
-    # Replay beds follow the shared ICU board clock — charting is observe-only.
-    observations_due = False if patient.source_mode == "replay" else (due or bool(missing))
     return {
         "encounter_key": patient.encounter_key,
         "patient_id": patient.patient_id,
@@ -96,8 +87,8 @@ def _census_row(patient: Patient) -> dict:
         "latest_news2": latest_news2,
         "latest_vitals": (latest_prediction or {}).get("vitals") if latest_prediction else None,
         "risk_band": (latest_prediction or {}).get("risk_band") if latest_prediction else None,
-        "observations_due": observations_due,
-        "chart_writable": patient.source_mode == "api",
+        "observations_due": due or bool(missing),
+        "chart_writable": True,
     }
 
 

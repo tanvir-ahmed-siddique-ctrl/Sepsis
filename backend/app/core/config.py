@@ -48,8 +48,6 @@ class Settings(BaseSettings):
     public_simulation_enabled: bool = False
     public_simulation_interval_seconds: int = 30
     # Demo ICU board: advance PhysioNet replay one hour on this cadence (0 = off).
-    # Runs inside the API process so the shared public board still moves even when
-    # PUBLIC_DEMO_LOCKDOWN blocks visitor-triggered /demo/replay/step calls.
     demo_replay_auto_interval_seconds: int = 0
     evaluation_runtime: bool = False
     evaluation_admin_password: SecretStr | None = None

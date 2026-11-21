@@ -928,7 +928,12 @@ class Engine:
                 if not settings.demo_mode and unit_id not in self.units:
                     quarantined.append(self._quarantine(ob, "unknown_care_unit", connector))
                     continue
-                p = self.patients.get(encounter_key)
+                # Replay beds are keyed by bed id (e.g. BED-01), not patient--encounter.
+                p = self.patients.get(encounter_key) or self.patients.get(ob.patient_id)
+                if p is None:
+                    resolved = self.resolve_patient(ob.patient_id)
+                    if resolved is not None:
+                        p = resolved
                 if p is None:
                     kind = self.unit_kind(unit_id)
                     p = Patient(

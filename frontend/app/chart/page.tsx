@@ -95,14 +95,6 @@ export default function ChartPage() {
 
   async function submitVitals() {
     if (!current) return;
-    if (current.chart_writable === false || current.source_mode === "replay") {
-      setMessage(
-        bn
-          ? "এই বেড ICU board-এর একই replay timeline — চার্ট লিখা নয়; board advance/auto হলে vitals বদলায়।"
-          : "This bed shares the ICU board replay timeline. Chart writes stay on live/API beds; vitals move when the board advances.",
-      );
-      return;
-    }
     const numeric = [
       "heart_rate",
       "spo2",
@@ -294,29 +286,23 @@ export default function ChartPage() {
           )}
           {current && (
             <div className="grid gap-5 xl:grid-cols-[1fr_auto]">
-              {(current.chart_writable === false || current.source_mode === "replay") && (
-                <div className="xl:col-span-2 space-y-3 rounded-xl border border-border bg-muted-surface/60 p-4 text-sm text-ink">
-                  <p>
-                    {bn
-                      ? "একই ICU demo beds (Bed 01…) — ICU board-এর সাথে সিঙ্ক। Vitals এখানে দেখা যায়; timeline board auto-advance / Advance দিয়ে এগোয়।"
-                      : "Same ICU demo beds as the board (Bed 01…). Vitals here mirror the shared replay; the timeline advances from the ICU board (auto ~20s or Advance)."}
+              {current.latest_vitals && (
+                <div className="xl:col-span-2 space-y-2 rounded-xl border border-border bg-muted-surface/40 p-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    {bn ? "সর্বশেষ vitals (বোর্ড সিঙ্ক)" : "Latest vitals (board sync)"}
                   </p>
-                  {current.latest_vitals && (
-                    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {Object.entries(current.latest_vitals).map(([code, value]) => (
-                        <div key={code} className="rounded-lg border border-border bg-white px-3 py-2">
-                          <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted">{code}</dt>
-                          <dd className="mt-0.5 font-mono text-sm text-ink">{value == null ? "—" : value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  )}
+                  <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {Object.entries(current.latest_vitals).map(([code, value]) => (
+                      <div key={code} className="rounded-lg border border-border bg-white px-3 py-2">
+                        <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted">{code}</dt>
+                        <dd className="mt-0.5 font-mono text-sm text-ink">{value == null ? "—" : value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
               )}
               <form
-                className={`grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 ${
-                  current.chart_writable === false || current.source_mode === "replay" ? "pointer-events-none opacity-45" : ""
-                }`}
+                className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3"
                 onSubmit={(event) => {
                   event.preventDefault();
                   void submitVitals();
@@ -392,8 +378,6 @@ export default function ChartPage() {
               </form>
               <div className="space-y-3">
                 <BedQr encounterKey={current.encounter_key} bed={current.bed_id || current.encounter_id} />
-                {current.source_mode !== "replay" && current.chart_writable !== false && (
-                  <>
                 <select className="auralis-input" value={transferUnit} onChange={(e) => setTransferUnit(e.target.value)}>
                   <option value="">{bn ? "স্থানান্তর…" : "Transfer to…"}</option>
                   {units.data?.units
@@ -418,24 +402,18 @@ export default function ChartPage() {
                 >
                   {bn ? "স্থানান্তর" : "Transfer"}
                 </button>
-                  </>
+                {current.kind === "ward" && (
+                  <button type="button" className="auralis-btn-ghost auralis-btn-sm w-full" onClick={() => void changeNews2Scale()}>
+                    NEWS2 SpO₂ Scale {current.hypercapnic_scale2 ? "2 (change to 1)" : "1 (change to 2)"}
+                  </button>
                 )}
-                {current.source_mode !== "replay" && current.chart_writable !== false && (
-                  <>
-                    {current.kind === "ward" && (
-                      <button type="button" className="auralis-btn-ghost auralis-btn-sm w-full" onClick={() => void changeNews2Scale()}>
-                        NEWS2 SpO₂ Scale {current.hypercapnic_scale2 ? "2 (change to 1)" : "1 (change to 2)"}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="auralis-btn-ghost auralis-btn-sm w-full text-risk-high hover:text-risk-high"
-                      onClick={() => void transferOrDischarge("discharge")}
-                    >
-                      {bn ? "ডিসচার্জ" : "Discharge"}
-                    </button>
-                  </>
-                )}
+                <button
+                  type="button"
+                  className="auralis-btn-ghost auralis-btn-sm w-full text-risk-high hover:text-risk-high"
+                  onClick={() => void transferOrDischarge("discharge")}
+                >
+                  {bn ? "ডিসচার্জ" : "Discharge"}
+                </button>
               </div>
             </div>
           )}
