@@ -43,6 +43,7 @@ Full Mermaid diagrams: [LAYERS.md](LAYERS.md).
 | Transfer Shield / readiness | [innovation-adoption-barriers](innovation-adoption-barriers.md) — note S7 is primarily audit documentation, not a separate auto-stop module |
 | Pricing / market / grants | Hypothesis unless cited; see `docs/business/pricing-assumptions.md` |
 | Gaps / unresolved history | [GAPS_AND_RISKS](GAPS_AND_RISKS.md) |
+| Co-pilot / BYO LLM / Bangla policy | [auralis-copilot-byo-llm](auralis-copilot-byo-llm.md) |
 | Outside-repo work | [REAL_WORLD_ACTION_PLAN.md](../REAL_WORLD_ACTION_PLAN.md) |
 
 ## MCP (operator / docs / mapping)

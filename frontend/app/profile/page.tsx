@@ -35,14 +35,15 @@ type Profile = {
 
 type Workspaces = { site_id: string; workspaces: { id: string; label: string; path: string; scope: string }[]; default_path: string | null };
 
-type TabId = "overview" | "personal" | "access" | "security" | "preferences" | "activity";
+type TabId = "overview" | "personal" | "access" | "security" | "preferences" | "auralis-ai" | "activity";
 
-const TABS: Array<{ id: TabId; label: string; icon: "user" | "doc" | "building" | "shield" | "settings" | "clock" }> = [
+const TABS: Array<{ id: TabId; label: string; icon: "user" | "doc" | "building" | "shield" | "settings" | "layers" | "clock" }> = [
   { id: "overview", label: "Overview", icon: "user" },
   { id: "personal", label: "Personal information", icon: "doc" },
   { id: "access", label: "Organization & access", icon: "building" },
   { id: "security", label: "Security", icon: "shield" },
   { id: "preferences", label: "Preferences", icon: "settings" },
+  { id: "auralis-ai", label: "Auralis AI", icon: "layers" },
   { id: "activity", label: "Activity", icon: "clock" },
 ];
 
@@ -150,6 +151,7 @@ export default function ProfilePage() {
               />
             )}
             {tab === "preferences" && <PreferencesTab profile={data} act={act} setNotice={setNotice} />}
+            {tab === "auralis-ai" && <AuralisAiTab role={data.role} />}
             {tab === "activity" && <ActivityTab profile={data} />}
           </div>
         </>
@@ -428,6 +430,75 @@ function SecurityTab({
         </Panel>
       </div>
     </>
+  );
+}
+
+function AuralisAiTab({ role }: { role: string }) {
+  const isIt =
+    role === "admin" ||
+    role === "operator" ||
+    role === "clinical_it" ||
+    role === "clinical-it" ||
+    role === "integrator";
+
+  return (
+    <div className="space-y-5">
+      <Panel title="Auralis Co-pilot">
+        <p className="max-w-3xl text-sm leading-6 text-muted">
+          Assistive AI for this hospital site. Default runtime is on-premises{" "}
+          <strong className="text-ink">Qwen 3.5 4B</strong> with hybrid RAG for terminology. It never writes the sepsis
+          risk score — Frozen LightGBM Run 4 + TrustGate stay on a separate path.
+        </p>
+        <ul className="mt-4 space-y-2 text-sm text-ink">
+          {[
+            "Propose Bangla / local lab names → LOINC (human SHA sign-off)",
+            "Explain TrustGate / UI terms in EN or বাংলা chrome",
+            "Draft handoff text from fields already on screen (roadmap-gated)",
+            "Optional site-approved cloud LLM to improve those jobs only",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <Icon name="check" size={16} className="mt-0.5 shrink-0 text-teal" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm text-muted">
+          Forbidden: diagnosis, prescriptions, changing Run 4 thresholds, dumping full identifiable charts to a public cloud
+          by default.
+        </p>
+      </Panel>
+
+      <Panel title="Language">
+        <p className="text-sm leading-6 text-muted">
+          Use the nav <strong className="text-ink">বাংলা / EN</strong> toggle for menus and help text. Keep disease names,
+          LOINC, and drug-class labels in <strong className="text-ink">English</strong> on clinical boards so charts stay
+          interoperable — local slang is accepted as input and mapped to English codes.
+        </p>
+      </Panel>
+
+      <Panel title="Credentials & privacy">
+        <p className="text-sm leading-6 text-muted">
+          API keys for optional cloud models are <strong className="text-ink">not stored in this browser</strong>. They
+          belong on the hospital-local server (environment / encrypted site secret). The UI may only show whether a
+          provider is configured — never the secret itself.
+        </p>
+        {isIt ? (
+          <p className="mt-3 text-sm text-ink">
+            As clinical IT / admin, configure <code className="text-xs">COPILOT_LLM_*</code> on the site host (or future
+            encrypted store). See Integration hub and{" "}
+            <a className="text-teal underline" href="/docs">
+              /docs
+            </a>
+            . Design notes: <code className="text-xs">docs/auralis-copilot-byo-llm.md</code>.
+          </p>
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            Ask clinical IT if your site should enable an approved external model. Clinicians use the co-pilot; they do not
+            paste vendor API keys here.
+          </p>
+        )}
+      </Panel>
+    </div>
   );
 }
 

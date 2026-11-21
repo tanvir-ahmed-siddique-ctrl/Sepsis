@@ -559,7 +559,126 @@ Long dossiers stay in `docs/` — open from these colorful cards:
       <a href="https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/"><img src="https://img.shields.io/badge/📚_GITHUB_PAGES-Docsify_hub-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a>
     </td>
   </tr>
+  <tr>
+    <td>
+      <a href="docs/auralis-copilot-byo-llm.md"><img src="https://img.shields.io/badge/🤖_COPILOT_BYO_LLM-Security_design-2A9D8F?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      n8n decision · RAG scope · Bangla policy · credentials
+    </td>
+    <td>
+      <a href="docs/business/business-model.md"><img src="https://img.shields.io/badge/📈_KPIs_&_BUSINESS-Hypothesis_charts-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Also inlined in README · pricing assumptions internal
+    </td>
+  </tr>
 </table>
+
+---
+
+## 📈 KPIs & business (hypothesis · not revenue claims)
+
+> **Label:** planning / discovery ranges only. Pre-revenue research prototype.  
+> No paid pilots, signed ARR, or clinical outcome ROI is claimed. Figures from internal hypotheses in `docs/business/*` — **not** validated willingness-to-pay.
+
+### Commercial funnel (site-by-site FDE)
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#2A9D8F','primaryTextColor':'#0B1C2C','lineColor':'#1B6CA8'}}}%%
+flowchart LR
+  L["Lead / Discover"] --> R["Paid readiness<br/>৳3L hyp."]
+  R --> S["Silent eval<br/>৳5L hyp."]
+  S --> I["Implement<br/>৳6L hyp."]
+  I --> A["Annual licence<br/>৳12L/yr hyp."]
+  A --> X["Expand units / sites"]
+  S -.->|stop OK| STOP["Go / no-go"]
+  R -.->|stop OK| STOP
+```
+
+### Package mix — discovery BDT ranges (lakh)
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#1B6CA8, #2A9D8F, #00897B, #C45C26'}}}}%%
+xychart-beta
+  title "Pricing hypotheses (BDT lakh) — unvalidated"
+  x-axis ["Readiness 3L", "Silent pilot 5L", "Implement 6L", "Annual licence 12L/yr"]
+  y-axis "BDT lakh" 0 --> 14
+  bar [3, 5, 6, 12]
+```
+
+### What we track as **product KPIs** (ops · not “lives saved”)
+
+| KPI family | Examples we instrument / plan | Never use as sales claim |
+|:-----------|:------------------------------|:-------------------------|
+| **Data quality** | TrustGate Verify/Abstain rates · feed freshness · unmapped codes | “% false alarms reduced” without matched study |
+| **Workflow** | Alert ack SLA · handoff completion · trained users / shift | Mortality reduction |
+| **Integration** | Connector uptime · quarantine queue · mapping reuse | Live EHR without MoU |
+| **Evidence** | Silent-eval protocol adherence · Set B one-shot discipline | Bangladesh AUROC without local data |
+| **Commercial** | Pipeline stage · readiness→pilot conversion · renewal intent | ARR without signed contracts |
+
+### Value story (honest)
+
+| Layer hospitals pay for | Why it can sell before local model proof |
+|:------------------------|:-----------------------------------------|
+| **Bridge + TrustGate** | Makes vitals arrive + refuses bad interrupts |
+| **Silent evaluation** | Local evidence gate before alerts |
+| **Managed Edge / FDE** | Install, train, support — enablement not SaaS fantasy |
+| **Frozen Run 4 licence** | Only after local readiness + governance | 
+
+Deep dive (hypothesis-aware): [business-model](docs/business/business-model.md) · [pricing-assumptions](docs/business/pricing-assumptions.md) · [strategic-plan](docs/business/strategic-plan.md) · [FDE playbook](docs/business/fde-delivery-playbook.md)
+
+---
+
+## 🗣️ Language policy · বাংলা UI + English clinical terms
+
+We **already ship** an EN ⇄ বাংলা toggle (`frontend/lib/copy.ts`, nav button).
+
+| Surface | Language | Why |
+|:--------|:---------|:---|
+| Menus, buttons, empty states, disclaimers | **Bangla or English** (user choice) | Staff comfort |
+| Disease / syndrome names, LOINC, SNOMED-ish labels, drug class names | **Keep English (Latin script)** | Shared charting language · reduces mistranslation risk |
+| Local lab slang on paper (নাড়ি, RBS, Hb%) | **Accepted as input** → mapped to English canonical codes | Mapping copilot + synonyms |
+| Risk bands / TrustGate states | Dual: Bangla gloss + **English code** in audit | Audit interoperability |
+
+**Does Bangla look “bad”?** No — Bangla chrome + English medical tokens is standard for BD clinical software and reads *more* professional than inventing unstable Bangla disease neologisms on an ICU board.
+
+---
+
+## 🧩 Why not n8n? Do we use RAG?
+
+| Tool / pattern | Did we use it? | Why |
+|:---------------|:---------------|:----|
+| **n8n** | **No** | Hospital edge needs deterministic connectors, quarantine, audit, and offline CPU — not a general workflow SaaS. HL7/FHIR/CSV live in `backend/app/integrations/` + optional `edge/` MLLP. n8n would add another moving part, weaker audit story, and cloud temptation. |
+| **RAG** | **Yes — for mapping only** | Hybrid lexical + embedding retrieval + RRF over the LOINC registry (`backend/app/integrations/copilot.py`). LLM may **only choose among retrieved candidates**. |
+| **RAG over patient chart for diagnosis** | **No** | Would blur into treatment advice; sepsis score stays frozen LightGBM + TrustGate. |
+
+Design for optional cloud assist + co-pilot scope: **[docs/auralis-copilot-byo-llm.md](docs/auralis-copilot-byo-llm.md)**
+
+---
+
+## 🤖 Auralis Co-pilot (local first · optional BYO cloud)
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Local_default-Qwen_3.5_4B_+_hybrid_RAG-2A9D8F?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/Never_scores_sepsis-Isolated_from_Run_4-B00020?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+**Today:** mapping proposals (Bangla/local → LOINC), JSON-schema, human SHA sign-off.  
+**Profile → Auralis AI:** explains capabilities; **credentials never live in the browser**.  
+**Clinical IT:** can point the site at on-prem Ollama **or** an approved OpenAI-compatible API (key stored only on the **hospital-local server**, encrypted/config secret — not `localStorage`).
+
+```mermaid
+flowchart LR
+  UI["Browser profile / IT settings<br/>no raw key stored"] --> API["Hospital API"]
+  API --> VAULT["Local secret store / env"]
+  VAULT --> LOCAL["Default: Ollama Qwen"]
+  VAULT --> CLOUD["Optional: site-approved<br/>OpenAI-compatible API"]
+  LOCAL --> JOBS["Allowed jobs only"]
+  CLOUD --> JOBS
+  JOBS --> MAP["Mapping propose"]
+  JOBS --> HAND["Handoff draft"]
+  JOBS --> HELP["UI / protocol explain"]
+  JOBS -.->|blocked| SCORE["Sepsis probability"]
+```
+
+Full security + allowed/forbidden jobs → [docs/auralis-copilot-byo-llm.md](docs/auralis-copilot-byo-llm.md)
 
 ---
 
@@ -591,6 +710,7 @@ uvicorn app.main:app --reload
 - TrustGate alert-burden benefit unproven at matched sensitivity  
 - Live HIS needs MoU + legal basis + FDE work outside this repo  
 - Frozen Run 4 is **immutable** until a new ledgered promotion  
+- Business figures in this README are **hypotheses**, not booked revenue  
 
 ---
 

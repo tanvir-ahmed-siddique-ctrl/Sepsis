@@ -15,6 +15,7 @@
   - [Safety case](safety-case.md)
   - [Safety & ethics](safety-ethics.md)
   - [Innovation / Transfer Shield](innovation-adoption-barriers.md)
+  - [Co-pilot / BYO LLM](auralis-copilot-byo-llm.md)
 
 - **Systems**
   - [Architecture](architecture.md)
