@@ -4,10 +4,54 @@ import { useEffect, useMemo, useState } from "react";
 import { BedQr } from "@/components/BedQr";
 import { ApiError, EmptyState, PageHeader, Panel, Pill, Stat } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { api, DEMO_UNIT, type CareUnit, type CensusEncounter } from "@/lib/api";
+import { api, DEMO_UNIT, type CareUnit, type CensusEncounter, type UnitOverview } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
 import { enqueue, flushOutbox, outboxItems } from "@/lib/outbox";
 import { usePoll } from "@/lib/usePoll";
+
+type CensusPayload = { encounters: CensusEncounter[]; due_count: number; complete_count: number };
+
+async function loadCensus(unitId: string): Promise<CensusPayload> {
+  const census = await api<CensusPayload>(`/v1/care/census?unit_id=${encodeURIComponent(unitId)}`);
+  if (census.encounters.length > 0) return census;
+  // Main ICU beds live on the board overview; if census is briefly empty during a
+  // timeline step, fall back so charting never looks like a vacant unit.
+  try {
+    const overview = await api<UnitOverview>(`/v1/units/${encodeURIComponent(unitId)}/overview`);
+    const encounters: CensusEncounter[] = overview.patients.map((patient) => ({
+      encounter_key: patient.encounter_key || patient.patient_id,
+      patient_id: patient.patient_id,
+      display_name: patient.display_name,
+      encounter_id: patient.encounter_id,
+      unit_id: unitId,
+      bed_id: patient.display_name?.startsWith("Bed ")
+        ? patient.display_name.replace("Bed ", "BED-")
+        : patient.patient_id,
+      kind: "icu",
+      status: "admitted",
+      source_mode: patient.source_mode,
+      hypercapnic_scale2: false,
+      age: patient.age,
+      sex: patient.sex,
+      admitted_at: null,
+      missing_required: patient.missing_required_signals || [],
+      stale_required: [],
+      complete_required: (patient.missing_required_signals || []).length === 0,
+      latest_news2: null,
+      latest_vitals: null,
+      risk_band: patient.risk_band,
+      observations_due: (patient.missing_required_signals || []).length > 0,
+      chart_writable: true,
+    }));
+    return {
+      encounters,
+      due_count: encounters.filter((row) => row.observations_due).length,
+      complete_count: encounters.filter((row) => row.complete_required).length,
+    };
+  } catch {
+    return census;
+  }
+}
 
 const EMPTY_VITALS = {
   heart_rate: "",
@@ -31,15 +75,10 @@ export default function ChartPage() {
   const bn = locale === "bn";
   const units = usePoll(() => api<{ units: CareUnit[] }>("/v1/care/units"), 30000);
   const [unit, setUnit] = useState("");
-  const census = usePoll(
-    () =>
-      api<{ encounters: CensusEncounter[]; due_count: number; complete_count: number }>(
-        `/v1/care/census?unit_id=${encodeURIComponent(unit)}`,
-      ),
-    10000,
-    [unit],
-    { enabled: Boolean(unit), cacheKey: unit ? `census:${unit}` : undefined },
-  );
+  const census = usePoll(() => loadCensus(unit), 10000, [unit], {
+    enabled: Boolean(unit),
+    cacheKey: unit ? `census:${unit}` : undefined,
+  });
   const completeness = usePoll(
     () => api<{ completeness: number | null }>(`/v1/care/completeness?unit_id=${encodeURIComponent(unit)}&hours=8`),
     30000,

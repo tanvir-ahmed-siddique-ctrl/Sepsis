@@ -56,7 +56,19 @@ export function usePoll<T>(
         setError(null);
         const at = Date.now();
         setUpdatedAt(new Date(at));
-        if (cacheKeyRef.current) pollCache.set(cacheKeyRef.current, { data: next, at });
+        if (cacheKeyRef.current) {
+          // Do not sticky-cache empty clinical boards. A transient Main ICU
+          // rebuild (or timed-out follow-up) previously froze chart/NEWS2/handoff
+          // on "0 beds" / endless skeletons.
+          const empty =
+            next &&
+            typeof next === "object" &&
+            (("encounters" in next && Array.isArray((next as { encounters: unknown[] }).encounters) && (next as { encounters: unknown[] }).encounters.length === 0) ||
+              ("beds" in next && Array.isArray((next as { beds: unknown[] }).beds) && (next as { beds: unknown[] }).beds.length === 0) ||
+              ("patients" in next && Array.isArray((next as { patients: unknown[] }).patients) && (next as { patients: unknown[] }).patients.length === 0));
+          if (!empty) pollCache.set(cacheKeyRef.current, { data: next, at });
+          else pollCache.delete(cacheKeyRef.current);
+        }
       }
     } catch (cause) {
       if (mountedRef.current && currentRequest === requestId.current) {

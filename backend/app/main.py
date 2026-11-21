@@ -53,24 +53,15 @@ async def lifespan(_: FastAPI):
         tasks.append(asyncio.create_task(simulation_loop()))
     if settings.demo_mode and settings.demo_replay_auto_interval_seconds > 0:
         async def replay_auto_loop() -> None:
-            # Step is cheap; full reset_replay reloads/scores every PhysioNet case and
-            # holds the engine lock for a long time — that made ICU/alerts/chart/NEWS2
-            # look blank or stuck on "Connecting to local feed…" during the lock.
+            # Advance only. Never auto-call reset_replay(): it drops every Main ICU
+            # bed under the engine lock, so chart/NEWS2/handoff briefly (or stuck)
+            # show zero beds / endless loading while the cohort is rebuilt.
             interval = max(15, settings.demo_replay_auto_interval_seconds)
-            reset_cooldown = max(180, interval * 6)
-            state = {"last_reset": 0.0}
 
             def _tick() -> None:
                 if engine.site.state.effective_mode != "demo":
                     return
-                result = engine.step(1)
-                if int(result.get("advanced_patient_hours") or 0) > 0:
-                    return
-                now = time.time()
-                if now - state["last_reset"] < reset_cooldown:
-                    return
-                engine.reset_replay()
-                state["last_reset"] = now
+                engine.step(1)
 
             while True:
                 await asyncio.sleep(interval)

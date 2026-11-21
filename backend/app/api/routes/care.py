@@ -45,12 +45,20 @@ def _patient(engine: Engine, actor: Actor, identifier: str) -> Patient:
 
 
 def _freshness(patient: Patient, code: str) -> int | None:
-    if code not in patient.raw or patient.raw[code].dropna().empty:
+    if patient.raw is None or getattr(patient.raw, "empty", True) or code not in patient.raw.columns:
         return None
     # Replay hours are case-relative, not wall-clock unix hours.
     if patient.source_mode == "replay":
-        return 0
-    latest_hour = int(patient.raw.loc[patient.raw[code].notna(), "_hour"].max())
+        value = patient.raw[code].iloc[-1]
+        try:
+            missing = value != value  # NaN
+        except Exception:
+            missing = value is None
+        return None if missing else 0
+    series = patient.raw[code].dropna()
+    if series.empty or "_hour" not in patient.raw.columns:
+        return None
+    latest_hour = int(patient.raw.loc[series.index, "_hour"].max())
     return max(0, int(datetime.now(timezone.utc).timestamp() // 3600 - latest_hour) * 60)
 
 
@@ -119,14 +127,15 @@ def census(
         ensure_unit(actor, unit_id)
     engine = get_engine()
     with engine.lock:
-        rows = [
-            _census_row(patient)
+        cohort = [
+            patient
             for patient in engine.patients.values()
             if patient.source_mode in {"api", "replay"}
             and patient.status == "admitted"
             and (unit_id is None or patient.unit_id == unit_id)
             and actor.can_access_unit(patient.unit_id)
         ]
+        rows = [_census_row(patient) for patient in cohort]
     rows.sort(key=lambda row: (not row["observations_due"], row["bed_id"] or "", row["display_name"]))
     return {
         "unit_id": unit_id,
@@ -151,6 +160,24 @@ def shift_completeness(
             if patient.unit_id != unit_id or patient.status != "admitted" or patient.source_mode not in {"api", "replay"}:
                 continue
             required = WARD_REQUIRED if patient.kind == "ward" else REQUIRED_SIGNALS
+            if patient.source_mode == "replay":
+                # Keep Main ICU chart snappy: avoid rebuilding full feature frames
+                # for every PhysioNet bed on each completeness poll.
+                window = min(hours, max(1, len(patient.predictions) or len(patient.raw)))
+                expected = window * len(required)
+                latest = patient.predictions[-1] if patient.predictions else {}
+                vitals = latest.get("vitals") or {}
+                observed = sum(1 for code in required if vitals.get(code) is not None)
+                observed = min(expected, observed * window)
+                rows.append({
+                    "encounter_key": patient.encounter_key,
+                    "bed_id": patient.bed_id,
+                    "observed_required_cells": observed,
+                    "expected_required_cells": expected,
+                    "completeness": None if expected == 0 else round(observed / expected, 4),
+                    "window_hours": window,
+                })
+                continue
             frame = engine.patient_frame(patient).tail(hours)
             expected = len(frame) * len(required)
             observed = sum(int(frame[code].notna().sum()) for code in required if code in frame)

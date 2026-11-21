@@ -37,7 +37,7 @@ export function ReplayControls({
           ? `Site mode is ${siteMode}. Switch back to demo operating mode to advance the Main ICU timeline.`
           : `Advance the Main ICU timeline anytime. It also moves forward one hour every ~${
               Number.isFinite(AUTO_HINT_SECONDS) && AUTO_HINT_SECONDS > 0 ? AUTO_HINT_SECONDS : 30
-            }s; the board refreshes every 3s.`}
+            }s (Reset is manual). The board refreshes every 3s.`}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <button
