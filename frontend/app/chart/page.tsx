@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BedQr } from "@/components/BedQr";
 import { ApiError, EmptyState, PageHeader, Panel, Pill, Stat } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { api, type CareUnit, type CensusEncounter } from "@/lib/api";
+import { api, DEMO_UNIT, type CareUnit, type CensusEncounter } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
 import { enqueue, flushOutbox, outboxItems } from "@/lib/outbox";
 import { usePoll } from "@/lib/usePoll";
@@ -63,7 +63,12 @@ export default function ChartPage() {
   });
 
   useEffect(() => {
-    if (!unit && units.data?.units.length) setUnit(units.data.units[0].unit_id);
+    if (unit || !units.data?.units.length) return;
+    const preferred =
+      units.data.units.find((row) => row.unit_id === DEMO_UNIT) ||
+      units.data.units.find((row) => row.kind === "icu") ||
+      units.data.units[0];
+    setUnit(preferred.unit_id);
   }, [unit, units.data]);
   useEffect(() => {
     void outboxItems().then((items) => setOutbox(items.length));
@@ -90,6 +95,14 @@ export default function ChartPage() {
 
   async function submitVitals() {
     if (!current) return;
+    if (current.chart_writable === false || current.source_mode === "replay") {
+      setMessage(
+        bn
+          ? "এই বেড ICU board-এর একই replay timeline — চার্ট লিখা নয়; board advance/auto হলে vitals বদলায়।"
+          : "This bed shares the ICU board replay timeline. Chart writes stay on live/API beds; vitals move when the board advances.",
+      );
+      return;
+    }
     const numeric = [
       "heart_rate",
       "spo2",
@@ -264,6 +277,8 @@ export default function ChartPage() {
                     <span className="mt-0.5 block truncate font-mono text-xs text-muted">{row.encounter_id}</span>
                   </span>
                   <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                    {row.source_mode === "replay" && <Pill>{bn ? "বোর্ড সিঙ্ক" : "board sync"}</Pill>}
+                    {row.risk_band && <Pill>{row.risk_band.replace(/_/g, " ")}</Pill>}
                     {row.observations_due && <Pill tone="warning">{bn ? "বাকি" : "due"}</Pill>}
                     {row.latest_news2?.score != null && <Pill>NEWS2 {row.latest_news2.score}</Pill>}
                   </span>
@@ -279,8 +294,29 @@ export default function ChartPage() {
           )}
           {current && (
             <div className="grid gap-5 xl:grid-cols-[1fr_auto]">
+              {(current.chart_writable === false || current.source_mode === "replay") && (
+                <div className="xl:col-span-2 space-y-3 rounded-xl border border-border bg-muted-surface/60 p-4 text-sm text-ink">
+                  <p>
+                    {bn
+                      ? "একই ICU demo beds (Bed 01…) — ICU board-এর সাথে সিঙ্ক। Vitals এখানে দেখা যায়; timeline board auto-advance / Advance দিয়ে এগোয়।"
+                      : "Same ICU demo beds as the board (Bed 01…). Vitals here mirror the shared replay; the timeline advances from the ICU board (auto ~20s or Advance)."}
+                  </p>
+                  {current.latest_vitals && (
+                    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {Object.entries(current.latest_vitals).map(([code, value]) => (
+                        <div key={code} className="rounded-lg border border-border bg-white px-3 py-2">
+                          <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted">{code}</dt>
+                          <dd className="mt-0.5 font-mono text-sm text-ink">{value == null ? "—" : value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                </div>
+              )}
               <form
-                className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                className={`grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 ${
+                  current.chart_writable === false || current.source_mode === "replay" ? "pointer-events-none opacity-45" : ""
+                }`}
                 onSubmit={(event) => {
                   event.preventDefault();
                   void submitVitals();
@@ -356,6 +392,8 @@ export default function ChartPage() {
               </form>
               <div className="space-y-3">
                 <BedQr encounterKey={current.encounter_key} bed={current.bed_id || current.encounter_id} />
+                {current.source_mode !== "replay" && current.chart_writable !== false && (
+                  <>
                 <select className="auralis-input" value={transferUnit} onChange={(e) => setTransferUnit(e.target.value)}>
                   <option value="">{bn ? "স্থানান্তর…" : "Transfer to…"}</option>
                   {units.data?.units
@@ -380,18 +418,24 @@ export default function ChartPage() {
                 >
                   {bn ? "স্থানান্তর" : "Transfer"}
                 </button>
-                {current.kind === "ward" && (
-                  <button type="button" className="auralis-btn-ghost auralis-btn-sm w-full" onClick={() => void changeNews2Scale()}>
-                    NEWS2 SpO₂ Scale {current.hypercapnic_scale2 ? "2 (change to 1)" : "1 (change to 2)"}
-                  </button>
+                  </>
                 )}
-                <button
-                  type="button"
-                  className="auralis-btn-ghost auralis-btn-sm w-full text-risk-high hover:text-risk-high"
-                  onClick={() => void transferOrDischarge("discharge")}
-                >
-                  {bn ? "ডিসচার্জ" : "Discharge"}
-                </button>
+                {current.source_mode !== "replay" && current.chart_writable !== false && (
+                  <>
+                    {current.kind === "ward" && (
+                      <button type="button" className="auralis-btn-ghost auralis-btn-sm w-full" onClick={() => void changeNews2Scale()}>
+                        NEWS2 SpO₂ Scale {current.hypercapnic_scale2 ? "2 (change to 1)" : "1 (change to 2)"}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="auralis-btn-ghost auralis-btn-sm w-full text-risk-high hover:text-risk-high"
+                      onClick={() => void transferOrDischarge("discharge")}
+                    >
+                      {bn ? "ডিসচার্জ" : "Discharge"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}

@@ -39,7 +39,7 @@ from app.services.engine import ModeError, ReadOnlyError, get_engine, shutdown_e
 async def lifespan(_: FastAPI):
     validate_security_configuration()
     engine = get_engine()  # load model, take the writer lease and restore state at startup
-    task: asyncio.Task | None = None
+    tasks: list[asyncio.Task] = []
     if settings.public_simulation_enabled:
         async def simulation_loop() -> None:
             while True:
@@ -50,11 +50,27 @@ async def lifespan(_: FastAPI):
                     # Keep the API responsive and leave a visible diagnostic in
                     # service logs if the simulation relay stops progressing.
                     print(f"public simulation tick failed: {error!r}", flush=True)
-        task = asyncio.create_task(simulation_loop())
+        tasks.append(asyncio.create_task(simulation_loop()))
+    if settings.demo_mode and settings.demo_replay_auto_interval_seconds > 0:
+        async def replay_auto_loop() -> None:
+            interval = max(5, settings.demo_replay_auto_interval_seconds)
+            while True:
+                await asyncio.sleep(interval)
+                try:
+                    def _tick() -> None:
+                        if engine.site.state.effective_mode != "demo":
+                            return
+                        result = engine.step(1)
+                        if int(result.get("advanced_patient_hours") or 0) == 0:
+                            engine.reset_replay()
+                    await asyncio.to_thread(_tick)
+                except Exception as error:
+                    print(f"demo replay auto-tick failed: {error!r}", flush=True)
+        tasks.append(asyncio.create_task(replay_auto_loop()))
     try:
         yield
     finally:
-        if task:
+        for task in tasks:
             task.cancel()
         shutdown_engine()
 

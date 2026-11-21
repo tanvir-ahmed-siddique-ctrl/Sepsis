@@ -587,6 +587,8 @@ class Engine:
                     age=int(src["Age"].iloc[0]),
                     sex={0: "F", 1: "M"}.get(int(src["Gender"].iloc[0])),
                     source=src.drop(columns=["SepsisLabel"]),
+                    bed_id=case["bed_id"],
+                    kind="icu",
                     replay_meta={
                         "labelled_onset_hour": case["labelled_onset_hour"],
                         "kind": case["kind"],

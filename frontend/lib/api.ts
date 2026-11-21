@@ -160,6 +160,7 @@ export type CensusEncounter = {
   bed_id: string | null;
   kind: "icu" | "ward";
   status: "admitted" | "discharged";
+  source_mode?: "api" | "replay";
   hypercapnic_scale2: boolean;
   age: number | null;
   sex: string | null;
@@ -168,7 +169,10 @@ export type CensusEncounter = {
   stale_required: string[];
   complete_required: boolean;
   latest_news2: News2 | null;
+  latest_vitals?: Record<string, number | null> | null;
+  risk_band?: string | null;
   observations_due: boolean;
+  chart_writable?: boolean;
 };
 
 export type LocalUser = {
