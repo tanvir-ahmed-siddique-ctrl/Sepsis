@@ -67,6 +67,14 @@ export default function HandoffPage() {
 
       {error && <ApiError error={error} />}
 
+      {!data && !error && (
+        <div className="space-y-3" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="auralis-skeleton h-28 rounded-xl" />
+          ))}
+        </div>
+      )}
+
       {data && data.beds.length === 0 && (
         <EmptyState icon="handoff" title="No visible beds" body="No visible beds for this unit." />
       )}

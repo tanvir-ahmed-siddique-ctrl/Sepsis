@@ -1,5 +1,7 @@
 export const API_BASE = "/api/hospital";
+/** Primary clinical ICU board (stable id; product label is "Main ICU"). */
 export const DEMO_UNIT = process.env.NEXT_PUBLIC_DEMO_UNIT_ID ?? "icu-demo-1";
+/** Secondary connector/integration ICU — not the default clinician board. */
 export const API_UNIT = "icu-api";
 
 export type RiskBand = "insufficient_data" | "stable" | "watch" | "high_risk";
@@ -349,22 +351,43 @@ export async function api<T = unknown>(path: string, init?: RequestInit): Promis
   if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-    credentials: "same-origin",
-    cache: "no-store",
-  });
-  const contentType = response.headers.get("content-type") ?? "";
-  const body = contentType.includes("application/json") ? await response.json() : await response.text();
-  if (!response.ok) {
-    const detail =
-      typeof body === "object" && body && "detail" in body
-        ? String((body as { detail: unknown }).detail)
-        : String(body || response.statusText);
-    throw new ApiRequestError(detail, response.status);
+  // Bound waits so a long engine lock (replay step/reset) cannot leave boards hung forever.
+  const timeoutMs = 45000;
+  const controller = new AbortController();
+  const outer = init?.signal;
+  const onAbort = () => controller.abort();
+  if (outer) {
+    if (outer.aborted) controller.abort();
+    else outer.addEventListener("abort", onAbort, { once: true });
   }
-  return body as T;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+      credentials: "same-origin",
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const contentType = response.headers.get("content-type") ?? "";
+    const body = contentType.includes("application/json") ? await response.json() : await response.text();
+    if (!response.ok) {
+      const detail =
+        typeof body === "object" && body && "detail" in body
+          ? String((body as { detail: unknown }).detail)
+          : String(body || response.statusText);
+      throw new ApiRequestError(detail, response.status);
+    }
+    return body as T;
+  } catch (cause) {
+    if (cause instanceof DOMException && cause.name === "AbortError") {
+      throw new ApiRequestError("Request timed out waiting for the hospital API. Retry in a moment.", 504);
+    }
+    throw cause;
+  } finally {
+    clearTimeout(timer);
+    if (outer) outer.removeEventListener("abort", onAbort);
+  }
 }
 
 export function isStatus(error: unknown, status: number): boolean {

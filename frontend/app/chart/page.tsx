@@ -220,6 +220,10 @@ export default function ChartPage() {
 
       {(units.error || census.error) && <ApiError error={(units.error || census.error)!} />}
 
+      {!units.data && !units.error && (
+        <p className="text-sm text-muted">{bn ? "কেয়ার ইউনিট লোড হচ্ছে…" : "Loading care units…"}</p>
+      )}
+
       <div className="flex flex-wrap items-stretch gap-3">
         <Stat label={bn ? "ভর্তি" : "Admitted"} value={census.data?.encounters.length ?? 0} />
         <Stat

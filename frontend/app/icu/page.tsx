@@ -54,10 +54,13 @@ export default function OverviewPage() {
     const available = units.data.units;
     const fallback = units.data.default_unit ?? DEMO_UNIT;
     setUnit((current) => {
-      let next = current;
-      if (!(current && available.includes(current))) {
+      // Keep an in-session choice. On first land, Main ICU (icu-demo-1) wins over a
+      // stale Integration ICU preference so Advance/Reset and the primary board show.
+      let next = current && available.includes(current) ? current : null;
+      if (!next) {
         const stored = readStoredUnit();
-        if (stored && available.includes(stored)) next = stored;
+        if (stored === API_UNIT && available.includes(DEMO_UNIT)) next = DEMO_UNIT;
+        else if (stored && available.includes(stored)) next = stored;
         else if (available.includes(DEMO_UNIT)) next = DEMO_UNIT;
         else if (fallback && available.includes(fallback)) next = fallback;
         else next = available.includes(API_UNIT) ? API_UNIT : available[0] ?? DEMO_UNIT;
@@ -148,14 +151,25 @@ export default function OverviewPage() {
         </div>
       )}
 
-      {data?.site_mode === "demo" && unit === DEMO_UNIT && <ReplayControls onChange={refresh} />}
+      {(unit === DEMO_UNIT || data?.patients.some((patient) => patient.source_mode === "replay")) && (
+        <ReplayControls onChange={refresh} siteMode={data?.site_mode ?? null} />
+      )}
+      {unit === API_UNIT && (
+        <p className="text-xs text-muted">
+          Integration ICU is for connector drills. Switch unit to Main ICU ({DEMO_UNIT}) for the primary board and
+          timeline controls.
+        </p>
+      )}
       {(error || units.error) && <ApiError error={(error ?? units.error) as Error} />}
 
       {!data && !error && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="auralis-skeleton h-40 rounded-xl" />
-          ))}
+        <div className="space-y-3">
+          <p className="text-sm text-muted">{t.icu.connecting}</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="auralis-skeleton h-40 rounded-xl" />
+            ))}
+          </div>
         </div>
       )}
 

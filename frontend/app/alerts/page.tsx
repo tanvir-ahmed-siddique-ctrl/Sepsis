@@ -42,8 +42,16 @@ export default function AlertsPage() {
         </p>
       )}
 
+      {!data && !error && (
+        <div className="space-y-3" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="auralis-skeleton h-24 rounded-xl" />
+          ))}
+        </div>
+      )}
+
       <Panel title={`Open (${open.length})`}>
-        {open.length === 0 && (
+        {data && open.length === 0 && (
           <EmptyState
             icon="bell"
             title="No open alerts"

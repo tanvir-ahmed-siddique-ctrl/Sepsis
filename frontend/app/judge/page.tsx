@@ -44,7 +44,7 @@ const TOUR: Array<{ step: string; title: string; body: string; href: string; ico
   {
     step: "05",
     title: "ICU board + patient chart",
-    body: "Sign in as demo-clinician. Open icu-demo-1, then a bed for SHAP drivers and Aurie guideline context.",
+    body: "Sign in as ICU consultant. Open Main ICU, then a bed for SHAP drivers and Auri guideline context.",
     href: "/signin?next=/app/icu",
     icon: "grid",
     minutes: "3 min",

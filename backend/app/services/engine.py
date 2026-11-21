@@ -201,12 +201,15 @@ class Engine:
     # ---------- care units and ADT ----------
     def _ensure_default_units(self) -> None:
         defaults = (
-            (settings.demo_unit_id, "Demo ICU", "icu"),
-            (settings.api_unit_id, "API ICU", "icu"),
-            ("ward-demo-1", "Demo Ward", "ward"),
+            (settings.demo_unit_id, "Main ICU", "icu"),
+            (settings.api_unit_id, "Integration ICU", "icu"),
+            ("ward-demo-1", "General Ward", "ward"),
         )
         for unit_id, label, kind in defaults:
             if unit_id in self.units:
+                # Keep stable ids; refresh product-facing labels on boot.
+                self.units[unit_id]["label"] = label
+                self.units[unit_id]["kind"] = kind
                 continue
             row = {
                 "unit_id": unit_id,
@@ -597,11 +600,9 @@ class Engine:
                 self.patients[p.patient_id] = p
                 for _ in range(case["replay_start_hour"]):
                     self._advance(p, emit_alerts=False)
-            # The public competition build defaults to the real, de-identified
-            # PhysioNet replay cohort only. Synthetic commissioning beds are an
-            # explicit opt-in for connector drills, never mixed into the primary
-            # clinical experience.
-            if settings.public_simulation_enabled:
+            # Main ICU stays the PhysioNet cohort on demo_unit_id. Also seed the
+            # integration ICU + general ward so charting/NEWS2 are never empty.
+            if settings.demo_mode or settings.public_simulation_enabled:
                 self._seed_demo_care_workflow()
             self._log(
                 "replay_reset",

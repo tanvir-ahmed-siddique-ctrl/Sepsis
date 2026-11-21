@@ -64,7 +64,15 @@ export default function WardPage() {
           : "NEWS2 is scored from published bedside rules. It does not feed the ICU sepsis model."}
       </p>
 
-      {board.error && <ApiError error={board.error} />}
+      {(board.error || units.error) && <ApiError error={(board.error || units.error)!} />}
+
+      {!units.data && !units.error && (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="auralis-skeleton h-36 rounded-xl" />
+          ))}
+        </div>
+      )}
 
       {wards.length > 0 && !board.data && !board.error && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
@@ -74,7 +82,7 @@ export default function WardPage() {
         </div>
       )}
 
-      {!wards.length && (
+      {units.data && !wards.length && (
         <EmptyState
           icon="building"
           title={bn ? "কোনো ওয়ার্ড নেই" : "No ward units yet"}
