@@ -50,7 +50,6 @@ const BN: Record<string, string> = {
   "Readiness gates": "রেডিনেস গেটস",
   "Ops & backup": "অপস ও ব্যাকআপ",
   "Site licence": "সাইট লাইসেন্স",
-  "Deployment console": "ডিপ্লয়মেন্ট কনসোল",
   "Deployment home": "ডিপ্লয়মেন্ট হোম",
   "Site setup": "সাইট সেটআপ",
   "HIS / interfaces": "HIS / ইন্টারফেস",
@@ -72,7 +71,6 @@ const BN: Record<string, string> = {
   Minimize: "ছোট করুন",
   Language: "ভাষা",
   "Profile and security": "প্রোফাইল ও নিরাপত্তা",
-  Account: "অ্যাকাউন্ট",
   "Install app": "অ্যাপ ইনস্টল",
 };
 
