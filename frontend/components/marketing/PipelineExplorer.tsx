@@ -50,8 +50,34 @@ export function PipelineExplorer() {
   const step = STEPS[active];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <ol className="relative space-y-2" role="tablist" aria-label="Auralis pipeline" aria-orientation="vertical">
+    <div className="grid min-w-0 gap-4 sm:gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      {/* Mobile: horizontal step chips; desktop: vertical list */}
+      <div className="min-w-0 lg:hidden" role="tablist" aria-label="Auralis pipeline">
+        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+          {STEPS.map((item, idx) => {
+            const selected = idx === active;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                id={`pipeline-m-${item.id}`}
+                aria-selected={selected}
+                aria-controls="pipeline-panel"
+                onClick={() => setActive(idx)}
+                className={`flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-left transition-all ${
+                  selected ? "border-navy bg-navy text-white" : "border-border bg-white text-ink"
+                }`}
+              >
+                <span className="text-[11px] font-medium tabular-nums opacity-70">0{idx + 1}</span>
+                <span className="text-sm font-semibold">{item.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <ol className="relative hidden space-y-2 lg:block" role="tablist" aria-label="Auralis pipeline" aria-orientation="vertical">
         <span className="absolute bottom-9 left-[28px] top-9 w-px bg-border" aria-hidden="true" />
         {STEPS.map((item, idx) => {
           const selected = idx === active;
@@ -90,18 +116,18 @@ export function PipelineExplorer() {
         })}
       </ol>
 
-      <div id="pipeline-panel" role="tabpanel" aria-labelledby={`pipeline-${step.id}`} className="rounded-xl border border-border bg-white p-6 shadow-soft sm:p-8">
+      <div id="pipeline-panel" role="tabpanel" aria-labelledby={`pipeline-${step.id}`} className="min-w-0 rounded-xl border border-border bg-white p-4 shadow-soft sm:p-6 lg:p-8">
         <div key={step.id} className="auralis-fade-up">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-soft text-teal-dark">
             <Icon name={step.icon} size={20} />
           </span>
-          <h3 className="mt-5 text-xl font-semibold text-ink">{step.name}</h3>
-          <p className="mt-2 max-w-lg text-[15px] leading-7 text-muted">{step.detail}</p>
-          <ul className="mt-6 divide-y divide-border border-y border-border">
+          <h3 className="mt-4 text-lg font-semibold text-ink sm:mt-5 sm:text-xl">{step.name}</h3>
+          <p className="mt-2 max-w-lg text-sm leading-6 text-muted sm:text-[15px] sm:leading-7">{step.detail}</p>
+          <ul className="mt-5 divide-y divide-border border-y border-border sm:mt-6">
             {step.points.map((point) => (
-              <li key={point} className="flex items-center gap-3 py-3 text-sm text-ink">
-                <Icon name="check" size={16} className="text-teal" strokeWidth={2} />
-                {point}
+              <li key={point} className="flex items-start gap-3 py-2.5 text-sm text-ink sm:items-center sm:py-3">
+                <Icon name="check" size={16} className="mt-0.5 shrink-0 text-teal sm:mt-0" strokeWidth={2} />
+                <span className="min-w-0">{point}</span>
               </li>
             ))}
           </ul>

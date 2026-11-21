@@ -31,19 +31,19 @@ export function MarketingHero({
   asideItems?: string[];
 }) {
   return (
-    <section className="border-b border-border bg-white py-14 lg:py-20">
+    <section className="overflow-x-clip border-b border-border bg-white py-10 sm:py-14 lg:py-20">
       <div className="auralis-container-public">
-        <div className="grid gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
-          <Reveal>
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center lg:gap-10">
+          <Reveal className="min-w-0">
             <span className="auralis-eyebrow">{eyebrow}</span>
-            <h1 className="mt-4 max-w-3xl text-[1.85rem] font-semibold leading-[1.12] tracking-[-0.03em] text-ink sm:text-4xl sm:leading-[1.08] lg:text-5xl">{title}</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg sm:leading-8">{description}</p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href={primaryHref} className="group auralis-btn-primary px-6">
+            <h1 className="mt-3 max-w-3xl text-[1.65rem] font-semibold leading-[1.15] tracking-[-0.03em] text-ink sm:mt-4 sm:text-4xl sm:leading-[1.08] lg:text-5xl">{title}</h1>
+            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted sm:mt-5 sm:text-lg sm:leading-8">{description}</p>
+            <div className="mt-6 flex w-full flex-col gap-2.5 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+              <Link href={primaryHref} className="group auralis-btn-primary w-full justify-center px-6 sm:w-auto">
                 {primaryLabel}
                 <Icon name="arrow-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link href={secondaryHref} className="auralis-btn-secondary px-5">
+              <Link href={secondaryHref} className="auralis-btn-secondary w-full justify-center px-5 sm:w-auto">
                 {secondaryLabel}
               </Link>
             </div>
@@ -95,14 +95,14 @@ export function MarketingSection({
   const toneClasses = tone === "muted" || tone === "dark" ? "bg-canvas" : "bg-white";
 
   return (
-    <section className={`border-t border-border py-16 lg:py-24 ${toneClasses}`}>
+    <section className={`overflow-x-clip border-t border-border py-12 sm:py-16 lg:py-24 ${toneClasses}`}>
       <div className="auralis-container-public">
-        <Reveal className="max-w-3xl">
+        <Reveal className="max-w-3xl min-w-0">
           <span className="auralis-eyebrow">{eyebrow}</span>
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-[2.5rem] sm:leading-[1.12]">{title}</h2>
-          {description && <p className="mt-4 text-base leading-7 text-muted">{description}</p>}
+          <h2 className="mt-3 text-[1.65rem] font-semibold leading-tight tracking-[-0.025em] text-ink sm:text-[2.5rem] sm:leading-[1.12]">{title}</h2>
+          {description && <p className="mt-3 text-[15px] leading-7 text-muted sm:mt-4 sm:text-base">{description}</p>}
         </Reveal>
-        <div className="mt-10">{children}</div>
+        <div className="mt-8 min-w-0 sm:mt-10">{children}</div>
       </div>
     </section>
   );
@@ -129,27 +129,27 @@ export function FeatureGrid({ items }: { items: Array<{ title: string; body: str
 
 export function MarketingCta() {
   return (
-    <section className="bg-white py-16 lg:py-24">
+    <section className="overflow-x-clip bg-white py-12 sm:py-16 lg:py-24">
       <div className="auralis-container-public">
-        <Reveal className="relative overflow-hidden rounded-2xl bg-navy px-5 py-10 sm:px-8 sm:py-12 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:px-12">
+        <Reveal className="relative overflow-hidden rounded-2xl bg-navy px-4 py-8 sm:px-8 sm:py-12 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:px-12">
           <svg className="pointer-events-none absolute -right-10 top-1/2 hidden h-[140%] -translate-y-1/2 text-white/[0.06] lg:block" viewBox="0 0 400 200" fill="none" aria-hidden="true">
             <path d="M0 110h90l26-60 40 120 32-84 18 28h194" stroke="currentColor" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <div className="relative max-w-2xl">
+          <div className="relative min-w-0 max-w-2xl">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#73C3CF]">Next step</span>
-            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-white sm:text-4xl">
+            <h2 className="mt-3 text-[1.65rem] font-semibold leading-tight tracking-[-0.025em] text-white sm:text-4xl">
               Open the board, or book a site talk.
             </h2>
-            <p className="mt-3 text-base leading-7 text-white/65">
+            <p className="mt-3 text-[15px] leading-7 text-white/65 sm:text-base">
               Try the ICU workspace, or talk feeds and readiness with our engineers.
             </p>
           </div>
-          <div className="relative mt-8 flex flex-wrap items-center gap-3 lg:mt-0 lg:shrink-0">
-            <Link href="/signin" className="group inline-flex h-11 items-center gap-2 rounded-lg bg-white px-6 text-sm font-semibold text-navy transition-colors hover:bg-[#E8EDF0]">
+          <div className="relative mt-6 flex w-full flex-col gap-2.5 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 lg:mt-0 lg:shrink-0">
+            <Link href="/signin" className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-6 text-sm font-semibold text-navy transition-colors hover:bg-[#E8EDF0] sm:w-auto">
               Open live ICU board
               <Icon name="arrow-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/contact" className="inline-flex h-11 items-center rounded-lg border border-white/20 px-6 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5">
+            <Link href="/contact" className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-white/20 px-6 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:w-auto">
               Book a consultation
             </Link>
           </div>

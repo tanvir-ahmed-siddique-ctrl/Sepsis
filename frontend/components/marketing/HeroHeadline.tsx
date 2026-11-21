@@ -46,12 +46,13 @@ export function HeroHeadline() {
   const [line1, line2] = LINES[current];
 
   return (
-    <h1 className="relative max-w-xl">
+    <h1 className="relative max-w-xl min-w-0">
       <span className="sr-only">
         {line1} {line2}
       </span>
+      {/* Mobile: natural height so long lines wrap cleanly. Desktop: clipped stage for crossfade. */}
       <span
-        className="relative block h-[5.6rem] overflow-hidden sm:h-[6.8rem] lg:h-[7.6rem]"
+        className="relative block min-h-[4.75rem] overflow-hidden sm:h-[6.8rem] sm:min-h-0 lg:h-[7.6rem]"
         aria-hidden="true"
       >
         {outgoing != null && (
@@ -62,6 +63,10 @@ export function HeroHeadline() {
         <span className={`auralis-hero-line absolute inset-x-0 top-0 ${outgoing != null ? "is-in" : "is-steady"}`}>
           <LinePair pair={LINES[current]} />
         </span>
+        {/* Invisible steady pair reserves mobile height while absolute layers animate */}
+        <span className="invisible block sm:hidden">
+          <LinePair pair={LINES[current]} />
+        </span>
       </span>
     </h1>
   );
@@ -70,10 +75,10 @@ export function HeroHeadline() {
 function LinePair({ pair }: { pair: [string, string] }) {
   return (
     <>
-      <span className="block text-[2.35rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy sm:text-[2.9rem] lg:text-[3.4rem] lg:leading-[1.02]">
+      <span className="block text-[1.75rem] font-semibold leading-[1.12] tracking-[-0.035em] text-navy sm:text-[2.9rem] sm:leading-[1.05] sm:tracking-[-0.04em] lg:text-[3.4rem] lg:leading-[1.02]">
         {pair[0]}
       </span>
-      <span className="mt-1 block text-[2.35rem] font-semibold leading-[1.05] tracking-[-0.04em] text-[#2F8A63] sm:text-[2.9rem] lg:text-[3.4rem] lg:leading-[1.02]">
+      <span className="mt-0.5 block text-[1.75rem] font-semibold leading-[1.12] tracking-[-0.035em] text-[#2F8A63] sm:mt-1 sm:text-[2.9rem] sm:leading-[1.05] sm:tracking-[-0.04em] lg:text-[3.4rem] lg:leading-[1.02]">
         {pair[1]}
       </span>
     </>

@@ -443,29 +443,68 @@ function LoginPageContent() {
                   </h2>
                   <span className="h-px flex-1 bg-border" />
                 </div>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {[...demoAccounts.map((acct) => ({ ...acct, key: acct.role })), { ...VENDOR_DEMO, role: "vendor", key: "vendor" }].map((acct) => {
-                    const meta = ROLE_META[acct.key] ?? ROLE_META.clinician;
-                    const launching = quickBusyId === acct.user_id;
-                    return (
-                      <button
-                        key={acct.user_id}
-                        type="button"
-                        disabled={busy}
-                        onClick={() => void instantRoleLogin(acct.user_id, acct.password, acct.default_path)}
-                        className="group flex items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
-                          {launching ? <Spinner /> : <Icon name={meta.icon} size={16} />}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-semibold text-ink">{acct.label}</span>
-                          <span className="block truncate text-xs text-muted">{launching ? "Signing in…" : meta.detail}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
+
+                {/* Local hospital plane — surfaced here for judges */}
+                <div className="mt-5 rounded-xl border border-border bg-canvas/80 p-3.5 sm:p-4">
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-teal-dark">
+                      <Icon name="server" size={14} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-ink">Local hospital system</p>
+                      <p className="mt-0.5 text-xs leading-5 text-muted">
+                        Our on-prem clinical plane, brought into this web demo so judges can walk ICU, charting, and deployment without a separate install.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3.5 grid gap-2 sm:grid-cols-2">
+                    {demoAccounts.map((acct) => {
+                      const meta = ROLE_META[acct.role] ?? ROLE_META.clinician;
+                      const launching = quickBusyId === acct.user_id;
+                      return (
+                        <button
+                          key={acct.user_id}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void instantRoleLogin(acct.user_id, acct.password, acct.default_path)}
+                          className="group flex items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
+                            {launching ? <Spinner /> : <Icon name={meta.icon} size={16} />}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[13px] font-semibold text-ink">{acct.label}</span>
+                            <span className="block truncate text-xs text-muted">{launching ? "Signing in…" : meta.detail}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+
+                <div className="my-5 flex items-center gap-3" aria-hidden="true">
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Vendor plane</span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void instantRoleLogin(VENDOR_DEMO.user_id, VENDOR_DEMO.password, VENDOR_DEMO.default_path)}
+                  className="group flex w-full items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
+                    {quickBusyId === VENDOR_DEMO.user_id ? <Spinner /> : <Icon name={ROLE_META.vendor.icon} size={16} />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-semibold text-ink">{VENDOR_DEMO.label}</span>
+                    <span className="block truncate text-xs text-muted">
+                      {quickBusyId === VENDOR_DEMO.user_id ? "Signing in…" : ROLE_META.vendor.detail}
+                    </span>
+                  </span>
+                </button>
+
                 <p className="mt-3 text-center text-xs text-muted">
                   Synthetic patients only. Shared password{" "}
                   <code className="rounded border border-border bg-canvas px-1.5 py-0.5 font-mono text-ink">auralis-demo-2026</code>

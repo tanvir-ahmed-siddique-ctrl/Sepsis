@@ -133,12 +133,33 @@ export function ProductShowcaseCarousel() {
 
   return (
     <div
-      className="rounded-2xl border border-border bg-white p-3 shadow-lift sm:p-4"
+      className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-white p-2.5 shadow-lift sm:p-4"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="flex items-center justify-between gap-2 px-1 pb-3">
-        <div className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]" role="tablist" aria-label="Product views">
+      {/* Mobile: select + arrows. Desktop: tab strip. */}
+      <div className="flex items-center gap-2 px-0.5 pb-2.5 sm:px-1 sm:pb-3">
+        <label className="min-w-0 flex-1 sm:hidden">
+          <span className="sr-only">Product view</span>
+          <select
+            value={current.id}
+            onChange={(e) => {
+              const next = SLIDES.findIndex((s) => s.id === e.target.value);
+              if (next >= 0) {
+                setIndex(next);
+                setPaused(true);
+              }
+            }}
+            className="auralis-input !h-10 w-full min-w-0 text-xs font-medium"
+          >
+            {SLIDES.map((slide) => (
+              <option key={slide.id} value={slide.id}>
+                {slide.badge}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="hidden min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] sm:block" role="tablist" aria-label="Product views">
           <div className="inline-flex min-w-max gap-1 rounded-lg bg-muted-surface p-1">
             {SLIDES.map((slide, idx) => {
               const active = idx === index;
@@ -166,55 +187,86 @@ export function ProductShowcaseCarousel() {
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
-          <button type="button" onClick={prev} aria-label="Previous view" className="auralis-icon-btn h-10 w-10">
+        <div className="flex shrink-0 items-center gap-1">
+          <button type="button" onClick={prev} aria-label="Previous view" className="auralis-icon-btn h-9 w-9 sm:h-10 sm:w-10">
             <Icon name="chevron-left" size={16} />
           </button>
-          <button type="button" onClick={next} aria-label="Next view" className="auralis-icon-btn h-10 w-10">
+          <button type="button" onClick={next} aria-label="Next view" className="auralis-icon-btn h-9 w-9 sm:h-10 sm:w-10">
             <Icon name="chevron-right" size={16} />
           </button>
         </div>
       </div>
 
-      {/* Fixed-height workspace so slide swaps never shove the hero left column */}
+      {/* Auto-height on mobile; fixed stage on desktop so hero column stays steady */}
       <div
-        className="min-h-[28rem] overflow-hidden rounded-xl border border-border bg-canvas sm:min-h-[30.5rem]"
+        className="overflow-hidden rounded-xl border border-border bg-canvas sm:min-h-[30.5rem]"
         aria-live="polite"
       >
         {/* Simulated Browser / App Topbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-white px-3 py-3 sm:gap-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex items-center justify-between gap-2 border-b border-border bg-white px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="h-2 w-2 shrink-0 rounded-full bg-teal-light" />
-            <span className="truncate text-xs font-semibold text-ink">
-              Auralis Hospital Workspace · Adult ICU Unit A
+            <span className="truncate text-[11px] font-semibold text-ink sm:text-xs">
+              <span className="sm:hidden">Adult ICU · Unit A</span>
+              <span className="hidden sm:inline">Auralis Hospital Workspace · Adult ICU Unit A</span>
             </span>
             <span className="hidden rounded-full border border-border bg-muted-surface px-2.5 py-0.5 text-[11px] font-medium text-muted sm:inline-block">
               Illustrative preview
             </span>
           </div>
-          <span className="shrink-0 font-mono text-[11px] text-muted">Synthetic evaluation data</span>
+          <span className="hidden shrink-0 font-mono text-[11px] text-muted sm:inline">Synthetic evaluation data</span>
         </div>
 
         {/* SLIDE 1: REALISTIC ICU COMMAND BOARD */}
         {current.id === "icu-board" && (
-          <div className="p-4 sm:p-6">
-            <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="p-3 sm:p-6">
+            <div className="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:gap-3 sm:grid-cols-4">
               {[
                 { label: "High Risk Alerts", val: "1", tone: "text-[#B42318]" },
                 { label: "Watch Trajectory", val: "1", tone: "text-[#C4500A]" },
                 { label: "TrustGate Hold", val: "1", tone: "text-muted" },
                 { label: "Review SLA Target", val: "15 min", tone: "text-teal" },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-border bg-white px-4 py-3">
-                  <p className="text-[11px] font-medium text-muted">{stat.label}</p>
-                  <p className={`mt-0.5 text-xl font-bold ${stat.tone}`}>{stat.val}</p>
+                <div key={stat.label} className="rounded-xl border border-border bg-white px-3 py-2.5 sm:px-4 sm:py-3">
+                  <p className="text-[10px] font-medium text-muted sm:text-[11px]">{stat.label}</p>
+                  <p className={`mt-0.5 text-lg font-bold sm:text-xl ${stat.tone}`}>{stat.val}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {DEMO_BEDS.map((b) => (
-                <div key={b.bed} className="rounded-xl border border-border bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+              {DEMO_BEDS.slice(0, 2).map((b) => (
+                <div key={b.bed} className="rounded-xl border border-border bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] sm:p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-ink">{b.bed}</p>
+                      <p className="truncate text-xs text-muted">{b.patient}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:text-[11px] ${b.bandClass}`}>
+                      {b.band}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex items-end justify-between gap-2">
+                    <div>
+                      <p className="text-[11px] text-muted">6h Sepsis Risk</p>
+                      <p className="text-xl font-bold tabular-nums sm:text-2xl" style={{ color: b.scoreColor }}>
+                        {b.score}
+                      </p>
+                    </div>
+                    <svg viewBox="0 0 100 32" className="h-7 w-20 sm:h-8 sm:w-24">
+                      <path d={b.spark} fill="none" stroke={b.scoreColor} strokeWidth="2.2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/70 pt-2.5 text-[11px] text-muted">
+                    <span className="min-w-0 truncate">{b.alert}</span>
+                    <span className="shrink-0 font-medium text-ink">{b.freshness}</span>
+                  </div>
+                </div>
+              ))}
+              {DEMO_BEDS.slice(2).map((b) => (
+                <div key={b.bed} className="hidden rounded-xl border border-border bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] sm:block">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-semibold text-ink">{b.bed}</p>
@@ -249,11 +301,11 @@ export function ProductShowcaseCarousel() {
 
         {/* SLIDE 2: BEDSIDE PATIENT TRAJECTORY & DRIVERS */}
         {current.id === "bedside-chart" && (
-          <div className="grid gap-5 p-4 sm:p-6 lg:grid-cols-[1.25fr_0.75fr]">
-            <div className="rounded-xl border border-border bg-white p-5">
+          <div className="grid gap-3 p-3 sm:gap-5 sm:p-6 lg:grid-cols-[1.25fr_0.75fr]">
+            <div className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="text-base font-semibold text-ink">ICU-A · Bed 04 · 6-Hour Risk Curve</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ink sm:text-base">ICU-A · Bed 04 · 6-Hour Risk Curve</p>
                   <p className="text-xs text-muted">Serial vitals + arterial lactate · TrustGate Verified</p>
                 </div>
                 <span className="rounded-full bg-[#FEF3F2] px-3 py-1 text-xs font-semibold text-[#B42318]">
@@ -309,7 +361,7 @@ export function ProductShowcaseCarousel() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-between rounded-xl border border-border bg-white p-5">
+            <div className="flex flex-col justify-between rounded-xl border border-border bg-white p-3.5 sm:p-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-teal">Top Physiological Drivers</p>
                 <div className="mt-3 space-y-3">
@@ -341,7 +393,7 @@ export function ProductShowcaseCarousel() {
 
         {/* SLIDE 3: TRUSTGATE DATA QUALITY & QUARANTINE */}
         {current.id === "trustgate" && (
-          <div className="grid gap-4 p-4 sm:p-6 md:grid-cols-3">
+          <div className="grid gap-3 p-3 sm:gap-4 sm:p-6 md:grid-cols-3">
             {[
               {
                 status: "Verified Stream",
@@ -362,11 +414,11 @@ export function ProductShowcaseCarousel() {
                 body: "Catches µmol/L vs mg/dL creatinine mismatches at the connector before they touch the patient chart.",
               },
             ].map((card) => (
-              <div key={card.title} className="rounded-xl border border-border bg-white p-5">
+              <div key={card.title} className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
                 <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${card.badge}`}>
                   {card.status}
                 </span>
-                <h4 className="mt-3 text-base font-semibold text-ink">{card.title}</h4>
+                <h4 className="mt-3 text-sm font-semibold text-ink sm:text-base">{card.title}</h4>
                 <p className="mt-2 text-xs leading-5 text-muted">{card.body}</p>
               </div>
             ))}
@@ -375,15 +427,15 @@ export function ProductShowcaseCarousel() {
 
         {/* SLIDE 4: ALERT SLA & SHIFT HANDOFF */}
         {current.id === "handoff" && (
-          <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-2">
-            <div className="rounded-xl border border-border bg-white p-5">
+          <div className="grid gap-3 p-3 sm:gap-4 sm:p-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
               <div className="flex items-center justify-between">
                 <span className="rounded-full bg-[#FEF3F2] px-2.5 py-0.5 text-xs font-semibold text-[#B42318]">
                   Active ICU Alert · SLA 09:14 remaining
                 </span>
                 <span className="text-xs text-muted">Bed 04</span>
               </div>
-              <h4 className="mt-3 text-lg font-semibold text-ink">
+              <h4 className="mt-3 text-base font-semibold text-ink sm:text-lg">
                 Clinician review & one-tap bedside response
               </h4>
               <p className="mt-1.5 text-xs leading-5 text-muted">
@@ -395,11 +447,11 @@ export function ProductShowcaseCarousel() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-white p-5">
+            <div className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
               <span className="rounded-full bg-teal/10 px-2.5 py-0.5 text-xs font-semibold text-teal">
                 Incoming Shift Summary · 08:00 Handover
               </span>
-              <h4 className="mt-3 text-lg font-semibold text-ink">
+              <h4 className="mt-3 text-base font-semibold text-ink sm:text-lg">
                 Structured nurse & consultant handoff
               </h4>
               <ul className="mt-2.5 space-y-2 text-xs text-muted">
@@ -417,12 +469,12 @@ export function ProductShowcaseCarousel() {
         )}
       </div>
 
-      <div className="flex min-h-[6.75rem] flex-wrap items-start justify-between gap-4 px-1 pb-1 pt-4 sm:min-h-[5.5rem]">
-        <div className="max-w-2xl">
-          <h3 className="text-base font-semibold text-ink">{current.title}</h3>
-          <p className="mt-0.5 text-sm text-muted">{current.caption}</p>
+      <div className="flex flex-col gap-3 px-0.5 pb-0.5 pt-3 sm:min-h-[5.5rem] sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4 sm:px-1 sm:pt-4">
+        <div className="min-w-0 max-w-2xl">
+          <h3 className="text-sm font-semibold leading-snug text-ink sm:text-base">{current.title}</h3>
+          <p className="mt-0.5 text-xs leading-5 text-muted sm:text-sm">{current.caption}</p>
         </div>
-        <Link href={current.ctaHref} className="group auralis-btn-secondary auralis-btn-sm shrink-0">
+        <Link href={current.ctaHref} className="group auralis-btn-secondary auralis-btn-sm w-full justify-center sm:w-auto sm:shrink-0">
           {current.ctaLabel}
           <Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" />
         </Link>

@@ -138,7 +138,7 @@ export default function OverviewPage() {
       </p>
 
       {data && (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
           <Stat label="Alert" value={data.high_risk_count} color="text-risk-high" />
           <Stat label="Watch" value={data.watch_count} color="text-risk-watch" />
           <Stat label="Verify" value={data.verify_count} color="text-teal" />
@@ -172,11 +172,11 @@ export default function OverviewPage() {
       )}
 
       {data && data.patients.length > 0 && (
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
           {data.patients.map((p) => (
             <article
               key={p.patient_id}
-              className={`rounded-xl border bg-white p-4 shadow-soft ${
+              className={`min-w-0 rounded-xl border bg-white p-3.5 shadow-soft sm:p-4 ${
                 p.review_overdue
                   ? "border-risk-high"
                   : p.unresolved_alerts
@@ -187,25 +187,27 @@ export default function OverviewPage() {
               <Link href={`/patient/${encodeURIComponent(p.patient_id)}`} className="block group">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-semibold text-ink transition-colors group-hover:text-teal">{p.display_name}</p>
-                    <p className="mt-0.5 text-xs text-muted">
+                    <p className="truncate font-semibold text-ink transition-colors group-hover:text-teal">{p.display_name}</p>
+                    <p className="mt-0.5 text-xs leading-snug text-muted">
                       {p.age ?? "—"} y · {p.sex ?? "—"} · ICU hour {p.hour} ·{" "}
                       {p.source_mode === "api" ? "hospital connector" : "scored encounter"}
                     </p>
                   </div>
-                  <RiskBadge band={p.risk_band} />
+                  <span className="shrink-0">
+                    <RiskBadge band={p.risk_band} />
+                  </span>
                 </div>
-                <div className="mt-3 flex items-end justify-between gap-3">
-                  <div>
+                <div className="mt-3 flex items-end justify-between gap-2 sm:gap-3">
+                  <div className="min-w-0">
                     <p className="text-xs font-medium text-muted">{t.scoreLabel}</p>
-                    <p className="text-2xl font-semibold tabular-nums tracking-tight" style={{ color: BAND_COLOR[p.risk_band] }}>
+                    <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl" style={{ color: BAND_COLOR[p.risk_band] }}>
                       {pct(p.probability)}
                       {p.uncertainty != null && p.probability != null && (
                         <span className="ml-1 text-xs font-normal text-muted">±{pct(p.uncertainty)}</span>
                       )}
                     </p>
                   </div>
-                  <div className="w-28">
+                  <div className="w-24 shrink-0 sm:w-28">
                     <Sparkline values={p.trend} color={BAND_COLOR[p.risk_band]} />
                   </div>
                 </div>

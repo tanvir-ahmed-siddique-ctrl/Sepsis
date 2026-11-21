@@ -94,9 +94,9 @@ export function SiteModeBanner({ mode, detail }: { mode: SiteMode; detail?: Reac
 
 export function Stat({ label, value, color = "text-ink", hint }: { label: string; value: ReactNode; color?: string; hint?: ReactNode }) {
   return (
-    <div className="min-w-0 flex-1 basis-[7rem] rounded-xl border border-border bg-white px-3 py-3 shadow-soft sm:min-w-[7rem] sm:flex-none sm:px-4">
-      <p className="truncate text-xs font-medium text-muted">{label}</p>
-      <p className={`mt-1 text-2xl font-semibold tabular-nums tracking-tight ${color}`}>{value}</p>
+    <div className="min-w-0 flex-1 basis-[6.5rem] rounded-xl border border-border bg-white px-2.5 py-2.5 shadow-soft sm:min-w-[7rem] sm:flex-none sm:px-4 sm:py-3">
+      <p className="truncate text-[11px] font-medium text-muted sm:text-xs">{label}</p>
+      <p className={`mt-0.5 text-xl font-semibold tabular-nums tracking-tight sm:mt-1 sm:text-2xl ${color}`}>{value}</p>
       {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
     </div>
   );
@@ -142,14 +142,14 @@ export function PageHeader({
   back?: { href: string; label: string };
 }) {
   return (
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
+    <header className="mb-5 flex flex-col gap-3 border-b border-border pb-4 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4 sm:pb-5">
       <div className="min-w-0">
         {back && <BackLink href={back.href} label={back.label} className="mb-3" />}
         {eyebrow && <p className="auralis-eyebrow">{eyebrow}</p>}
         <h1 className="mt-1.5 auralis-page-title">{title}</h1>
         {description && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">{actions}</div>}
     </header>
   );
 }
