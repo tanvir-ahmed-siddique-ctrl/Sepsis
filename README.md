@@ -1,59 +1,132 @@
 # Auralis
 
 <p align="center">
-  <strong>Hospital-local ICU early-warning intelligence</strong><br/>
-  Public brand <b>Auralis</b> · Research track <b>PredictRx Sentinel</b> · FDE-led hospital enablement
+  <img alt="Auralis" src="https://img.shields.io/badge/AURALIS-Hospital--local_ICU_intelligence-2A9D8F?style=for-the-badge&labelColor=0B1C2C" />
 </p>
 
 <p align="center">
-  <a href="https://predictrx-sentinel-demo.onrender.com"><img alt="Live demo" src="https://img.shields.io/badge/Live_demo-Render-2A9D8F?style=for-the-badge&labelColor=0B1C2C" /></a>
-  <a href="https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/"><img alt="GitHub Pages" src="https://img.shields.io/badge/Docs_site-GitHub_Pages-1B6CA8?style=for-the-badge&labelColor=0B1C2C" /></a>
-  <a href="https://hub.docker.com/r/tanvirdoc02/predictrx-sentinel"><img alt="Docker Hub" src="https://img.shields.io/badge/Docker-tanvirdoc02%2Fpredictrx--sentinel-2496ED?style=for-the-badge&labelColor=0B1C2C" /></a>
+  <b>Public brand · Auralis</b> &nbsp;·&nbsp; <b>Research track · PredictRx Sentinel</b> &nbsp;·&nbsp; <b>FDE-led hospital enablement</b><br/>
+  HealthSphere AI · PredictRx · International AI Builders Congress 2026
 </p>
 
 <p align="center">
-  <img alt="Model" src="https://img.shields.io/badge/Active_model-LightGBM_Run_4-0B1C2C?style=flat-square&labelColor=2A9D8F" />
-  <img alt="Version" src="https://img.shields.io/badge/Version-v0.2.0--202609281906-1B6CA8?style=flat-square" />
-  <img alt="Holdout" src="https://img.shields.io/badge/Dataset_B_AUROC-0.808-2A9D8F?style=flat-square" />
-  <img alt="Utility" src="https://img.shields.io/badge/B_utility-0.238-C45C26?style=flat-square" />
-  <img alt="Status" src="https://img.shields.io/badge/Clinical_use-Not_approved-B00020?style=flat-square" />
-  <img alt="Demo data" src="https://img.shields.io/badge/Public_demo-Synthetic_%2F_PhysioNet-5C6BC0?style=flat-square" />
+  <a href="https://predictrx-sentinel-demo.onrender.com"><img alt="Live demo" src="https://img.shields.io/badge/🟢_Live_demo-Render-2A9D8F?style=for-the-badge&labelColor=0B1C2C" /></a>
+  <a href="https://predictrx-sentinel-demo.onrender.com/docs"><img alt="In-app docs" src="https://img.shields.io/badge/📘_In--app_/docs-Whitepaper-1B6CA8?style=for-the-badge&labelColor=0B1C2C" /></a>
+  <a href="https://predictrx-sentinel-demo.onrender.com/api/docs"><img alt="API" src="https://img.shields.io/badge/🔌_API_OpenAPI-Swagger-5C6BC0?style=for-the-badge&labelColor=0B1C2C" /></a>
+  <a href="https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/"><img alt="Pages" src="https://img.shields.io/badge/📚_Docs_site-GitHub_Pages-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a>
+  <a href="https://hub.docker.com/r/tanvirdoc02/predictrx-sentinel"><img alt="Docker" src="https://img.shields.io/badge/🐳_Docker-tanvirdoc02%2Fpredictrx--sentinel-2496ED?style=for-the-badge&labelColor=0B1C2C" /></a>
+  <a href="https://github.com/tanvir-ahmed-siddique-ctrl/Sepsis"><img alt="Repo" src="https://img.shields.io/badge/💻_Source-GitHub-181717?style=for-the-badge&labelColor=0B1C2C" /></a>
+</p>
+
+<p align="center">
+  <img alt="Active" src="https://img.shields.io/badge/Active_scorer-LightGBM_Run_4-2A9D8F?style=flat-square&labelColor=0B1C2C" />
+  <img alt="Ver" src="https://img.shields.io/badge/v0.2.0--202609281906-1B6CA8?style=flat-square" />
+  <img alt="A" src="https://img.shields.io/badge/Test_A_AUROC-0.821-2A9D8F?style=flat-square" />
+  <img alt="B" src="https://img.shields.io/badge/Holdout_B_AUROC-0.808-2A9D8F?style=flat-square" />
+  <img alt="U" src="https://img.shields.io/badge/B_utility-0.238-C45C26?style=flat-square" />
+  <img alt="Clinical" src="https://img.shields.io/badge/Clinical_use-NOT_approved-B00020?style=flat-square" />
+  <img alt="Demo" src="https://img.shields.io/badge/Public_demo-Synthetic_%2F_PhysioNet-5C6BC0?style=flat-square" />
 </p>
 
 > **Research prototype — not approved for clinical use.**  
-> Public demo = synthetic / PhysioNet replay only. Scores support judgment; they do not replace it.  
-> Not validated on Bangladeshi patients. No claim of lives saved, paid pilots, or regulatory approval.
+> Public demo = synthetic / PhysioNet replay only. Scores support clinical judgment; they do not replace it.  
+> Not validated on Bangladeshi patients. No claim of lives saved, paid pilots, or regulatory approval.  
+> Everything below is either **measured**, **implemented**, or clearly labeled **hypothesis**.
 
 ---
 
-## Production model — promoted · frozen · hash-locked
+## Team · Team NRB
 
 <p align="center">
-  <img alt="Frozen" src="https://img.shields.io/badge/ACTIVE-Run_4_only-2A9D8F?style=for-the-badge&labelColor=0B1C2C" />
-  <img alt="Not Qwen" src="https://img.shields.io/badge/Qwen-Mapping_side--branch_only-5C6BC0?style=for-the-badge&labelColor=0B1C2C" />
-  <img alt="No Transformer" src="https://img.shields.io/badge/Transformer-Not_trained-B00020?style=for-the-badge&labelColor=0B1C2C" />
+  <img alt="BD" src="https://img.shields.io/badge/🇧🇩-Bangladesh-006A4E?style=for-the-badge&labelColor=0B1C2C" />
+  <img alt="Mode" src="https://img.shields.io/badge/Mode-Physical_(In--person)-1B6CA8?style=for-the-badge&labelColor=0B1C2C" />
 </p>
 
-The live scorer is **only** Frozen LightGBM **Run 4** — not Qwen, not a Transformer, not any challenger.
+| | Name | Role on team | Focus |
+|:--:|:-----|:-------------|:------|
+| 👑 | **Taskin Billah Tamim** | **Leader** | Full-Stack Developer · Product / UX Designer |
+| ⚙️ | **Faysal Hasan** | Member | Full-Stack Developer |
+| 🧠 | **Tanvir Ahmed** | Member | Domain Expert · Full-Stack Developer · AI/ML Engineer |
+| 🛠️ | **Piush Podder** | Member | Full-Stack Developer |
+| 🔬 | **Emtiaz Ahmed Siam** | Member · Team Lead | AI/ML Engineer |
+
+---
+
+## Jump links (everything in one place)
+
+| Need | Open |
+|:-----|:-----|
+| 🟢 **Live product demo** | https://predictrx-sentinel-demo.onrender.com |
+| 📘 **In-app technical whitepaper** | https://predictrx-sentinel-demo.onrender.com/docs |
+| 🔌 **API Swagger** | https://predictrx-sentinel-demo.onrender.com/api/docs |
+| 📚 **Navigable docs site** | https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/ |
+| 🐳 **Docker image** | https://hub.docker.com/r/tanvirdoc02/predictrx-sentinel · tags `latest` · `judge` · git SHA |
+| 💻 **This repository** | https://github.com/tanvir-ahmed-siddique-ctrl/Sepsis |
+| 🗺️ **Audience map** | [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) |
+| 📐 **All layer diagrams** | this README ↓ · full file [docs/LAYERS.md](docs/LAYERS.md) |
+| 🧪 **Experiment matrix** | this README ↓ · full file [docs/EXPERIMENT_MATRIX.md](docs/EXPERIMENT_MATRIX.md) |
+| ⚠️ **Gaps & risks** | [docs/GAPS_AND_RISKS.md](docs/GAPS_AND_RISKS.md) |
+| 🧾 **Model / data cards** | [model-card](docs/model-card.md) · [data-card](docs/data-card.md) · [ledger](docs/experiment-ledger.md) |
+| 🛡️ **TrustGate + safety** | [trustgate-layers](docs/trustgate-layers.md) · [safety-ethics](docs/safety-ethics.md) · [safety-case](docs/safety-case.md) |
+| 🏗️ **Architecture** | [architecture](docs/architecture.md) · [current-state audit](docs/architecture/current-state-audit.md) |
+| 🏥 **FDE / business** | [business-model](docs/business/business-model.md) · [REAL_WORLD_ACTION_PLAN](REAL_WORLD_ACTION_PLAN.md) |
+
+---
+
+## Nav → README sections
+
+Same structure as the [Docsify site](https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/) — content lives **here** so judges never have to leave GitHub.
+
+| Nav group | Section in this README |
+|:----------|:------------------------|
+| **Start** | [Production model](#-production-model--promoted--frozen--hash-locked) · [Layers](#-layers--full-visual-pack) · [Experiment matrix](#-models-we-built--compared) · [Gaps](#-gaps--risks) |
+| **Evidence** | [Benchmark charts](#-benchmark-charts-eye-catching) · [Deep evidence boxes](#-deep-evidence-link-boxes) |
+| **Safety & quality** | [TrustGate](#-trustgate--safety) · [Safety link boxes](#-deep-evidence-link-boxes) |
+| **Systems** | [Architecture](#-systems--architecture) · [System link boxes](#-deep-evidence-link-boxes) |
+| **FDE / business** | [FDE lifecycle](#-fde-service-lifecycle) · [Business link boxes](#-deep-evidence-link-boxes) |
+
+---
+
+## What it is
+
+Auralis is an **on-premises ICU early-warning stack**:
+
+1. **Connect** — FHIR R4 · HL7 v2 · CSV with unit / LOINC quarantine  
+2. **Score** — frozen LightGBM **Run 4** only (past-only features + TreeSHAP)  
+3. **Guard** — **TrustGate** → Alert / Watch / Verify data / Abstain  
+4. **Work** — role-separated doctor · nurse · admin · clinical-IT surfaces  
+5. **Deploy** — forward-deployed engineering, site by site  
+
+Optional **Qwen 3.5 4B** = Bangla / local lab → LOINC proposals — **never** edits the sepsis probability.
+
+---
+
+## 🏆 Production model — promoted · frozen · hash-locked
+
+<p align="center">
+  <img src="https://img.shields.io/badge/ACTIVE_SCORER-Frozen_LightGBM_Run_4-2A9D8F?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Version-v0.2.0--202609281906-1B6CA8?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/SHA--256-a7dcf5f4…3532d-0B1C2C?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Features-673_past--only-00897B?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Calibration-Isotonic-C45C26?style=for-the-badge" />
+</p>
 
 | Field | Value |
 |:------|:------|
-| **Version** | `v0.2.0-202609281906` (`RUN4-FROZEN`) |
-| **Family** | LightGBM + **isotonic** calibration + TreeSHAP drivers |
-| **SHA-256** | `a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d` |
+| **Family** | LightGBM + isotonic + TreeSHAP drivers |
 | **Pointer** | `ml/artifacts/models/ACTIVE.json` → `run4_frozen/model.joblib` |
 | **Train** | PhysioNet Challenge 2019 **Dataset A** · patient-wise split · seed **42** |
-| **Features** | **673** past-only temporal / missingness / rate features (no future leak) |
-| **Internal test (A)** | AUROC **0.821** · AUPRC **0.109** · high-risk utility **0.244** |
-| **Holdout Dataset B** *(once after freeze)* | AUROC **0.808** · AUPRC **0.079** · utility **0.238** |
-| **Baselines on B** | Clinical-rule **0.053** · logistic **0.124** → Run 4 wins |
-| **Calibration honesty** | B slope ~**0.80** → **local recalibration required** before any live use |
-
-**Rejected for production** (ledgered; never on `ACTIVE.json`): 36-trial LightGBM/CatBoost · GRU-D · TCN · Graph-Hazard · Run4+TCN blend · Residual-Hazard · 5-member bootstrap.  
-**Not claimed:** trained time-series Transformer. **Qwen 3.5 4B** = Bangla/local → LOINC only.
+| **Label** | Challenge-compatible `SepsisLabel` (positive from 6h before onset) |
+| **Internal test A** | AUROC **0.821** · AUPRC **0.109** · high-risk utility **0.244** |
+| **Holdout B** *(scored once after freeze)* | AUROC **0.808** · AUPRC **0.079** · utility **0.238** |
+| **Baselines on B** | Clinical-rule utility **0.053** · logistic **0.124** → Run 4 wins |
+| **Calibration honesty** | B slope ~**0.80** → **local recalibration required** before any live hospital use |
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#2A9D8F','primaryTextColor':'#0B1C2C','primaryBorderColor':'#0B1C2C','lineColor':'#1B6CA8','secondaryColor':'#E8F4F1','tertiaryColor':'#F4E6DC'}}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#2A9D8F','primaryTextColor':'#0B1C2C','primaryBorderColor':'#0B1C2C','lineColor':'#1B6CA8','secondaryColor':'#E8F4F1','tertiaryColor':'#F4E6DC'}}}%%
 flowchart LR
   A["Dataset A<br/>train / select / calibrate"] --> F["Freeze Run 4<br/>hash-locked"]
   F --> B["Dataset B<br/>one-shot eval"]
@@ -61,262 +134,432 @@ flowchart LR
   C["Challengers"] -.->|rejected| X["Not ACTIVE"]
 ```
 
-Evidence: [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) · [model-card](docs/model-card.md) · [data-card](docs/data-card.md) · [ledger](docs/experiment-ledger.md)
-
 ---
 
-## Quick links
+## 📊 Benchmark charts (eye-catching)
 
-| | |
-|:--|:--|
-| **Live demo** | https://predictrx-sentinel-demo.onrender.com |
-| **In-app docs** | `/docs` (live model hash + architecture) |
-| **API OpenAPI** | Demo `/api/docs` |
-| **GitHub Pages** | https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/ |
-| **Docker Hub** | `tanvirdoc02/predictrx-sentinel` (`latest` · `judge` · git SHA) |
-| **Challenge** | HealthSphere AI · PredictRx · International AI Builders Congress 2026 |
-
----
-
-## Documentation pack (everything we published)
-
-All engineering docs stay as **full files**; this README is the colorful landing page that points into them.
-
-| Badge | Doc | What it is |
-|:------|:----|:-----------|
-| ![](https://img.shields.io/badge/hub-teal?style=flat-square&color=2A9D8F) | [DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) | Audience map — judges / ML / IT / FDE |
-| ![](https://img.shields.io/badge/layers-navy?style=flat-square&color=0B1C2C) | [LAYERS.md](docs/LAYERS.md) | Mermaid system / role / safety diagrams |
-| ![](https://img.shields.io/badge/matrix-blue?style=flat-square&color=1B6CA8) | [EXPERIMENT_MATRIX.md](docs/EXPERIMENT_MATRIX.md) | Verified model comparison + disposition |
-| ![](https://img.shields.io/badge/gaps-amber?style=flat-square&color=C45C26) | [GAPS_AND_RISKS.md](docs/GAPS_AND_RISKS.md) | Open history / risks / honesty register |
-| ![](https://img.shields.io/badge/pages-indigo?style=flat-square&color=5C6BC0) | [docs/index.html](docs/index.html) + [_sidebar.md](docs/_sidebar.md) | Docsify GitHub Pages hub |
-| ![](https://img.shields.io/badge/arch-slate?style=flat-square&color=455A64) | [architecture.md](docs/architecture.md) | Backend / frontend / security planes |
-| ![](https://img.shields.io/badge/trust-teal?style=flat-square&color=2A9D8F) | [trustgate-layers.md](docs/trustgate-layers.md) | Alert / Watch / Verify / Abstain |
-| ![](https://img.shields.io/badge/judge-gold?style=flat-square&color=B8860B) | [judge-evidence-matrix.md](docs/judge-evidence-matrix.md) | Claim → evidence file map |
-| ![](https://img.shields.io/badge/safety-crimson?style=flat-square&color=B00020) | [safety-ethics.md](docs/safety-ethics.md) | Clinical + research boundaries |
-| ![](https://img.shields.io/badge/agents-green?style=flat-square&color=2E7D32) | [AGENTS.md](AGENTS.md) | Repo operator / agent conventions |
-
-**Core set (kept as links + sections below):**  
-[LAYERS](docs/LAYERS.md) · [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) · [DOCUMENTATION_INDEX](docs/DOCUMENTATION_INDEX.md) · [GAPS_AND_RISKS](docs/GAPS_AND_RISKS.md) · [architecture](docs/architecture.md) · [trustgate](docs/trustgate-layers.md) · [judge-evidence-matrix](docs/judge-evidence-matrix.md) · [safety-ethics](docs/safety-ethics.md) · [AGENTS.md](AGENTS.md)
-
-Also useful: [model-card](docs/model-card.md) · [data-card](docs/data-card.md) · [experiment-ledger](docs/experiment-ledger.md) · [operations](docs/operations.md) · [operator-guide](docs/operator-guide.md) · [business-model](docs/business/business-model.md) · [REAL_WORLD_ACTION_PLAN](REAL_WORLD_ACTION_PLAN.md)
-
----
-
-## What it is
-
-Auralis is an **on-premises decision-support stack** for adult ICU early warning:
-
-1. **Connect** hospital feeds (FHIR R4, HL7 v2, CSV) with unit/LOINC quarantine  
-2. **Score** with the **frozen** LightGBM Run 4 model above  
-3. **Guard** with **TrustGate** (Alert / Watch / Verify data / Abstain)  
-4. **Work** in role-separated doctor, nurse, admin, and clinical-IT surfaces  
-5. **Deploy** site-by-site via forward-deployed engineering  
-
----
-
-## System architecture
+### Dataset B — high-risk utility (higher is better)
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#2A9D8F','primaryTextColor':'#0B1C2C','primaryBorderColor':'#0B1C2C','lineColor':'#1B6CA8','secondaryColor':'#E8F4F1','tertiaryColor':'#F4E6DC','background':'#F7FAFC'}}}%%
+%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#B00020, #C45C26, #2A9D8F'}}}}%%
+xychart-beta
+  title "PhysioNet Set B · high-risk utility (one-shot after freeze)"
+  x-axis ["Clinical rule", "Logistic baseline", "Run 4 ACTIVE"]
+  y-axis "Utility" 0 --> 0.30
+  bar [0.053, 0.124, 0.238]
+```
+
+### Discrimination — AUROC
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#5C6BC0, #1B6CA8, #2A9D8F'}}}}%%
+xychart-beta
+  title "AUROC · Run 4 vs clinical-rule baseline (A val / B holdout)"
+  x-axis ["Rule (A val)", "Run 4 (A test)", "Run 4 (B holdout)"]
+  y-axis "AUROC" 0.50 --> 0.90
+  bar [0.596, 0.821, 0.808]
+```
+
+### Scoreboard
+
+| Metric | Clinical rule | Logistic | **Run 4 (ACTIVE)** |
+|:-------|:-------------:|:--------:|:------------------:|
+| Set B high-risk utility | 0.053 | 0.124 | **0.238** |
+| Set B AUROC | — | — | **0.808** |
+| Set A test AUROC | — | — | **0.821** |
+| Set A test AUPRC | — | — | **0.109** |
+| Set B AUPRC | — | — | **0.079** |
+
+> Numbers from `ml/artifacts/models/run4_frozen/metrics.json`, `eval_holdout.json`, and preregistered Set B baselines — **not** Bangladesh hospital outcomes.
+
+---
+
+## 🧪 Models we built & compared
+
+Big nameplates. Only **one** is production.
+
+<p align="center">
+  <img src="https://img.shields.io/badge/✅_ACTIVE-LightGBM_Run_4-2A9D8F?style=for-the-badge&labelColor=0B1C2C" /><br/>
+  <img src="https://img.shields.io/badge/v0.2.0--202609281906-isotonic_+_TreeSHAP-00897B?style=for-the-badge" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/❌_REJECTED-Clinical_rule_baseline-B00020?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/❌_REJECTED-Logistic_regression-B00020?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/❌_REJECTED-36--trial_LightGBM_⧸_CatBoost-C45C26?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/TABULAR--AONLY--01-search-C45C26?style=for-the-badge" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/❌_REJECTED-5--member_Run_4_bootstrap_ensemble-C45C26?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/❌_REJECTED-GRU--D-5C6BC0?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/❌_REJECTED-TCN-5C6BC0?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/❌_REJECTED-Graph--Hazard-5C6BC0?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/❌_REJECTED-Run_4_+_TCN_blend-5C6BC0?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/❌_REJECTED-Residual--Hazard-5C6BC0?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/ℹ️_INFO-TrustGate_offline_robustness-B8860B?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/🚫_NOT_RUN-Time--series_Transformer-455A64?style=for-the-badge&labelColor=0B1C2C" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/🔀_SIDE_BRANCH-Qwen_3.5_4B_terminology-1B6CA8?style=for-the-badge&labelColor=0B1C2C" /><br/>
+  <img src="https://img.shields.io/badge/NOT_the_sepsis_scorer-Bangla_⧸_LOINC_only-5C6BC0?style=for-the-badge" />
+</p>
+
+| Family | Run ID | Result | Disposition |
+|:-------|:-------|:-------|:------------|
+| **LightGBM Run 4** | `RUN4-FROZEN` | B utility **0.238** · AUROC **0.808** | ✅ **ACTIVE** |
+| Clinical-rule + logistic | `baselines_setb_*` | Utility 0.053 / 0.124 | Reference |
+| LightGBM / CatBoost search | `TABULAR-AONLY-01` | Lost on locked A test | ❌ Rejected |
+| Bootstrap ensemble | `RUN4-BOOTSTRAP-ENSEMBLE` | Val util 0.392 vs single 0.402 | ❌ Rejected |
+| GRU-D | under `GRAPH-HAZARD-01` | No utility win | ❌ Rejected |
+| TCN | under `GRAPH-HAZARD-01` | Best temporal; still below tree | ❌ Rejected |
+| Graph-Hazard | `GRAPH-HAZARD-01` | Ablations; no prod win | ❌ Rejected |
+| Run 4 + TCN blend | `GRAPH-HAZARD-01` final | AUPRC ↑; utility not | ❌ Rejected |
+| Residual-Hazard | `RESIDUAL-HAZARD-01` | B utility 0.109 | ❌ Rejected |
+| Transformer | — | No training evidence | 🚫 Not run |
+| Qwen 3.5 4B | mapping | LOINC proposals | 🔀 Not scorer |
+
+Full matrix → [docs/EXPERIMENT_MATRIX.md](docs/EXPERIMENT_MATRIX.md)
+
+---
+
+## 📐 Layers — full visual pack
+
+Copied from [docs/LAYERS.md](docs/LAYERS.md) so the story is complete on the landing page.
+
+### L0 — One picture: hospital-local product
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#2A9D8F','primaryTextColor':'#0B1C2C','primaryBorderColor':'#0B1C2C','lineColor':'#1B6CA8','secondaryColor':'#E8F4F1','tertiaryColor':'#F4E6DC'}}}%%
 flowchart TB
-  subgraph HOSPITAL["Hospital boundary — LAN / on-prem"]
-    SRC["Monitors · LIS · HIS · Bedside"]
-    CONN["Connectors<br/>FHIR · HL7 · CSV"]
-    MAP["Map + quarantine"]
-    FEAT["Past-only features"]
-    ML["Frozen LightGBM Run 4<br/>+ TreeSHAP"]
-    TG["TrustGate"]
-    UI["ICU · Patient · Alerts · Handoff"]
+  subgraph HOSP["HOSPITAL BOUNDARY — on-prem / LAN"]
+    SRC["Monitors · LIS · HIS · Bedside chart"]
+    CONN["L1 Connectors<br/>FHIR R4 · HL7 v2 · CSV · Vendor adapter"]
+    MAP["L2 Mapping + Quarantine<br/>units · LOINC · Bangla terms"]
+    FEAT["L3 Features<br/>past-only · 24h window · 673 inputs"]
+    ML["L4 Frozen LightGBM Run 4<br/>TreeSHAP drivers"]
+    TG["L5 TrustGate<br/>Alert · Watch · Verify · Abstain"]
+    MODE["L6 Site mode<br/>demo · silent · live-disabled · live"]
+    UI["L7 Clinical workspaces<br/>ICU · Patient · Alerts · Handoff · Ward · Chart"]
     DB[("Local DB + hash-chained audit")]
-    SRC --> CONN --> MAP --> FEAT --> ML --> TG --> UI
+    SRC --> CONN --> MAP --> FEAT --> ML --> TG --> MODE --> UI
     FEAT --> DB
     ML --> DB
     TG --> DB
     UI --> DB
   end
-
-  subgraph SIDE["Side branch — never edits sepsis probability"]
-    BN["Bangla / local names"]
-    QW["Optional Qwen 3.5 4B + hybrid RAG"]
-    LO["LOINC candidates · human SHA sign-off"]
-    BN --> QW --> LO -.-> MAP
+  subgraph SIDE["Side branch — never edits the risk score"]
+    BN["Bangla / local lab names"]
+    LLM["Local mapping LLM + RAG retrieval"]
+    LOINC["LOINC / standard tags · human sign-off"]
+    BN --> LLM --> LOINC
+    LOINC -.-> MAP
   end
-
-  subgraph VENDOR["Vendor plane — metadata only"]
-    FLEET["Fleet · licences · readiness<br/>no patient payload"]
+  subgraph VENDOR["Vendor plane — outside patient data"]
+    FLEET["Fleet / CRM / FDE projects<br/>metadata · licences · readiness only"]
   end
-  UI -.-> FLEET
+  UI -.->|no patient payload| FLEET
+```
+
+### L1 — Input → AI → Output
+
+```mermaid
+flowchart LR
+  I["INPUT<br/>vitals · labs · demographics<br/>freshness · missingness"]
+  AI["AI CORE<br/>frozen LightGBM<br/>+ isotonic calibration<br/>+ TreeSHAP"]
+  G["GUARD<br/>TrustGate"]
+  O["OUTPUT<br/>probability · band · drivers<br/>owner · SLA · handoff"]
+  I --> AI --> G --> O
+```
+
+| Step | What happens | Where |
+|:-----|:-------------|:------|
+| Input | Hourly observations, provenance, units | `backend/app/integrations/` |
+| Features | Past-only windows; no future leak | `ml/`, `engine.py` |
+| Model | Frozen Run 4 LightGBM | `ml/artifacts/models/run4_frozen/` |
+| Guard | Stale / mismatch / gaps → Verify or Abstain | `backend/app/trustgate.py` |
+| Output | Score, drivers, ownership, audit | ICU board · patient · alerts |
+
+### Engineering layer badges
+
+| Layer | | Job | Code |
+|:------|:--|:----|:-----|
+| **L1 Connect** | ![](https://img.shields.io/badge/-L1-1B6CA8?style=flat-square) | FHIR / HL7 / CSV / quarantine | `backend/app/integrations/` |
+| **L2 Map** | ![](https://img.shields.io/badge/-L2-5C6BC0?style=flat-square) | Bangla/local → LOINC (proposal) | `copilot.py` |
+| **L3 Features** | ![](https://img.shields.io/badge/-L3-00897B?style=flat-square) | Past-only 24h · 673 inputs | `ml/` · `engine.py` |
+| **L4 Score** | ![](https://img.shields.io/badge/-L4-2A9D8F?style=flat-square) | Frozen Run 4 + TreeSHAP | `run4_frozen/` |
+| **L5 Guard** | ![](https://img.shields.io/badge/-L5-C45C26?style=flat-square) | TrustGate | `trustgate.py` |
+| **L6 Mode** | ![](https://img.shields.io/badge/-L6-B8860B?style=flat-square) | demo · silent · live gates | `site.py` · `pilot.py` |
+| **L7 Work** | ![](https://img.shields.io/badge/-L7-455A64?style=flat-square) | Role workspaces + audit | `frontend/app/` |
+
+### L2 — Safety stack (Responsible AI)
+
+```mermaid
+flowchart TB
+  A["Frozen model SHA — no silent retrain"] --> B["Past-only features"]
+  B --> C["TrustGate data-quality gate"]
+  C --> D["Silent evaluation before live alerts"]
+  D --> E["Readiness gates + site mode"]
+  E --> F["Clinician acknowledgement required"]
+  F --> G["Hash-chained audit · DPIA · model card"]
+```
+
+**We do not claim:** saves lives · approved · live hospital EHR on the public demo · auto-retrains · proven false-alarm % reduction.
+
+### L3 — Role-separated planes
+
+```mermaid
+flowchart TB
+  SIGNIN["One sign-in → role workspace"]
+  SIGNIN --> DOC["Doctor / ICU board"]
+  SIGNIN --> NURSE["Nurse / chart · NEWS2"]
+  SIGNIN --> ADM["Hospital admin / staff · pilot · readiness"]
+  SIGNIN --> IT["Clinical IT / deploy · mapping · quarantine"]
+  SIGNIN --> VEN["Vendor / fleet — metadata only"]
+```
+
+### L4 — Integration / FDE path
+
+```mermaid
+flowchart LR
+  D["Discover"] --> BS["Bridge Start"]
+  BS --> BC["Bridge Connect"]
+  BC --> VE["Validated Evaluation"]
+  VE --> CL["Clinical Licence"]
+  CL --> ME["Managed Edge optional"]
+```
+
+```mermaid
+flowchart LR
+  A["Assess"] --> E["Equipment"]
+  E --> I["Integrate"]
+  I --> Dep["Deploy"]
+  Dep --> S["Silent eval"]
+  S --> T["Train"]
+  T --> Sup["Support"]
+  Sup --> P["Partner"]
+```
+
+### L5 — Evidence layers
+
+```mermaid
+flowchart TB
+  DATA["PhysioNet 2019<br/>~40k ICU stays · ~1.55M hourly rows"]
+  A["Dataset A — train / select"]
+  B["Dataset B — scored once"]
+  WIN["LightGBM Run 4 · AUROC ~0.81"]
+  REJ["Rejected: CatBoost search · GRU-D · TCN · Graph-Hazard · blends"]
+  DATA --> A --> WIN
+  DATA --> B --> WIN
+  A --> REJ
+```
+
+### L6 — Product surfaces (demo)
+
+| Layer | Route | Users |
+|:------|:------|:------|
+| Public site | `/` | Everyone |
+| Sign-in | `/signin` · quick roles | Demo / staff |
+| ICU | `/app/icu` | Clinicians |
+| Patient | `/patient/BED-*` | Clinicians |
+| Alerts / handoff | `/app/alerts` · `/app/handoff` | Care team |
+| Ward / chart | `/app/ward` · `/app/chart` | Nurses |
+| Deploy | `/deploy` | Clinical IT |
+| Vendor | `/platform` · fleet | Auralis ops |
+
+### L7 — Congress pitch map
+
+```mermaid
+flowchart LR
+  P["Problem 0:00–0:30"] --> S["Solution 0:30–1:00"]
+  S --> D["Demo 1:00–2:00"]
+  D --> AI["AI 2:00–2:20"]
+  AI --> B["Business 2:20–3:00"]
 ```
 
 ---
 
-## Core set · LAYERS
+## 🛡️ TrustGate & safety
 
-Full diagrams: **[docs/LAYERS.md](docs/LAYERS.md)**
+| State | |
+|:------|:--|
+| ![](https://img.shields.io/badge/Alert-B00020?style=for-the-badge) | Interruptive path allowed when data + model agree |
+| ![](https://img.shields.io/badge/Watch-C45C26?style=for-the-badge) | Elevated — monitor |
+| ![](https://img.shields.io/badge/Verify_data-B8860B?style=for-the-badge) | Quality / freshness / unit issue |
+| ![](https://img.shields.io/badge/Abstain-455A64?style=for-the-badge) | Do not interrupt |
 
-| Layer | Color cue | Responsibility | Evidence |
-|:------|:----------|:---------------|:---------|
-| **L1 Connect** | ![](https://img.shields.io/badge/-L1-1B6CA8?style=flat-square) | FHIR / HL7 / CSV, quarantine | `backend/app/integrations/` |
-| **L2 Map** | ![](https://img.shields.io/badge/-L2-5C6BC0?style=flat-square) | Local/Bangla → LOINC (proposal) | `backend/app/integrations/copilot.py` |
-| **L3 Features** | ![](https://img.shields.io/badge/-L3-00897B?style=flat-square) | Past-only 24h window | `ml/`, `engine.py` |
-| **L4 Score** | ![](https://img.shields.io/badge/-L4-2A9D8F?style=flat-square) | Frozen Run 4 + TreeSHAP | `ml/artifacts/models/run4_frozen/` |
-| **L5 Guard** | ![](https://img.shields.io/badge/-L5-C45C26?style=flat-square) | TrustGate Verify / Abstain | `backend/app/trustgate.py` |
-| **L6 Mode** | ![](https://img.shields.io/badge/-L6-B8860B?style=flat-square) | demo · silent · gates | `site.py`, `pilot.py` |
-| **L7 Work** | ![](https://img.shields.io/badge/-L7-455A64?style=flat-square) | Role workspaces + audit | `frontend/app/` |
+Deterministic gate in `backend/app/trustgate.py` — **not** an LLM.  
+Honest limit: false-alert *benefit* at matched sensitivity is **not** statistically established.
 
 ---
 
-## Core set · EXPERIMENT_MATRIX
+## 🏗️ Systems & architecture
 
-Full table: **[docs/EXPERIMENT_MATRIX.md](docs/EXPERIMENT_MATRIX.md)**
+| Plane | Stack | Notes |
+|:------|:------|:------|
+| Clinical API | FastAPI · SQLAlchemy | `/v1/*` · OpenAPI at `/docs` |
+| UI | Next.js · Tailwind · ECharts | Public + hospital + vendor |
+| Auth | Local / OIDC / demo roles | Doctor · nurse · admin · clinical IT |
+| Audit | Hash-chained | Hospital-local |
+| MCP | 3 read-only servers | Ops · docs · mapping — **no PHI** |
+| Edge | Optional HL7 MLLP | `edge/` |
+| Image | `tanvirdoc02/predictrx-sentinel` | Public synthetic demo |
 
-| Family | Status |
-|:-------|:-------|
-| Clinical-rule + logistic baselines | ![](https://img.shields.io/badge/reference-1B6CA8?style=flat-square) |
-| 36-trial LightGBM / CatBoost | ![](https://img.shields.io/badge/rejected-B00020?style=flat-square) |
-| 5-member Run 4 bootstrap | ![](https://img.shields.io/badge/rejected-B00020?style=flat-square) |
-| GRU-D · TCN · Graph-Hazard · blend | ![](https://img.shields.io/badge/rejected-B00020?style=flat-square) |
-| Residual-Hazard | ![](https://img.shields.io/badge/rejected-B00020?style=flat-square) |
-| Time-series Transformer | ![](https://img.shields.io/badge/not_run-455A64?style=flat-square) |
-| Qwen 3.5 4B | ![](https://img.shields.io/badge/mapping_only-5C6BC0?style=flat-square) |
-| **Frozen LightGBM Run 4** | ![](https://img.shields.io/badge/ACTIVE-2A9D8F?style=flat-square) |
-
----
-
-## Core set · DOCUMENTATION_INDEX
-
-**[docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)** — who opens what.
-
-| Audience | Start here |
-|:---------|:-----------|
-| Judges (3 min) | This README → LAYERS → EXPERIMENT_MATRIX → live demo |
-| ML / research | model-card · data-card · ledger · matrix |
-| Hospital IT | architecture · integration · operations |
-| Clinical safety | trustgate · safety-case · safety-ethics |
-| FDE / commercial | `docs/business/*` *(hypothesis-aware)* |
-| Pages hub | [github.io/Sepsis](https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/) |
+```
+backend/   FastAPI · TrustGate · connectors · scoring
+frontend/  Next.js · Auralis UI · /docs hub
+ml/        Pipeline · frozen Run 4 · (local) challengers
+docs/      Cards · ledger · layers · Pages hub · FDE
+mcp-server/  Read-only MCP
+control-plane/  Patient-free vendor fleet
+infra/     Docker · Congress preflight
+demo/      Replay assets
+```
 
 ---
 
-## Core set · GAPS_AND_RISKS
+## ⚠️ Gaps & risks
 
-**[docs/GAPS_AND_RISKS.md](docs/GAPS_AND_RISKS.md)**
+Highlights from [docs/GAPS_AND_RISKS.md](docs/GAPS_AND_RISKS.md):
 
-| Highlight | Label |
-|:----------|:------|
+| Item | Label |
+|:-----|:------|
 | Challenger artifacts mostly gitignored | ![](https://img.shields.io/badge/by_design-1B6CA8?style=flat-square) |
 | Transfer Shield S7 | ![](https://img.shields.io/badge/docs_%2F_audit-C45C26?style=flat-square) — not a separate auto-stop service |
 | Public demo ≠ live EHR | ![](https://img.shields.io/badge/policy_closed-2A9D8F?style=flat-square) |
 | Pricing / paid pilots / grants | ![](https://img.shields.io/badge/hypothesis-5C6BC0?style=flat-square) |
-| Scratch logs removed from git | ![](https://img.shields.io/badge/cleaned-2E7D32?style=flat-square) · keep `eval_log_setB.txt` |
 
 ---
 
-## Core set · architecture
+## 🚀 FDE service lifecycle
 
-**[docs/architecture.md](docs/architecture.md)** · [current-state-audit](docs/architecture/current-state-audit.md)
-
-| Plane | Stack | Notes |
-|:------|:------|:------|
-| Clinical API | FastAPI · SQLAlchemy | `/v1/*`, OpenAPI at API `/docs` |
-| UI | Next.js · Tailwind · ECharts | Public + hospital + vendor |
-| Auth | Local / OIDC / demo roles | Doctor · nurse · admin · clinical IT |
-| Audit | Hash-chained | Hospital-local |
-| MCP | 3 read-only servers | Ops · docs · mapping — **no PHI tools** |
-| Edge | Optional HL7 MLLP | `edge/` |
-
----
-
-## Core set · trustgate
-
-**[docs/trustgate-layers.md](docs/trustgate-layers.md)** · code `backend/app/trustgate.py`
-
-| State | Meaning |
-|:------|:--------|
-| ![](https://img.shields.io/badge/Alert-B00020?style=flat-square) | Interruptive path allowed (data + model agree) |
-| ![](https://img.shields.io/badge/Watch-C45C26?style=flat-square) | Elevated — monitor, not necessarily interrupt |
-| ![](https://img.shields.io/badge/Verify_data-B8860B?style=flat-square) | Quality / freshness / unit issue |
-| ![](https://img.shields.io/badge/Abstain-455A64?style=flat-square) | Do not interrupt — insufficient trustworthy input |
-
-Honest limit: false-alert *benefit* at matched sensitivity is **not** statistically established.  
-Transfer Shield / readiness: [innovation-adoption-barriers](docs/innovation-adoption-barriers.md).
+| Stage | Intent | Status |
+|:------|:-------|:-------|
+| **Discover** | Workflow + infra readiness | Implemented surfaces |
+| **Bridge Start** | CSV / batch | Implemented |
+| **Bridge Connect** | HL7 / FHIR | Implemented + edge |
+| **Validated Evaluation** | Silent / retrospective | Protocol — **no paid pilot claimed** |
+| **Clinical Workflow Licence** | Annual site | ![](https://img.shields.io/badge/hypothesis-5C6BC0?style=flat-square) |
+| **Managed Edge** | Local ops | Playbooks / FDE |
+| **Expansion** | More sites | Roadmap |
 
 ---
 
-## Core set · judge-evidence-matrix
+## 📦 Deep evidence — link boxes
 
-**[docs/judge-evidence-matrix.md](docs/judge-evidence-matrix.md)** — claim → proof file. Use before inventing metrics.
+Long dossiers stay in `docs/` — open from these colorful cards:
 
----
-
-## Core set · safety-ethics
-
-**[docs/safety-ethics.md](docs/safety-ethics.md)** · [safety-case](docs/safety-case.md)
-
-- Decision support only · clinicians remain accountable  
-- No Bangladesh patient validation claimed  
-- Patient data is never a product for sale  
-- Public demo = PhysioNet / synthetic only  
-
----
-
-## Core set · AGENTS.md
-
-**[AGENTS.md](AGENTS.md)** — public repo conventions (prompt packs stay local / `LOCAL_ONLY/`).
-
----
-
-## Local terminology AI (isolated)
-
-| | |
-|:--|:--|
-| Runtime | Optional Ollama `qwen3.5:4b` |
-| Job | Bangla / BD lab aliases → LOINC candidates |
-| Isolation | Score path **never** calls the LLM |
-| Bench | [copilot-retrieval-bench-v1.json](docs/evaluation/copilot-retrieval-bench-v1.json) |
-
----
-
-## Synthetic demo vs hospital-local
-
-| | Public demo | Intended hospital install |
-|:--|:------------|:--------------------------|
-| Data | PhysioNet + synthetic | Hospital-local only |
-| Mode | `demo` | Silent → gated live |
-| EHR | **Not** live hospital integration | FHIR / HL7 / CSV on LAN |
-| Image | `tanvirdoc02/predictrx-sentinel` | Same pattern · site compose / FDE |
-
----
-
-## FDE service lifecycle
-
-| Stage | Intent | Label |
-|:------|:-------|:------|
-| Discover | Readiness | Implemented surfaces |
-| Bridge Start | CSV / batch | Implemented |
-| Bridge Connect | HL7 / FHIR | Implemented + edge |
-| Validated Evaluation | Silent / retrospective | Protocol — **no paid pilot claimed** |
-| Clinical Workflow Licence | Annual site | ![](https://img.shields.io/badge/hypothesis-5C6BC0?style=flat-square) |
-| Managed Edge | Local ops | Playbooks / FDE |
-| Expansion | More sites | Roadmap |
-
-[business-model](docs/business/business-model.md) · [fde-delivery-playbook](docs/business/fde-delivery-playbook.md) · [REAL_WORLD_ACTION_PLAN](REAL_WORLD_ACTION_PLAN.md)
-
----
-
-## Repo layout
-
-```
-backend/        FastAPI · TrustGate · connectors · scoring
-frontend/       Next.js · Auralis UI · /docs hub
-ml/             Pipeline · frozen Run 4 · (local) challengers
-docs/           Cards · ledger · layers · Pages hub · FDE
-mcp-server/     Read-only MCP (ops · docs · mapping)
-control-plane/  Patient-free vendor fleet
-infra/          Docker · Congress preflight
-edge/           Optional HL7 edge relay
-demo/           Replay assets
-```
+<table>
+  <tr>
+    <td width="50%">
+      <a href="docs/DOCUMENTATION_INDEX.md"><img src="https://img.shields.io/badge/🗺️_DOCUMENTATION_INDEX-Audience_map-2A9D8F?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Who opens what · judges / ML / IT / FDE
+    </td>
+    <td width="50%">
+      <a href="docs/LAYERS.md"><img src="https://img.shields.io/badge/📐_LAYERS-Full_diagrams-0B1C2C?style=for-the-badge&labelColor=1B6CA8" /></a><br/>
+      Same Mermaid pack as above · standalone page
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/EXPERIMENT_MATRIX.md"><img src="https://img.shields.io/badge/🧪_EXPERIMENT_MATRIX-Verified_runs-1B6CA8?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Run IDs · configs · hashes · dispositions
+    </td>
+    <td>
+      <a href="docs/GAPS_AND_RISKS.md"><img src="https://img.shields.io/badge/⚠️_GAPS_AND_RISKS-Honesty_register-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Open history · engineering gaps
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/model-card.md"><img src="https://img.shields.io/badge/🧾_MODEL_CARD-Run_4_dossier-00897B?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Intended use · limits · metrics
+    </td>
+    <td>
+      <a href="docs/data-card.md"><img src="https://img.shields.io/badge/🧬_DATA_CARD-PhysioNet_provenance-5C6BC0?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Splits · leakage controls · Dataset B
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/experiment-ledger.md"><img src="https://img.shields.io/badge/📓_EXPERIMENT_LEDGER-Narrative_history-B8860B?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      What was trained · rejected · frozen
+    </td>
+    <td>
+      <a href="docs/judge-evidence-matrix.md"><img src="https://img.shields.io/badge/⚖️_JUDGE_EVIDENCE-Claim_→_file-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Congress claim map
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/trustgate-layers.md"><img src="https://img.shields.io/badge/🛡️_TRUSTGATE-Data_quality_gate-B00020?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Alert · Watch · Verify · Abstain
+    </td>
+    <td>
+      <a href="docs/safety-ethics.md"><img src="https://img.shields.io/badge/❤️_SAFETY_ETHICS-Boundaries-B00020?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      + <a href="docs/safety-case.md">safety-case</a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/architecture.md"><img src="https://img.shields.io/badge/🏗️_ARCHITECTURE-Planes_&_APIs-455A64?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      + <a href="docs/architecture/current-state-audit.md">current-state audit</a>
+    </td>
+    <td>
+      <a href="docs/integration.md"><img src="https://img.shields.io/badge/🔗_INTEGRATION-FHIR_HL7_CSV-1B6CA8?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Connectors · quarantine · spool
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/operations.md"><img src="https://img.shields.io/badge/🧰_OPERATIONS-Runbooks-00897B?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      + <a href="docs/operator-guide.md">operator-guide</a>
+    </td>
+    <td>
+      <a href="docs/frontend-how-to-use.md"><img src="https://img.shields.io/badge/🖥️_FRONTEND-How_to_use-5C6BC0?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Surfaces · roles · demo paths
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/innovation-adoption-barriers.md"><img src="https://img.shields.io/badge/🚧_TRANSFER_SHIELD-Readiness_gates-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      Site readiness · S7 honesty note
+    </td>
+    <td>
+      <a href="docs/business/business-model.md"><img src="https://img.shields.io/badge/💼_BUSINESS_MODEL-Hypothesis_aware-5C6BC0?style=for-the-badge&labelColor=0B1C2C" /></a><br/>
+      + FDE playbook · pricing assumptions
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="docs/business/fde-delivery-playbook.md"><img src="https://img.shields.io/badge/🚚_FDE_PLAYBOOK-Delivery-1B6CA8?style=for-the-badge&labelColor=0B1C2C" /></a>
+    </td>
+    <td>
+      <a href="REAL_WORLD_ACTION_PLAN.md"><img src="https://img.shields.io/badge/🌍_REAL_WORLD_PLAN-Outside_repo-0B1C2C?style=for-the-badge&labelColor=2A9D8F" /></a>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="AGENTS.md"><img src="https://img.shields.io/badge/🤖_AGENTS-Repo_conventions-2E7D32?style=for-the-badge&labelColor=0B1C2C" /></a>
+    </td>
+    <td>
+      <a href="https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/"><img src="https://img.shields.io/badge/📚_GITHUB_PAGES-Docsify_hub-C45C26?style=for-the-badge&labelColor=0B1C2C" /></a>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -329,26 +572,19 @@ py -3.11 -m venv .venv
 pip install -r ml\requirements.txt
 pip install -e .\ml
 pip install -r backend\requirements.txt
-
-# API
 Set-Location backend
 alembic upgrade head
 uvicorn app.main:app --reload
-
-# UI (other terminal)
-Set-Location frontend
-npm ci
-npm run dev
+# other terminal → frontend: npm ci && npm run dev
 ```
 
 - UI → http://localhost:3000  
-- API OpenAPI → http://localhost:8000/docs  
-- Tests → `cd backend && pytest -q` · `cd frontend && npm test`  
+- API → http://localhost:8000/docs  
 - Demo image → `docker build --platform linux/amd64 -f infra/Dockerfile.demo -t tanvirdoc02/predictrx-sentinel:latest .`
 
 ---
 
-## Limitations & roadmap
+## Limitations
 
 - US PhysioNet ≠ Bangladesh ICU reality  
 - No clinical outcome improvement claimed  
