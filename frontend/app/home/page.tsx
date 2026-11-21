@@ -331,7 +331,7 @@ export default function HomePage() {
             <ul className="mt-7 space-y-4">
               {[
                 ["shield", "TrustGate", "Stale or conflicting inputs → no misleading score."],
-                ["user", "Decision support", "Aurie adds context — never changes the probability."],
+                ["user", "Auri AI", "Local co-pilot for mapping & context — never changes the sepsis probability. Language: English / বাংলা."],
                 ["lock", "Separate planes", "Vendor tooling never shares the clinical data path."],
               ].map(([icon, title, body]) => (
                 <li key={title} className="flex gap-3.5">

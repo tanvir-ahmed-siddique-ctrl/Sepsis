@@ -61,18 +61,46 @@ export default function AuriePage() {
         </div>
       </MarketingSection>
 
+      <MarketingSection eyebrow="Status" title="What you can see today vs what is next." tone="muted">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Reveal className="rounded-2xl border border-teal/30 bg-white p-7">
+            <span className="rounded-full bg-teal/10 px-3 py-1 text-xs font-semibold text-teal">Shipped · visible now</span>
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-ink">
+              <li>Header <strong>Language</strong> dropdown — English / বাংলা (medical terms stay English)</li>
+              <li>Local Qwen + hybrid RAG mapping co-pilot</li>
+              <li>Profile → <strong>Auri AI</strong> capabilities & privacy rules</li>
+              <li>Hospital setup → encrypted cloud API key on the <strong>local server</strong> only</li>
+              <li>Never writes the Frozen Run 4 sepsis score</li>
+            </ul>
+          </Reveal>
+          <Reveal delayMs={80} className="rounded-2xl border border-border bg-white p-7">
+            <span className="rounded-full bg-muted-surface px-3 py-1 text-xs font-semibold text-muted">Coming · roadmap</span>
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-muted">
+              <li>Gated handoff / shift-note drafts from on-screen fields</li>
+              <li>Richer TrustGate & protocol explain chat</li>
+              <li>Vendor licence entitlement for bundled cloud assist</li>
+            </ul>
+            <p className="mt-4 text-xs text-muted">Roadmap is labelled honestly — not a live hospital outcome claim.</p>
+          </Reveal>
+        </div>
+      </MarketingSection>
+
       <MarketingSection eyebrow="Principles" title="Designed for high-trust ICU care.">
         <FeatureGrid
           items={[
             { title: "Clinician Sign-Off", body: "Every acknowledgement, escalation or snooze requires a named clinician." },
             { title: "No Silent Drift", body: "Models never self-modify online; updates require hospital governance approval." },
             { title: "Source Citations", body: "Every Vital or guideline line links straight back to its raw timestamp." },
-            { title: "Local Privacy", body: "Runs inside your hospital's clinical boundary." },
+            { title: "Local Privacy", body: "Runs inside your hospital's clinical boundary. API keys never live in the browser." },
           ]}
         />
         <div className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-teal">
+          <Link href="/signin?next=/app/profile#auralis-ai" className="auralis-link">
+            Open Auri AI in Profile
+            <Icon name="arrow-right" size={16} />
+          </Link>
           <Link href="/signin?next=/app/icu" className="auralis-link">
-            See Aurie on a patient chart
+            See ICU board
             <Icon name="arrow-right" size={16} />
           </Link>
           <Link href="/model" className="auralis-link">

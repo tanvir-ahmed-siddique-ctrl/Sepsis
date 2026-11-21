@@ -628,16 +628,16 @@ Deep dive (hypothesis-aware): [business-model](docs/business/business-model.md) 
 
 ## 🗣️ Language policy · বাংলা UI + English clinical terms
 
-We **already ship** an EN ⇄ বাংলা toggle (`frontend/lib/copy.ts`, nav button).
+**Shipped on the website/app:** header **Language** dropdown — `English` / `বাংলা` (`LanguageSelect` in public + hospital nav).
 
 | Surface | Language | Why |
 |:--------|:---------|:---|
-| Menus, buttons, empty states, disclaimers | **Bangla or English** (user choice) | Staff comfort |
-| Disease / syndrome names, LOINC, SNOMED-ish labels, drug class names | **Keep English (Latin script)** | Shared charting language · reduces mistranslation risk |
-| Local lab slang on paper (নাড়ি, RBS, Hb%) | **Accepted as input** → mapped to English canonical codes | Mapping copilot + synonyms |
+| Menus, buttons, empty states, disclaimers | **Bangla or English** (dropdown) | Staff comfort |
+| Disease / syndrome names, LOINC, drug class names | **Keep English (Latin script)** | Shared charting language · reduces mistranslation risk |
+| Local lab slang (নাড়ি, RBS, Hb%) | **Accepted as input** → English canonical codes | Auri AI mapping + synonyms |
 | Risk bands / TrustGate states | Dual: Bangla gloss + **English code** in audit | Audit interoperability |
 
-**Does Bangla look “bad”?** No — Bangla chrome + English medical tokens is standard for BD clinical software and reads *more* professional than inventing unstable Bangla disease neologisms on an ICU board.
+**Does Bangla look “bad”?** No — Bangla chrome + English medical tokens is standard for BD clinical software.
 
 ---
 
@@ -663,7 +663,11 @@ Design for optional cloud assist + co-pilot scope: **[docs/auralis-copilot-byo-l
 
 **Language:** header **Language** dropdown (`English` / `বাংলা`) — medical terms stay English.  
 **Auri AI:** mapping + explainers (+ gated drafts). Cloud assist is **bundled into the hospital deal** when quoted — admin installs the key on the **local server** (`/app/admin/setup`), not in the browser.  
-**Profile → Auri AI** for clinicians · **Hospital setup → Auri AI** for admin/IT.
+**Profile → Auri AI** for clinicians · **Hospital setup → Auri AI** for admin/IT · marketing **/aurie**.
+
+| Now on README + website | Coming next (labelled roadmap) |
+|:------------------------|:--------------------------------|
+| Language dropdown · Auri product page · Profile tab · Admin encrypted key store · local Qwen + mapping RAG | Handoff-draft chat · richer TrustGate explain · vendor licence entitlement push |
 
 ```mermaid
 flowchart LR
