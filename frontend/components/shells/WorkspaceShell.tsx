@@ -297,9 +297,9 @@ export function WorkspaceShell({
                   onClick={() => setMenuOpen((v) => !v)}
                   aria-expanded={menuOpen}
                   aria-haspopup="menu"
-                  className="flex items-center gap-2 rounded-lg border-2 border-[#B7C4CC] bg-white py-1 pl-1 pr-2.5 text-sm shadow-control transition-colors hover:border-navy/35"
+                  className="flex items-center gap-2 rounded-full border border-border bg-white py-1 pl-1 pr-2.5 text-sm transition-colors hover:border-[#C3CDD3]"
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-navy text-[11px] font-semibold text-white">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy text-[11px] font-semibold text-white">
                     {identity.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="hidden max-w-[10rem] truncate font-medium text-ink sm:inline">{identity}</span>

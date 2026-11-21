@@ -78,13 +78,11 @@ export default function HandoffPage() {
         <EmptyState icon="handoff" title="No visible beds" body="No visible beds for this unit." />
       )}
 
-      <div className="overflow-hidden rounded-xl border border-[#D5DDE3] bg-white shadow-card">
-        {data?.beds.map((bed, index) => (
+      <div className="divide-y divide-border/70">
+        {data?.beds.map((bed) => (
           <article
             key={bed.patient_id}
-            className={`px-4 py-4 sm:px-5 ${index > 0 ? "border-t border-border/80" : ""} ${
-              bed.open_alert?.overdue ? "bg-risk-high/[0.03]" : ""
-            }`}
+            className={`py-4 first:pt-0 ${bed.open_alert?.overdue ? "bg-risk-high/[0.03]" : ""}`}
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 max-w-full">

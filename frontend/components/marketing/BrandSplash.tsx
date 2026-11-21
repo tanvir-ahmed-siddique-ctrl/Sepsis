@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 
 /**
  * Full-viewport homepage entry — every refresh / direct domain hit.
- * Renders opaque on first paint (SSR + hydration) so the site never peeks through,
- * then cloud-dissolves after a short hold.
+ * Wordmark only (no glyph) so the brand name stays centered and readable.
  */
 export function BrandSplash() {
   const [phase, setPhase] = useState<"hold" | "out" | "gone">("hold");
@@ -48,16 +47,6 @@ export function BrandSplash() {
       <div className="auralis-splash-cloud auralis-splash-cloud-b" />
       <div className="auralis-splash-cloud auralis-splash-cloud-c" />
       <div className="auralis-splash-mark">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/app-icon.svg"
-          alt=""
-          width={160}
-          height={160}
-          className="auralis-splash-glyph"
-          decoding="sync"
-          fetchPriority="high"
-        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/wordmark-on-light.png"

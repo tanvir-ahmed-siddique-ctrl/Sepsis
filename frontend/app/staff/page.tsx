@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ApiError, FileDrop, PageHeader, Panel, Pill } from "@/components/ui";
+import { ApiError, FileDrop, PageHeader, Pill } from "@/components/ui";
 import { api, isStatus } from "@/lib/api";
 import { usePoll } from "@/lib/usePoll";
 import { useSession } from "@/lib/session";
@@ -93,36 +93,35 @@ export default function StaffPage() {
   const currentWindow = data?.current.shift;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Who is on this shift?"
         description="Clinical responsibility and handoff visibility, not payroll attendance. The list changes automatically at the configured shift boundary."
       />
       {roster.error && <ApiError error={roster.error} />}
-      {message && <p role="status" className="rounded-lg border border-teal/25 bg-teal-soft/40 px-3.5 py-2.5 text-sm text-ink">{message}</p>}
+      {message && <p role="status" className="text-sm text-teal-dark">{message}</p>}
 
-      <Panel
-        title={
-          currentWindow
+      <section>
+        <h2 className="text-base font-semibold tracking-tight text-ink">
+          {currentWindow
             ? `Now · ${currentWindow.label} · ${currentWindow.start}–${currentWindow.end}`
-            : "Now · loading shift window"
-        }
-      >
+            : "Now · loading shift window"}
+        </h2>
         {currentWindow && (
-          <p className="mb-3 text-sm text-muted">
+          <p className="mt-1 text-sm text-muted">
             Shift window <span className="font-semibold tabular-nums text-ink">{currentWindow.start}</span>
             {" → "}
             <span className="font-semibold tabular-nums text-ink">{currentWindow.end}</span>
           </p>
         )}
         {(data?.current.staff.length ?? 0) === 0 ? (
-          <p className="text-sm text-ink/60">No one is assigned to the current shift yet. An admin can add people below.</p>
+          <p className="mt-4 text-sm text-ink/60">No one is assigned to the current shift yet. An admin can add people below.</p>
         ) : (
-          <ul className="divide-y divide-border/80 border-t border-border/80">
+          <ul className="mt-3 divide-y divide-border/70">
             {data?.current.staff.map((person) => {
               const shift = shiftById.get(person.shift_id) ?? currentWindow;
               return (
-                <li key={person.id} className="flex items-start justify-between gap-3 py-3.5 first:pt-3">
+                <li key={person.id} className="flex items-start justify-between gap-3 py-3.5">
                   <div className="min-w-0">
                     <p className="truncate font-medium text-ink">{person.display_name}</p>
                     <p className="text-xs capitalize text-muted">{person.role} · {person.unit_id ?? "all units"}</p>
@@ -136,10 +135,11 @@ export default function StaffPage() {
             })}
           </ul>
         )}
-      </Panel>
+      </section>
 
-      <Panel title="Full schedule">
-        <div className="auralis-table-scroll">
+      <section>
+        <h2 className="text-base font-semibold tracking-tight text-ink">Full schedule</h2>
+        <div className="auralis-table-scroll mt-3">
           <table className="auralis-table min-w-[42rem]">
             <thead>
               <tr>
@@ -188,12 +188,13 @@ export default function StaffPage() {
             </tbody>
           </table>
         </div>
-      </Panel>
+      </section>
 
       {isAdmin && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Panel title={editingId ? "Edit assignment" : "Add assignment"}>
-            <div className="grid gap-3 text-sm">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <section>
+            <h2 className="text-base font-semibold tracking-tight text-ink">{editingId ? "Edit assignment" : "Add assignment"}</h2>
+            <div className="mt-3 grid gap-3 text-sm">
               <input aria-label="User ID" className="auralis-input" placeholder="User ID" value={form.user_id} onChange={(e) => setForm({ ...form, user_id: e.target.value })} />
               <input aria-label="Display name" className="auralis-input" placeholder="Display name" value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} />
               <select aria-label="Role" className="auralis-input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
@@ -212,13 +213,17 @@ export default function StaffPage() {
                 )}
               </div>
             </div>
-          </Panel>
-          <Panel title="CSV import" description="Columns: user_id, display_name, role, shift_id, unit_id, active">
-            {data?.csv_template && <pre className="mb-4 overflow-auto rounded-lg border border-border bg-canvas p-3 font-mono text-[11px] text-ink">{data.csv_template}</pre>}
-            <FileDrop label="Roster file" accept=".csv,text/csv" acceptLabel="CSV" maxBytes={12 * 1024 * 1024} file={csvFile} onFile={setCsvFile} compact />
+          </section>
+          <section>
+            <h2 className="text-base font-semibold tracking-tight text-ink">CSV import</h2>
+            <p className="mt-1 text-sm text-muted">Columns: user_id, display_name, role, shift_id, unit_id, active</p>
+            {data?.csv_template && <pre className="mt-3 overflow-auto rounded-lg bg-canvas p-3 font-mono text-[11px] text-ink">{data.csv_template}</pre>}
+            <div className="mt-3">
+              <FileDrop label="Roster file" accept=".csv,text/csv" acceptLabel="CSV" maxBytes={12 * 1024 * 1024} file={csvFile} onFile={setCsvFile} compact />
+            </div>
             <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} />Replace the existing schedule</label>
             <button type="button" disabled={!csvFile} className="auralis-btn-primary mt-4" onClick={() => void importCsv()}>Import CSV</button>
-          </Panel>
+          </section>
         </div>
       )}
     </div>

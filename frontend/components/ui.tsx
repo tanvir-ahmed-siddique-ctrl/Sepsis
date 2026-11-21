@@ -94,9 +94,9 @@ export function SiteModeBanner({ mode, detail }: { mode: SiteMode; detail?: Reac
 
 export function Stat({ label, value, color = "text-ink", hint }: { label: string; value: ReactNode; color?: string; hint?: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-xl border border-[#D5DDE3] bg-white px-3.5 py-3 shadow-card sm:px-4">
-      <p className="truncate text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{label}</p>
-      <p className={`mt-1 font-display text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${color}`}>{value}</p>
+    <div className="min-w-0 flex-1 basis-[5.5rem] border-l border-border/70 px-3 py-0.5 first:border-l-0 first:pl-0 sm:min-w-[6.5rem] sm:flex-none sm:px-4">
+      <p className="truncate text-[11px] font-medium text-muted">{label}</p>
+      <p className={`mt-0.5 font-display text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${color}`}>{value}</p>
       {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
     </div>
   );

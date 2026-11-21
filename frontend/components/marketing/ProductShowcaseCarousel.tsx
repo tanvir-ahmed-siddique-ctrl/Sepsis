@@ -11,16 +11,14 @@ const SLIDES: Array<{
   badge: string;
   title: string;
   caption: string;
-  ctaHref: string;
-  ctaLabel: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }> = [
   {
     id: "icu-board",
     badge: "ICU board",
     title: "Every adult ICU bed, sepsis risk trend & SLA timer in one view",
     caption: "Doctors and charge nurses see elevated 6-hour trajectories, vitals freshness, and bed ownership at a glance.",
-    ctaHref: "/signin?next=/app/icu",
-    ctaLabel: "Open the ICU board",
   },
   {
     id: "bedside-chart",
@@ -473,10 +471,12 @@ export function ProductShowcaseCarousel() {
           <h3 className="text-sm font-semibold leading-snug text-ink sm:text-base">{current.title}</h3>
           <p className="mt-0.5 text-xs leading-5 text-muted sm:text-sm">{current.caption}</p>
         </div>
-        <Link href={current.ctaHref} className="group auralis-btn-secondary auralis-btn-sm w-full justify-center sm:w-auto sm:shrink-0">
-          {current.ctaLabel}
-          <Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" />
-        </Link>
+        {current.ctaHref && current.ctaLabel ? (
+          <Link href={current.ctaHref} className="group auralis-btn-secondary auralis-btn-sm w-full justify-center sm:w-auto sm:shrink-0">
+            {current.ctaLabel}
+            <Icon name="arrow-right" size={15} className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        ) : null}
       </div>
     </div>
   );

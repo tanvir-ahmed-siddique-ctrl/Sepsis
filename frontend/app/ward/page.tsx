@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ApiError, EmptyState, PageHeader, Panel, Pill, Stat } from "@/components/ui";
+import { ApiError, EmptyState, PageHeader, Pill, Stat } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { api, type CareUnit, type CensusEncounter } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
@@ -56,7 +56,7 @@ export default function WardPage() {
         }
       />
 
-      <p role="status" className="flex items-start gap-2 rounded-lg border border-teal/25 bg-teal-soft/40 px-3.5 py-2.5 text-sm text-ink">
+      <p role="status" className="flex items-start gap-2 text-sm text-muted">
         <Icon name="info" size={16} className="mt-0.5 shrink-0 text-teal" />
         {bn
           ? "NEWS2 প্রকাশিত নিয়ম অনুযায়ী গণনা হয়; এটি ICU সেপসিস মডেলের স্কোর নয়।"
@@ -66,9 +66,9 @@ export default function WardPage() {
       {(board.error || units.error) && <ApiError error={(board.error || units.error)!} />}
 
       {!board.data && !board.error && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+        <div className="space-y-3" aria-hidden="true">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="auralis-skeleton h-36 rounded-xl" />
+            <div key={index} className="auralis-skeleton h-16 w-full" />
           ))}
         </div>
       )}
@@ -82,7 +82,7 @@ export default function WardPage() {
       )}
 
       {wards.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="flex flex-wrap gap-y-3 border-b border-border/70 pb-4">
           <Stat label={bn ? "রোগী" : "Patients"} value={patients.length} />
           <Stat
             label={bn ? "জরুরি" : "Urgent / emergency"}
@@ -105,29 +105,34 @@ export default function WardPage() {
         />
       )}
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <ul className="divide-y divide-border/70">
         {patients.map((patient) => {
           const news = patient.latest_news2;
           return (
-            <Panel key={patient.encounter_key} title={`${patient.bed_id || "—"} · ${patient.display_name}`}>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-4xl font-semibold tabular-nums tracking-tight text-ink">{news?.score ?? "—"}</span>
-                <div className="flex flex-wrap justify-end gap-1.5">
+            <li key={patient.encounter_key} className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-1">
+              <div className="min-w-0">
+                <p className="font-semibold text-ink">
+                  {patient.bed_id || "—"} · {patient.display_name}
+                </p>
+                {news?.response && <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted">{news.response}</p>}
+                {!news?.complete && (
+                  <p className="mt-1.5 text-sm text-risk-watch">
+                    {bn ? "অনুপস্থিত" : "Missing"}: {news?.missing.join(", ") || patient.missing_required.join(", ")}
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-muted">{news?.source || "No complete NEWS2 observation set yet."}</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                <span className="font-display text-3xl font-semibold tabular-nums tracking-tight text-ink">{news?.score ?? "—"}</span>
+                <div className="flex flex-col items-end gap-1.5">
                   {news?.urgency && <Pill tone={URGENCY_TONE[news.urgency]}>{news.urgency}</Pill>}
                   {patient.observations_due && <Pill tone="warning">{bn ? "এখন মাপুন" : "due now"}</Pill>}
                 </div>
               </div>
-              {!news?.complete && (
-                <p className="mt-3 text-sm text-risk-watch">
-                  {bn ? "অনুপস্থিত" : "Missing"}: {news?.missing.join(", ") || patient.missing_required.join(", ")}
-                </p>
-              )}
-              {news?.response && <p className="mt-3 text-sm leading-6 text-muted">{news.response}</p>}
-              <p className="mt-3 text-xs text-muted">{news?.source || "No complete NEWS2 observation set yet."}</p>
-            </Panel>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }

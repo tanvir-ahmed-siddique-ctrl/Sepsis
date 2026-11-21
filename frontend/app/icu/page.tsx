@@ -38,42 +38,33 @@ export default function OverviewPage() {
   const { me, isOperator } = useSession();
   const router = useRouter();
   const storedUnit = useStoredUnitPreference();
-  const [unit, setUnit] = useState<string | null>(storedUnit);
+  // Primary board always starts on Main ICU (24 replay beds + Advance). Integration
+  // is opt-in from this page only — Alerts may use Integration without hijacking the board.
+  const [unit, setUnit] = useState<string | null>(DEMO_UNIT);
+  const [userPickedUnit, setUserPickedUnit] = useState(false);
   useEffect(() => {
     if (isOperator) router.replace("/operations");
   }, [isOperator, router]);
   const units = usePoll(() => api<{ units: string[]; default_unit: string | null }>("/v1/units"), 15000);
 
   useEffect(() => {
-    if (storedUnit && !unit) setUnit(storedUnit);
-  }, [storedUnit, unit]);
-
-  useEffect(() => {
-    if (!units.data) return;
+    if (!units.data || userPickedUnit) return;
     const available = units.data.units;
-    const fallback = units.data.default_unit ?? DEMO_UNIT;
-    setUnit((current) => {
-      // Keep an in-session choice. On first land, Main ICU (icu-demo-1) wins over a
-      // stale Integration ICU preference so Advance/Reset and the primary board show.
-      let next = current && available.includes(current) ? current : null;
-      if (!next) {
-        const stored = readStoredUnit();
-        if (stored === API_UNIT && available.includes(DEMO_UNIT)) next = DEMO_UNIT;
-        else if (stored && available.includes(stored)) next = stored;
-        else if (available.includes(DEMO_UNIT)) next = DEMO_UNIT;
-        else if (fallback && available.includes(fallback)) next = fallback;
-        else next = available.includes(API_UNIT) ? API_UNIT : available[0] ?? DEMO_UNIT;
-      }
-      if (next) {
-        try {
-          window.localStorage.setItem(UNIT_KEY, next);
-        } catch {
-          /* private mode */
-        }
-      }
-      return next;
-    });
-  }, [units.data]);
+    const next = available.includes(DEMO_UNIT) ? DEMO_UNIT : available[0] ?? DEMO_UNIT;
+    setUnit(next);
+    try {
+      window.localStorage.setItem(UNIT_KEY, next);
+      window.dispatchEvent(new Event("storage"));
+    } catch {
+      /* private mode */
+    }
+  }, [units.data, userPickedUnit]);
+
+  // If another tab flips the shared key to Integration, keep Main ICU here unless the user chose it.
+  useEffect(() => {
+    if (userPickedUnit) return;
+    if (storedUnit === API_UNIT) setUnit(DEMO_UNIT);
+  }, [storedUnit, userPickedUnit]);
 
   const { data, error, updatedAt, refresh } = usePoll(
     () => api<UnitOverview>(`/v1/units/${encodeURIComponent(unit!)}/overview`),
@@ -83,6 +74,7 @@ export default function OverviewPage() {
   );
 
   function chooseUnit(next: string) {
+    setUserPickedUnit(true);
     try {
       window.localStorage.setItem(UNIT_KEY, next);
       window.dispatchEvent(new Event("storage"));
@@ -193,12 +185,12 @@ export default function OverviewPage() {
           {data.patients.map((p) => (
             <article
               key={p.patient_id}
-              className={`min-w-0 rounded-xl border-2 bg-white p-4 shadow-card ${
+              className={`min-w-0 rounded-xl bg-[#F7F9FA] p-4 ${
                 p.review_overdue
-                  ? "border-risk-high"
+                  ? "ring-2 ring-risk-high"
                   : p.unresolved_alerts
-                    ? "border-risk-high/45"
-                    : "border-[#D5DDE3]"
+                    ? "ring-1 ring-risk-high/45"
+                    : ""
               }`}
             >
               <Link href={`/patient/${encodeURIComponent(p.patient_id)}`} className="block group">

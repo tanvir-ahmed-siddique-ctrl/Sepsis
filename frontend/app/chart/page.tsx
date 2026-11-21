@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BedQr } from "@/components/BedQr";
-import { ApiError, EmptyState, PageHeader, Panel, Pill, Stat } from "@/components/ui";
+import { ApiError, EmptyState, PageHeader, Pill, Stat } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { api, DEMO_UNIT, type CareUnit, type CensusEncounter, type UnitOverview } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
@@ -264,7 +264,7 @@ export default function ChartPage() {
         <p className="text-sm text-muted">{bn ? "কেয়ার ইউনিট লোড হচ্ছে…" : "Loading care units…"}</p>
       )}
 
-      <div className="flex flex-wrap items-stretch gap-3">
+      <div className="flex flex-wrap items-end gap-y-3 border-b border-border/70 pb-4">
         <Stat label={bn ? "ভর্তি" : "Admitted"} value={census.data?.encounters.length ?? 0} />
         <Stat
           label={bn ? "এখন মাপা দরকার" : "Observations due"}
@@ -278,15 +278,16 @@ export default function ChartPage() {
         />
         <Stat label={bn ? "অফলাইন কিউ" : "Offline queue"} value={outbox} color={outbox ? "text-risk-watch" : "text-ink"} />
         {outbox > 0 && (
-          <button type="button" className="auralis-btn-secondary auralis-btn-sm self-end" onClick={() => void sync()}>
+          <button type="button" className="auralis-btn-secondary auralis-btn-sm ml-auto" onClick={() => void sync()}>
             <Icon name="refresh" size={14} />
             {bn ? "এখন সিঙ্ক" : "Sync now"}
           </button>
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-        <Panel title={bn ? "বেড তালিকা" : "Bed list"}>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:gap-10">
+        <section>
+          <h2 className="text-base font-semibold tracking-tight text-ink">{bn ? "বেড তালিকা" : "Bed list"}</h2>
           {!census.data?.encounters.length ? (
             <EmptyState
               icon="bed"
@@ -294,23 +295,23 @@ export default function ChartPage() {
               body={bn ? "রোগী ভর্তি করে শুরু করুন।" : "Admit a patient below to start charting."}
             />
           ) : (
-            <div className="-mx-1 divide-y divide-border/80">
+            <div className="mt-2 divide-y divide-border/70">
               {census.data.encounters.map((row) => (
                 <button
                   type="button"
                   key={row.encounter_key}
                   onClick={() => setSelected(row.encounter_key)}
-                  className={`flex w-full min-h-11 items-center justify-between gap-3 px-2 py-3 text-left transition-colors ${
-                    selected === row.encounter_key ? "bg-teal-soft/45" : "bg-transparent hover:bg-muted-surface/70"
+                  className={`flex w-full min-h-11 items-center justify-between gap-3 py-3 text-left transition-colors ${
+                    selected === row.encounter_key ? "bg-teal-soft/35" : "bg-transparent hover:bg-muted-surface/60"
                   }`}
                 >
-                  <span className="min-w-0">
+                  <span className="min-w-0 px-1">
                     <strong className="block truncate text-ink">
                       {row.bed_id || "—"} · {row.display_name}
                     </strong>
                     <span className="mt-0.5 block truncate font-mono text-xs text-muted">{row.encounter_id}</span>
                   </span>
-                  <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                  <span className="flex shrink-0 flex-wrap justify-end gap-1.5 px-1">
                     {row.source_mode === "replay" && <Pill>{bn ? "বোর্ড সিঙ্ক" : "board sync"}</Pill>}
                     {row.risk_band && <Pill>{row.risk_band.replace(/_/g, " ")}</Pill>}
                     {row.observations_due && <Pill tone="warning">{bn ? "বাকি" : "due"}</Pill>}
@@ -320,17 +321,20 @@ export default function ChartPage() {
               ))}
             </div>
           )}
-        </Panel>
+        </section>
 
-        <Panel title={current ? `${current.bed_id || ""} ${current.display_name}`.trim() : bn ? "একটি বেড বেছে নিন" : "Choose a bed"}>
+        <section>
+          <h2 className="text-base font-semibold tracking-tight text-ink">
+            {current ? `${current.bed_id || ""} ${current.display_name}`.trim() : bn ? "একটি বেড বেছে নিন" : "Choose a bed"}
+          </h2>
           {!current && (
-            <p className="text-sm text-muted">{bn ? "চার্ট করার জন্য বাম দিক থেকে একটি বেড নির্বাচন করুন।" : "Select a bed from the list to enter observations."}</p>
+            <p className="mt-2 text-sm text-muted">{bn ? "চার্ট করার জন্য বাম দিক থেকে একটি বেড নির্বাচন করুন।" : "Select a bed from the list to enter observations."}</p>
           )}
           {current && (
             <div className="grid gap-5 xl:grid-cols-[1fr_auto]">
               {current.latest_vitals && (
-                <div className="xl:col-span-2 space-y-2 rounded-xl border border-border bg-muted-surface/40 p-3 text-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                <div className="xl:col-span-2 space-y-2 bg-muted-surface/50 p-3 text-sm">
+                  <p className="text-xs font-medium text-muted">
                     {bn ? "সর্বশেষ vitals (বোর্ড সিঙ্ক)" : "Latest vitals (board sync)"}
                   </p>
                   <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -459,10 +463,10 @@ export default function ChartPage() {
               </div>
             </div>
           )}
-        </Panel>
+        </section>
       </div>
 
-      <details className="auralis-panel group">
+      <details className="group rounded-xl bg-[#F7F9FA] p-5">
         <summary className="cursor-pointer list-none text-sm font-semibold text-ink marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
             <Icon name="chevron-right" size={16} className="transition-transform group-open:rotate-90" />
