@@ -35,7 +35,7 @@
 
 ---
 
-## Team · Team NRB
+## Team · theMergers
 
 <p align="center">
   <img alt="BD" src="https://img.shields.io/badge/🇧🇩-Bangladesh-006A4E?style=for-the-badge&labelColor=0B1C2C" />
