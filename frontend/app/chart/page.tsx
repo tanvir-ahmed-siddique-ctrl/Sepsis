@@ -19,10 +19,10 @@ async function loadCensus(unitId: string): Promise<CensusPayload> {
   try {
     const overview = await api<UnitOverview>(`/v1/units/${encodeURIComponent(unitId)}/overview`);
     const encounters: CensusEncounter[] = overview.patients.map((patient) => ({
-      encounter_key: patient.encounter_key || patient.patient_id,
+      encounter_key: patient.patient_id,
       patient_id: patient.patient_id,
       display_name: patient.display_name,
-      encounter_id: patient.encounter_id,
+      encounter_id: `replay-${patient.patient_id}`,
       unit_id: unitId,
       bed_id: patient.display_name?.startsWith("Bed ")
         ? patient.display_name.replace("Bed ", "BED-")
