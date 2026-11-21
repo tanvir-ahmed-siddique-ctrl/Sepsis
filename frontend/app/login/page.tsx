@@ -38,8 +38,8 @@ const ROLE_META: Record<string, { icon: IconName; detail: string }> = {
 };
 
 const WORKSPACES = [
-  { title: "Judge tour", detail: "Congress walkthrough: pitch → evidence → ICU", href: "/judge", icon: "shield" as IconName },
-  { title: "180s presentation", detail: "Timed pitch replay for panels", href: "/presentation", icon: "activity" as IconName },
+  { title: "Product tour", detail: "Pitch → evidence → live ICU board", href: "/judge", icon: "shield" as IconName },
+  { title: "180s presentation", detail: "Timed pitch with live board", href: "/presentation", icon: "activity" as IconName },
   { title: "ICU board", detail: "Live risk board, alerts and handoff", href: "/app/icu", icon: "grid" as IconName },
   { title: "Bedside charting", detail: "Flowsheet vitals and ward NEWS2", href: "/app/chart", icon: "clipboard" as IconName },
   { title: "Hospital administration", detail: "Staff access, unit settings, evaluation", href: "/app/admin/overview", icon: "building" as IconName },
@@ -444,16 +444,15 @@ function LoginPageContent() {
                   <span className="h-px flex-1 bg-border" />
                 </div>
 
-                {/* Local hospital plane — surfaced here for judges */}
                 <div className="mt-5 rounded-xl border border-border bg-canvas/80 p-3.5 sm:p-4">
                   <div className="flex items-start gap-2.5">
                     <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-teal-soft text-teal-dark">
                       <Icon name="server" size={14} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-semibold text-ink">Local hospital system</p>
+                      <p className="text-[13px] font-semibold text-ink">Hospital clinical plane</p>
                       <p className="mt-0.5 text-xs leading-5 text-muted">
-                        Our on-prem clinical plane, brought into this web demo so judges can walk ICU, charting, and deployment without a separate install.
+                        The real Auralis hospital stack — ICU board, bedside charting, alerts, handoff, and deployment console.
                       </p>
                     </div>
                   </div>

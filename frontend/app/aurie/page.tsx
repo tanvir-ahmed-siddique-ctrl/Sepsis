@@ -112,7 +112,7 @@ export default function AuriePage() {
             <Icon name="arrow-right" size={16} />
           </Link>
           <Link href="/judge" className="auralis-link">
-            Judge tour
+            Product tour
             <Icon name="arrow-right" size={16} />
           </Link>
         </div>

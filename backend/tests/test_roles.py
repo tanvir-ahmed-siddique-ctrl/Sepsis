@@ -126,7 +126,7 @@ def test_public_demo_disables_the_production_writer_lease(tmp_path, monkeypatch)
         first.close()
 
 
-def test_public_demo_replay_controls_are_locked(client):
+def test_replay_controls_require_authentication(client):
     settings.public_demo_lockdown = True
     try:
         response = client.post("/v1/demo/replay/reset")

@@ -54,8 +54,8 @@ def smart_metadata(request: Request):
         "smart_version": "2.2",
         "status": "sandbox",
         "note": (
-            "Sandbox SMART surface for commissioning and judge demos. "
-            "Hospital Epic/Cerner production launch requires Vendor Services "
+            "SMART App Launch surface for hospital EHR shell integration. "
+            "Epic/Cerner production launch requires Vendor Services "
             "registration against the hospital FHIR authorization server — "
             "PredictRx remains the app owner; the EHR is the shell."
         ),

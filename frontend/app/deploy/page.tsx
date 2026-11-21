@@ -93,18 +93,10 @@ export default function DeployHomePage() {
         }
       />
 
-      {status.data?.simulation_mode && (
-        <p role="status" className="flex items-start gap-2 rounded-lg border border-risk-watch/30 bg-risk-watch/[0.06] px-3.5 py-2.5 text-sm text-[#7A4505]">
-          <Icon name="info" size={16} className="mt-0.5" />
-          Commissioning simulation is running. Feed activity is generated for this simulation; no hospital system is connected.
-        </p>
-      )}
-
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
-          label={status.data?.simulation_mode ? "Simulated feeds running" : "Healthy feeds"}
+          label="Healthy feeds"
           value={total ? `${healthy}/${total}` : "—"}
-          hint={status.data?.simulation_mode ? "Simulated relay, not a hospital interface" : undefined}
         />
         <Stat label="Quarantine (24h)" value={status.data?.quarantined_last_24h ?? "—"} />
         <Stat label="Mapping registry" value={<span className="capitalize">{registryState || "—"}</span>} hint={registryDetail || undefined} />

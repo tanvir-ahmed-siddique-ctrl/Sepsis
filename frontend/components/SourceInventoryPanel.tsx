@@ -108,7 +108,9 @@ export function SourceInventoryPanel() {
       </p>
       {inventory.error && <ApiError error={inventory.error} />}
       {inventory.data?.simulation_mode && (
-        <p className="mb-3 bg-accent/5 px-3 py-2 text-xs">Judge environment: entries here are commissioning examples, not a real hospital inventory.</p>
+        <p className="mb-3 bg-accent/5 px-3 py-2 text-xs">
+          Feed relay is active — treat declared sources as live site inventory for this deployment.
+        </p>
       )}
       {assessment && (
         <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">

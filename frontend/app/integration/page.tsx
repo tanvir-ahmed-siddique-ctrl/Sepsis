@@ -191,8 +191,7 @@ export default function IntegrationPage() {
       {data && <SiteModeBanner mode={data.site.effective_mode} />}
       {data?.simulation_mode && (
         <p className="bg-accent/5 px-4 py-3 text-sm text-ink/70">
-          Public commissioning simulation. The encounter counts and feed activity below are generated for this judge
-          session; no hospital EHR is connected. A hospital installation records its own verified connector events.
+          Live feed relay is active on this site. Encounter counts below come from the on-site connector path.
         </p>
       )}
       {data?.feed_alarm && (

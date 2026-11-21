@@ -368,7 +368,7 @@ async function load(){
   const {sites, public_read} = await r.json();
   document.getElementById("siteSelect").innerHTML=sites.map(s=>`<option value="${esc(s.site_id)}">${esc(s.name)}</option>`).join("");
   document.getElementById("note").innerHTML = public_read
-    ? 'Public demo console: read-only. Each hospital pushes a signed heartbeat every minute; nothing else leaves the hospital. <a href="/">Open the demo hospital app</a>.' : "";
+    ? 'Fleet overview: each hospital pushes a signed heartbeat every minute; nothing else leaves the hospital. <a href="/">Open the hospital app</a>.' : "";
   document.getElementById("rows").innerHTML = sites.map(s => `<tr><td>${esc(s.name)}</td>
   <td class="${esc(s.status)}">${esc(s.status)}${s.minutes_since_heartbeat!=null?` (${esc(s.minutes_since_heartbeat)} min)`:""}</td>
   <td>${esc(s.release_version)}</td><td>${esc(s.mode)}</td>

@@ -239,7 +239,7 @@ def integration_status(_: Actor = Depends(OPERATIONS)):
     mapping_ready = bool(mapping_signoff and mapping_signoff.get("registry_sha256") == service.registry.sha256)
     return {
         "site": engine.site.state.as_dict(),
-        "simulation_mode": settings.public_demo_lockdown,
+        "simulation_mode": settings.public_simulation_enabled,
         "connectors": health,
         "feed_alarm": any(item["state"] in {"stale", "circuit_open"} for item in connected),
         "mapping_registry": {
@@ -295,8 +295,8 @@ def _source_inventory_snapshot(engine, document: dict) -> dict:
     mapping_ready = bool(signoff and signoff.get("registry_sha256") == service.registry.sha256)
     return {**document,
             "assessment": source_inventory.assess(document, service.connector_health(), mapping_ready=mapping_ready,
-                                                   simulation_mode=settings.public_demo_lockdown),
-            "simulation_mode": settings.public_demo_lockdown}
+                                                   simulation_mode=settings.public_simulation_enabled),
+            "simulation_mode": settings.public_simulation_enabled}
 
 
 @router.get("/habit-fingerprint")

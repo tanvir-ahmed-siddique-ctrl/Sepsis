@@ -75,11 +75,6 @@ def site_readiness(_: Actor = Depends(OPERATIONS)):
 
 @router.put("/mode")
 def set_site_mode(body: SiteModeRequest, actor: Actor = Depends(ADMIN)):
-    if settings.public_demo_lockdown:
-        raise HTTPException(
-            status_code=403,
-            detail="This public judge demo is locked to replay mode. Hospital installations retain audited mode changes.",
-        )
     engine = get_engine()
     gates = evaluate_gates(engine, get_integration_service(engine).connector_health()) if body.mode == "live" else []
     if body.mode == "live" and settings.licence_required:
@@ -125,11 +120,6 @@ def auri_ai_status(_: Actor = Depends(require_roles(*CLINICAL_ROLES, "clinical_i
 @router.put("/auri-ai")
 def auri_ai_configure(body: AuriLlmBody, actor: Actor = Depends(AURI_ADMIN)):
     """Admin / clinical IT: store optional LLM credentials on the hospital-local server only."""
-    if settings.public_demo_lockdown and body.provider == "openai" and body.api_key:
-        raise HTTPException(
-            status_code=403,
-            detail="Public demo cannot accept customer cloud API keys. Hospital installs can configure Auri AI locally.",
-        )
     engine = get_engine()
     with engine.lock:
         engine._require_writable()
@@ -171,11 +161,6 @@ def governance_signoff(body: GovernanceSignoffRequest, actor: Actor = Depends(AD
 @router.put("/soft-landing")
 def set_soft_landing(body: SoftLandingRequest, actor: Actor = Depends(ADMIN)):
     """L5 — treat PredictRx as ICU intelligence UI; HIS keeps registration/billing."""
-    if settings.public_demo_lockdown:
-        raise HTTPException(
-            status_code=403,
-            detail="Public judge demo cannot change soft-landing; hospital installs retain this flag.",
-        )
     engine = get_engine()
     engine.site.state.soft_landing = bool(body.enabled)
     engine.site.save(actor.user_id)

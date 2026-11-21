@@ -41,14 +41,14 @@ export default function SystemCheckPage() {
         </section>
       )}
       <section className="space-y-3 border border-[#D6DCD8] bg-white p-6">
-        <p className="font-semibold">Same-stack judge tour (this deployment)</p>
+        <p className="font-semibold">Product tour (this deployment)</p>
         <p className="text-sm leading-6 text-muted">
-          Use the ordered tour on this public demo when a separate evaluation URL is not configured. Synthetic replay
-          only — no hospital patient data.
+          Walk the full Auralis stack on this site — evidence, ICU board, charting, and deployment. De-identified
+          PhysioNet replay only; no hospital patient data.
         </p>
         <div className="flex flex-wrap gap-3 pt-1">
           <Link href="/judge" className="auralis-btn-primary">
-            Open judge tour
+            Open product tour
             <Icon name="arrow-right" size={15} />
           </Link>
           <Link href="/presentation" className="auralis-btn-secondary">
