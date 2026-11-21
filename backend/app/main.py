@@ -61,6 +61,9 @@ async def lifespan(_: FastAPI):
             def _tick() -> None:
                 if engine.site.state.effective_mode != "demo":
                     return
+                # Skip overlapping auto ticks while a long Advance Nh is running.
+                if getattr(engine, "_step_busy", False):
+                    return
                 engine.step(1)
 
             while True:

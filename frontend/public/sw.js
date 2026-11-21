@@ -1,32 +1,25 @@
-const CACHE = "auralis-shell-v3";
-const SHELL = ["/", "/home", "/signin", "/app/icu", "/app/chart", "/app/ward", "/app/alerts", "/app/handoff", "/presentation"];
+/* Notification-only service worker.
+ *
+ * Older builds cached HTML + Next.js chunks under auralis-shell-v3. After a
+ * Render redeploy that left browsers flashing the previous ICU board (no
+ * Advance/Reset) whenever the network was slow, then swapping back once the
+ * new bundle loaded. We keep the worker only for SHOW_ALERT push-style
+ * messages and wipe every Cache Storage entry on activate.
+ */
+const CACHE_EPOCH = "auralis-notify-v1";
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
   self.skipWaiting();
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))));
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))));
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
-  if (request.method !== "GET" || url.origin !== self.location.origin || url.pathname.startsWith("/v1/")) return;
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          void caches.open(CACHE).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      })
-      .catch(() => caches.match(request).then((cached) => cached || caches.match("/chart"))),
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_EPOCH).map((key) => caches.delete(key)))).then(() => self.clients.claim()),
   );
 });
+
+// Intentionally no fetch handler: navigations and /_next/* always hit the network.
 
 self.addEventListener("message", (event) => {
   if (event.data?.type !== "SHOW_ALERT") return;

@@ -807,18 +807,42 @@ class Engine:
                             actor_id="evaluation-bootstrap", must_change_password=False)
 
     def step(self, hours: int = 1) -> dict:
-        with self.lock:
-            self._require_writable()
-            if self.site.state.effective_mode != "demo":
-                raise ModeError("Replay is only available in demo mode.")
+        """Advance replay beds one patient at a time.
+
+        Holding the engine lock across every bed made /overview, /alerts, ward
+        NEWS2 and handoff wait ~10s whenever auto-advance or Advance Nh ran —
+        the board sat on "Connecting to local feed…" and other pages looked hung.
+        Yield between patients so clinical reads can interleave.
+        """
+        self._step_busy = True
+        try:
+            with self.lock:
+                self._require_writable()
+                if self.site.state.effective_mode != "demo":
+                    raise ModeError("Replay is only available in demo mode.")
+                keys = [
+                    key
+                    for key, patient in self.patients.items()
+                    if patient.source is not None and patient.cursor < len(patient.source)
+                ]
             advanced = 0
-            for p in self.patients.values():
-                for _ in range(hours):
-                    if p.source is not None and p.cursor < len(p.source):
-                        self._advance(p, emit_alerts=True)
-                        advanced += 1
-            self._persist_state()
-            return {"advanced_patient_hours": advanced, "open_alerts": self.open_alert_count()}
+            for key in keys:
+                with self.lock:
+                    self._require_writable()
+                    if self.site.state.effective_mode != "demo":
+                        break
+                    patient = self.patients.get(key)
+                    if patient is None or patient.source is None:
+                        continue
+                    for _ in range(hours):
+                        if patient.cursor < len(patient.source):
+                            self._advance(patient, emit_alerts=True)
+                            advanced += 1
+            with self.lock:
+                self._persist_state()
+                return {"advanced_patient_hours": advanced, "open_alerts": self.open_alert_count()}
+        finally:
+            self._step_busy = False
 
     def advance_public_simulation(self) -> None:
         """Push synthetic SIM vitals through the real ingest/connector path each tick.
