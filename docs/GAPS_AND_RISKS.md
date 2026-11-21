@@ -39,5 +39,5 @@ Evidence-backed open items only. Update when closed with a ledger or PR referenc
 - [x] Noisy root MDs + `predictrx-codex-pack` removed from git index; kept local / `LOCAL_ONLY/`
 - [x] README + LAYERS + EXPERIMENT_MATRIX + DOCUMENTATION_INDEX linked
 - [x] Frozen Run 4 SHA matches `ml/artifacts/models/run4_frozen/FROZEN.json`
-- [ ] Docs commit/push — **only after explicit authorization**
-- [ ] Optional: dedicated GitHub Pages site (deferred; in-app `/docs` + Markdown hub)
+- [x] Docs commit/push + GitHub Pages Docsify hub
+- [x] Accidental scratch logs (`tmp_demo_build.log`, `tmp_pytest.log`, `torch_install.log`) removed from git; evidence `eval_log_setB.txt` retained

@@ -76,6 +76,9 @@ tmp_frontend*
 tmp_login*
 tmp_matrix*
 tmp_roles*
+torch_install.log
+*_install.log
+# Keep intentional evidence logs under ml/artifacts (eval_log_setB.txt stays tracked)
 
 # Pitch video package stays local only (not in GitHub)
 docs/submission/video/
