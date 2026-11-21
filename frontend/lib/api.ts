@@ -73,12 +73,15 @@ export type PatientOverview = {
   trust_state: TrustState;
   unresolved_alerts: number;
   open_alert_id?: string | null;
+  open_alert_hour?: number | null;
+  open_alert_trust_state?: TrustState | null;
   trend: Array<number | null>;
   age: number | null;
   sex: string | null;
   source_mode: "replay" | "api";
   owner: string | null;
   oldest_open_alert_minutes: number | null;
+  review_sla_minutes?: number | null;
   review_overdue: boolean;
   missing_required_signals: string[];
 };

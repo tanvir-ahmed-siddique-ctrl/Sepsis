@@ -82,8 +82,14 @@ def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL_READ)):
                 continue
             latest = p.predictions[-1]
             open_alerts = _open_alerts(engine, p)
-            oldest = _minutes_since(open_alerts[0].get("raised_at")) if open_alerts else None
+            open_alert = open_alerts[0] if open_alerts else None
+            oldest = _minutes_since(open_alert.get("raised_at")) if open_alert else None
             owner = engine.ownership.get(p.encounter_key)
+            # When an interruptive alert is open, board TrustGate matches the alert
+            # row clinicians see on /alerts (not a newer verify/abstain score).
+            alert_trust = None
+            if open_alert is not None:
+                alert_trust = (open_alert.get("trustgate") or {}).get("state") or open_alert.get("trust_state")
             cards.append(PatientOverviewCard(
                 patient_id=p.encounter_key,
                 encounter_id=p.encounter_id,
@@ -95,15 +101,18 @@ def unit_overview(unit_id: str, actor: Actor = Depends(CLINICAL_READ)):
                 hour=latest["hour"],
                 scored_at=latest.get("scored_at"),
                 data_freshness_minutes=latest["data_freshness_minutes"],
-                trust_state=latest["trustgate"]["state"],
+                trust_state=alert_trust or latest["trustgate"]["state"],
                 unresolved_alerts=len(open_alerts),
-                open_alert_id=open_alerts[0]["alert_id"] if open_alerts else None,
+                open_alert_id=open_alert["alert_id"] if open_alert else None,
+                open_alert_hour=open_alert.get("hour") if open_alert else None,
+                open_alert_trust_state=alert_trust,
                 trend=[pt["probability"] for pt in p.predictions[-12:]],
                 age=p.age,
                 sex=p.sex,
                 source_mode=p.source_mode,
                 owner=owner["owner"] if owner else None,
                 oldest_open_alert_minutes=oldest,
+                review_sla_minutes=sla,
                 review_overdue=oldest is not None and oldest > sla,
                 missing_required_signals=[gap.split(" ")[0] for gap in _data_gaps(latest)],
             ))

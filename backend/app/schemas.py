@@ -137,12 +137,15 @@ class PatientOverviewCard(BaseModel):
     trust_state: str
     unresolved_alerts: int
     open_alert_id: str | None = None
+    open_alert_hour: int | None = None
+    open_alert_trust_state: str | None = None
     trend: list[float | None]
     age: int | None = None
     sex: str | None = None
     source_mode: str = "replay"
     owner: str | None = None
     oldest_open_alert_minutes: int | None = None
+    review_sla_minutes: int | None = None
     review_overdue: bool = False
     missing_required_signals: list[str] = Field(default_factory=list)
 

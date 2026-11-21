@@ -8,6 +8,8 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { AppUtilityFooter } from "@/components/shells/AppUtilityFooter";
 import { InstallAppControl } from "@/components/InstallAppControl";
 import { LanguageSelect } from "@/components/LanguageSelect";
+import { useLocale } from "@/lib/locale";
+import { shellText } from "@/lib/shellCopy";
 import { useSession } from "@/lib/session";
 import { humanize } from "@/lib/pilot";
 
@@ -45,6 +47,7 @@ export function WorkspaceShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { locale } = useLocale();
   const { me, account, signOut } = useSession();
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -53,7 +56,13 @@ export function WorkspaceShell({
   const identity = me?.display_name || me?.user_id || account?.display_name || "Signed in";
   const role = me ? humanize(me.role) : account ? humanize(account.role) : "";
   const accountHref = me ? "/app/profile" : account ? "/platform/accounts" : "/signin";
-  const current = links
+  const localizedLinks = links.map((item) => ({
+    ...item,
+    label: shellText(item.label, locale),
+    group: item.group ? shellText(item.group, locale) : item.group,
+  }));
+  const localizedSurface = shellText(surfaceLabel, locale);
+  const current = localizedLinks
     .filter((item) => pathname === item.href || pathname.startsWith(item.href + "/"))
     .sort((a, b) => b.href.length - a.href.length)[0];
 
@@ -107,8 +116,8 @@ export function WorkspaceShell({
   }
 
   const nav = (iconOnly: boolean) => (
-    <nav className="space-y-5" aria-label={`${surfaceLabel} navigation`}>
-      {groupLinks(links).map((group, gi) => (
+    <nav className="space-y-5" aria-label={`${localizedSurface} navigation`}>
+      {groupLinks(localizedLinks).map((group, gi) => (
         <div key={group.name ?? gi}>
           {group.name && !iconOnly && (
             <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted/80">{group.name}</p>
@@ -163,7 +172,7 @@ export function WorkspaceShell({
           )}
           {!collapsed && (
             <>
-              <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal">{surfaceLabel}</p>
+              <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal">{localizedSurface}</p>
               {context && (
                 <p className="mt-0.5 truncate text-xs text-muted" title={context}>
                   {context}
@@ -194,16 +203,16 @@ export function WorkspaceShell({
             title={collapsed ? "Expand navigation" : "Minimize navigation"}
           >
             <Icon name={collapsed ? "chevron-right" : "chevron-left"} size={16} />
-            {!collapsed && "Minimize"}
+            {!collapsed && shellText("Minimize", locale)}
           </button>
           {!collapsed && (
             <button type="button" onClick={handleSignOut} className="auralis-btn-ghost mt-0.5 w-full justify-start px-2">
               <Icon name="logout" size={16} />
-              Sign out
+              {shellText("Sign out", locale)}
             </button>
           )}
           {collapsed && (
-            <button type="button" onClick={handleSignOut} className="auralis-icon-btn mx-auto mt-1 h-10 w-10" aria-label="Sign out" title="Sign out">
+            <button type="button" onClick={handleSignOut} className="auralis-icon-btn mx-auto mt-1 h-10 w-10" aria-label={shellText("Sign out", locale)} title={shellText("Sign out", locale)}>
               <Icon name="logout" size={16} />
             </button>
           )}
@@ -212,7 +221,7 @@ export function WorkspaceShell({
 
       {/* Mobile drawer */}
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={`${surfaceLabel} navigation`}>
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={`${localizedSurface} navigation`}>
           <button type="button" className="absolute inset-0 bg-navy/30 backdrop-blur-[2px]" aria-label="Close navigation" onClick={() => setOpen(false)} />
           <div className="auralis-fade-up absolute inset-y-0 left-0 flex w-[min(17.5rem,calc(100vw-2.5rem))] max-w-full flex-col bg-canvas shadow-lift">
             <div className="flex items-center justify-between gap-2 px-4 py-4 sm:px-5">
@@ -223,17 +232,17 @@ export function WorkspaceShell({
                 <Icon name="close" size={16} />
               </button>
             </div>
-            <p className="px-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal">{surfaceLabel}</p>
+            <p className="px-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal">{localizedSurface}</p>
             <div className="mt-4 flex-1 overflow-y-auto px-3 pb-4">{nav(false)}</div>
             <div className="space-y-2 border-t border-border p-3">
               {showInstallApp && <InstallAppControl />}
               <div className="flex items-center justify-between gap-2 px-1">
-                <span className="text-xs font-medium text-muted">Language</span>
+                <span className="text-xs font-medium text-muted">{shellText("Language", locale)}</span>
                 <LanguageSelect />
               </div>
               <button type="button" onClick={handleSignOut} className="auralis-btn-secondary w-full">
                 <Icon name="logout" size={16} />
-                Sign out
+                {shellText("Sign out", locale)}
               </button>
             </div>
           </div>
@@ -258,7 +267,7 @@ export function WorkspaceShell({
             </button>
             <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
               <Link href={homeHref} className="hidden truncate text-muted hover:text-ink sm:inline">
-                {surfaceLabel}
+                {localizedSurface}
               </Link>
               {current && current.href !== homeHref && (
                 <>
@@ -266,7 +275,7 @@ export function WorkspaceShell({
                   <span className="truncate font-medium text-ink">{current.label}</span>
                 </>
               )}
-              {(!current || current.href === homeHref) && <span className="truncate font-medium text-ink sm:hidden">{surfaceLabel}</span>}
+              {(!current || current.href === homeHref) && <span className="truncate font-medium text-ink sm:hidden">{localizedSurface}</span>}
             </nav>
             <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
               {showInstallApp && (
@@ -304,7 +313,7 @@ export function WorkspaceShell({
                     <div className="my-1 h-px bg-border" />
                     <Link role="menuitem" href={accountHref} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink hover:bg-muted-surface">
                       <Icon name="user" size={16} className="text-muted" />
-                      {me ? "Profile and security" : "Account"}
+                      {me ? shellText("Profile and security", locale) : shellText("Account", locale)}
                     </Link>
                     {showInstallApp && (
                       <button
@@ -317,12 +326,12 @@ export function WorkspaceShell({
                         }}
                       >
                         <Icon name="download" size={16} className="text-muted" />
-                        Install app
+                        {shellText("Install app", locale)}
                       </button>
                     )}
                     <button role="menuitem" type="button" onClick={handleSignOut} className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-ink hover:bg-muted-surface">
                       <Icon name="logout" size={16} className="text-muted" />
-                      Sign out
+                      {shellText("Sign out", locale)}
                     </button>
                   </div>
                 )}
@@ -333,7 +342,7 @@ export function WorkspaceShell({
         <main id="workspace-content" className="auralis-workspace min-w-0 flex-1 overflow-x-clip px-3 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           {children}
         </main>
-        <AppUtilityFooter surface={surfaceLabel} />
+        <AppUtilityFooter surface={localizedSurface} />
       </div>
     </div>
   );

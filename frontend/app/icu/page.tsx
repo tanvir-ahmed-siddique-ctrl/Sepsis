@@ -152,7 +152,7 @@ export default function OverviewPage() {
       )}
 
       {(unit === DEMO_UNIT || data?.patients.some((patient) => patient.source_mode === "replay")) && (
-        <ReplayControls onChange={refresh} siteMode={data?.site_mode ?? null} />
+        <ReplayControls onChange={refresh} onRefresh={refresh} siteMode={data?.site_mode ?? null} />
       )}
       {unit === API_UNIT && (
         <p className="text-xs text-muted">
@@ -227,12 +227,20 @@ export default function OverviewPage() {
                 </div>
               </Link>
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <TrustBadge state={p.trust_state} />
+                <TrustBadge state={(p.open_alert_trust_state || p.trust_state) as typeof p.trust_state} />
                 {p.unresolved_alerts > 0 && (
                   <Pill tone={p.review_overdue ? "danger" : "warning"}>
-                    {p.review_overdue ? "Review overdue" : "Open alert"}
-                    {p.oldest_open_alert_minutes != null ? ` · ${minutesLabel(p.oldest_open_alert_minutes)}` : ""}
+                    {(() => {
+                      const openMin = p.oldest_open_alert_minutes;
+                      const sla = p.review_sla_minutes ?? data.review_sla_minutes ?? 15;
+                      if (openMin == null) return "Open alert";
+                      if (p.review_overdue) return `Overdue by ${Math.max(0, Math.round(openMin - sla))} min`;
+                      return `Open ${Math.round(openMin)} of ${sla} min`;
+                    })()}
                   </Pill>
+                )}
+                {p.open_alert_hour != null && p.open_alert_hour !== p.hour && (
+                  <Pill>Alert @ hour {p.open_alert_hour}</Pill>
                 )}
                 {p.missing_required_signals.map((signal) => (
                   <Pill key={signal} tone="warning">

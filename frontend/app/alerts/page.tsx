@@ -15,7 +15,7 @@ export default function AlertsPage() {
   const { isAdmin } = useSession();
   const [message, setMessage] = useState<string | null>(null);
   const [showShadow, setShowShadow] = useState(false);
-  const { data, error, refresh } = usePoll(() => api<{ alerts: Alert[] }>("/v1/alerts"), 3000, [], {
+  const { data, error, refresh, updatedAt } = usePoll(() => api<{ alerts: Alert[] }>("/v1/alerts"), 3000, [], {
     cacheKey: "alerts:open",
   });
   const shadow = usePoll(
@@ -32,7 +32,21 @@ export default function AlertsPage() {
         eyebrow="Clinical review"
         title="Alert review"
         description="Every alert needs a human decision. The system never takes clinical action on its own. Overdue reviews are listed first."
+        actions={
+          <button type="button" className="auralis-btn-secondary auralis-btn-sm" onClick={() => void refresh()}>
+            <Icon name="refresh" size={14} />
+            Refresh alerts
+          </button>
+        }
       />
+
+      <p className="auralis-help -mt-3" aria-live="polite">
+        {error
+          ? "Alert refresh failed · showing last received state"
+          : updatedAt
+            ? `View refreshed ${updatedAt.toLocaleTimeString()} · polling every 3 seconds`
+            : "Connecting to alert feed…"}
+      </p>
 
       {error && <ApiError error={error} />}
       {message && (
