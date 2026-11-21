@@ -94,9 +94,9 @@ export function SiteModeBanner({ mode, detail }: { mode: SiteMode; detail?: Reac
 
 export function Stat({ label, value, color = "text-ink", hint }: { label: string; value: ReactNode; color?: string; hint?: ReactNode }) {
   return (
-    <div className="min-w-0 flex-1 basis-[5.5rem] border-l border-border/80 px-2.5 py-1 first:border-l-0 first:pl-0 sm:min-w-[6.5rem] sm:flex-none sm:px-4">
-      <p className="truncate text-[11px] font-medium uppercase tracking-[0.08em] text-muted sm:text-[11px]">{label}</p>
-      <p className={`mt-0.5 font-display text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${color}`}>{value}</p>
+    <div className="min-w-0 rounded-xl border border-[#D5DDE3] bg-white px-3.5 py-3 shadow-card sm:px-4">
+      <p className="truncate text-[11px] font-medium uppercase tracking-[0.08em] text-muted">{label}</p>
+      <p className={`mt-1 font-display text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${color}`}>{value}</p>
       {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
     </div>
   );
@@ -129,25 +129,26 @@ export function Skeleton({ className = "h-4 w-full" }: { className?: string }) {
 }
 
 export function PageHeader({
-  eyebrow,
+  eyebrow: _eyebrow,
   title,
   description,
   actions,
   back,
 }: {
+  /** Kept for call-site compatibility; no longer rendered (avoids AI-slop eyebrow stacks). */
   eyebrow?: string;
   title: string;
   description?: string;
   actions?: ReactNode;
   back?: { href: string; label: string };
 }) {
+  void _eyebrow;
   return (
-    <header className="mb-5 flex flex-col gap-3 border-b border-border pb-4 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4 sm:pb-5">
+    <header className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
       <div className="min-w-0">
         {back && <BackLink href={back.href} label={back.label} className="mb-3" />}
-        {eyebrow && <p className="auralis-eyebrow">{eyebrow}</p>}
-        <h1 className="mt-1.5 auralis-page-title">{title}</h1>
-        {description && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{description}</p>}
+        <h1 className="auralis-page-title">{title}</h1>
+        {description && <p className="mt-1.5 max-w-3xl text-[15px] leading-6 text-muted">{description}</p>}
       </div>
       {actions && <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">{actions}</div>}
     </header>

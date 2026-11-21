@@ -294,16 +294,14 @@ export default function ChartPage() {
               body={bn ? "রোগী ভর্তি করে শুরু করুন।" : "Admit a patient below to start charting."}
             />
           ) : (
-            <div className="space-y-2">
+            <div className="-mx-1 divide-y divide-border/80">
               {census.data.encounters.map((row) => (
                 <button
                   type="button"
                   key={row.encounter_key}
                   onClick={() => setSelected(row.encounter_key)}
-                  className={`flex w-full min-h-11 items-center justify-between gap-3 rounded-xl border p-3.5 text-left transition-colors ${
-                    selected === row.encounter_key
-                      ? "border-teal bg-teal-soft/50"
-                      : "border-border bg-white hover:border-[#C3CDD3]"
+                  className={`flex w-full min-h-11 items-center justify-between gap-3 px-2 py-3 text-left transition-colors ${
+                    selected === row.encounter_key ? "bg-teal-soft/45" : "bg-transparent hover:bg-muted-surface/70"
                   }`}
                 >
                   <span className="min-w-0">

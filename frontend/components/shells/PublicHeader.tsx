@@ -110,7 +110,7 @@ export function PublicHeader() {
   return (
     <header
       ref={root}
-      className={`sticky top-0 z-50 h-14 border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 ${
+      className={`sticky top-0 z-50 h-16 border-b backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-200 ${
         scrolled
           ? "border-border/70 bg-white/92 shadow-[0_8px_28px_-22px_rgba(11,20,34,0.35)]"
           : "border-transparent bg-[#F3FAFB]/80 shadow-none"
@@ -125,7 +125,7 @@ export function PublicHeader() {
           {NAV.map((item) => {
             const isCurrent = active(item);
             const isOpen = menu === item.href;
-            const base = `inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-[13px] font-medium transition-colors sm:px-3 sm:text-[14px] ${
+            const base = `inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors sm:px-3 sm:text-[14px] ${
               isCurrent || isOpen ? "text-ink" : "text-muted hover:text-ink"
             } ${isOpen ? "bg-muted-surface" : "hover:bg-muted-surface/70"}`;
             return (
@@ -146,7 +146,8 @@ export function PublicHeader() {
                     {item.label}
                     <Icon
                       name="chevron-down"
-                      size={14}
+                      size={13}
+                      strokeWidth={2.25}
                       className={`text-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                     />
                   </button>
@@ -156,7 +157,7 @@ export function PublicHeader() {
                   </Link>
                 )}
                 {isCurrent && (
-                  <span className="absolute inset-x-3 -bottom-[11px] h-0.5 rounded-full bg-navy" aria-hidden="true" />
+                  <span className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-navy" aria-hidden="true" />
                 )}
 
                 {item.children && isOpen && (
@@ -178,7 +179,7 @@ export function PublicHeader() {
                             <span className="mt-0.5 block text-xs leading-snug text-muted">{child.detail}</span>
                           </span>
                           <Icon
-                            name="chevron-right"
+                            name="arrow-right"
                             size={14}
                             className="mt-1 text-muted opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                           />

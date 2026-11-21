@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { FlashHost } from "@/components/FlashToast";
 import { BrandGlyph, BrandMark } from "@/components/ui/BrandMark";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AppUtilityFooter } from "@/components/shells/AppUtilityFooter";
@@ -202,7 +203,7 @@ export function WorkspaceShell({
             aria-label={collapsed ? "Expand navigation" : "Minimize navigation"}
             title={collapsed ? "Expand navigation" : "Minimize navigation"}
           >
-            <Icon name={collapsed ? "chevron-right" : "chevron-left"} size={16} />
+            <Icon name={collapsed ? "panel-right" : "panel-left"} size={16} />
             {!collapsed && shellText("Minimize", locale)}
           </button>
           {!collapsed && (
@@ -263,7 +264,7 @@ export function WorkspaceShell({
               aria-label={collapsed ? "Expand navigation" : "Minimize navigation"}
               title={collapsed ? "Expand navigation" : "Minimize navigation"}
             >
-              <Icon name={collapsed ? "chevron-right" : "chevron-left"} size={16} />
+              <Icon name={collapsed ? "panel-right" : "panel-left"} size={16} />
             </button>
             <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
               <Link href={homeHref} className="hidden truncate text-muted hover:text-ink sm:inline">
@@ -271,7 +272,7 @@ export function WorkspaceShell({
               </Link>
               {current && current.href !== homeHref && (
                 <>
-                  <Icon name="chevron-right" size={14} className="hidden shrink-0 text-muted/60 sm:block" />
+                  <Icon name="arrow-right" size={12} className="hidden shrink-0 text-muted/50 sm:block" />
                   <span className="truncate font-medium text-ink">{current.label}</span>
                 </>
               )}
@@ -296,9 +297,9 @@ export function WorkspaceShell({
                   onClick={() => setMenuOpen((v) => !v)}
                   aria-expanded={menuOpen}
                   aria-haspopup="menu"
-                  className="flex items-center gap-2 rounded-full border border-border bg-white py-1 pl-1 pr-2.5 text-sm transition-colors hover:border-[#C3CDD3]"
+                  className="flex items-center gap-2 rounded-lg border-2 border-[#B7C4CC] bg-white py-1 pl-1 pr-2.5 text-sm shadow-control transition-colors hover:border-navy/35"
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy text-[11px] font-semibold text-white">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-navy text-[11px] font-semibold text-white">
                     {identity.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="hidden max-w-[10rem] truncate font-medium text-ink sm:inline">{identity}</span>
@@ -343,6 +344,7 @@ export function WorkspaceShell({
           {children}
         </main>
         <AppUtilityFooter surface={localizedSurface} />
+        <FlashHost />
       </div>
     </div>
   );

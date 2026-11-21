@@ -92,8 +92,8 @@ export default function ProfilePage() {
   const data = profile.data;
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <PageHeader eyebrow="Account" title="Profile and security" description="Your identity, access, sign-in security and alert preferences for this hospital site." />
+    <div className="space-y-5">
+      <PageHeader title="Profile and security" description="Your identity, access, sign-in security and alert preferences for this hospital site." />
 
       {profile.error && <ApiError error={profile.error} />}
 

@@ -144,29 +144,31 @@ export default function HomePage() {
       </section>
 
       {/* Model + deployment — short */}
-      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-12 sm:py-16 lg:py-20">
-        <div className="auralis-container-public relative">
+      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-white py-12 sm:py-16 lg:py-20">
+        <div className="auralis-container-public relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
           <Reveal className="max-w-2xl" variant="left">
             <h2 className="text-[1.65rem] font-semibold leading-tight tracking-[-0.03em] text-navy sm:text-[2.25rem]">
-              Holdout-proven model. Real hospital pipes.
+              Proven on holdout. Wired for the ward.
             </h2>
             <p className="mt-3 max-w-xl text-[15px] leading-7 text-muted">
-              Frozen six-hour sepsis ML that beat simpler baselines on Dataset B — plus on-site feed engineering so the
-              score actually lands on a ward board.
+              Frozen six-hour sepsis ML with SHAP drivers and TrustGate — plus on-site HL7/FHIR engineering so the score
+              reaches the board, not a slide deck.
             </p>
           </Reveal>
-          <div className="mt-8 grid gap-5 sm:mt-10 sm:grid-cols-3 sm:gap-6">
-            {[
-              ["Model", "Holdout ~0.81 AUROC, SHAP drivers, TrustGate."],
-              ["Pipes", "HL7 / FHIR, units, quarantine on your LAN."],
-              ["Go-live", "Silent first. Alerts only after sign-off."],
-            ].map(([title, body], idx) => (
-              <Reveal key={title} as="article" delayMs={idx * 90} variant="up">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-teal">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
-              </Reveal>
-            ))}
-          </div>
+          <Reveal delayMs={80} variant="up">
+            <dl className="grid grid-cols-3 gap-3 border-t border-border pt-5 sm:gap-4">
+              {[
+                ["~0.81", "Holdout AUROC"],
+                ["6 h", "Early window"],
+                ["Silent", "First go-live"],
+              ].map(([value, label]) => (
+                <div key={label}>
+                  <dt className="font-display text-xl font-semibold tracking-tight text-navy sm:text-2xl">{value}</dt>
+                  <dd className="mt-1 text-xs leading-snug text-muted sm:text-sm">{label}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
         </div>
       </section>
 
@@ -254,32 +256,37 @@ export default function HomePage() {
       </section>
 
       {/* Product surfaces */}
-      <section className="border-b border-[#C9E6D6]/70 bg-[#EEF7F1] py-12 sm:py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-12 sm:py-16 lg:py-20">
         <div className="auralis-container-public">
           <Reveal className="max-w-xl">
             <h2 className="text-[1.65rem] font-semibold leading-tight tracking-[-0.03em] text-navy sm:text-[2.25rem]">
               One platform. Every role.
             </h2>
           </Reveal>
-          <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 overflow-hidden rounded-2xl border border-[#D0E0D6] bg-white shadow-card sm:mt-10">
             {SURFACES.map((item, idx) => (
-              <Reveal key={item.title} delayMs={(idx % 3) * 70} variant="up">
+              <Reveal key={item.title} delayMs={(idx % 3) * 40} variant="up">
                 <Link
                   href={item.href}
-                  className="group flex h-full flex-col rounded-2xl border border-[#D5E8EC] bg-white/90 p-4 transition-colors hover:border-teal/35 hover:bg-white sm:p-5"
+                  className={`group flex items-start gap-4 px-4 py-4 transition-colors hover:bg-[#F7FBF8] sm:gap-5 sm:px-5 sm:py-5 ${
+                    idx > 0 ? "border-t border-[#E4EEE8]" : ""
+                  }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#D8EFE3] text-[#267352]">
-                      <Icon name={item.icon} size={17} />
-                    </span>
-                    <span className="text-xs text-muted">{item.audience}</span>
-                  </div>
-                  <h3 className="mt-3 text-[15px] font-semibold text-ink sm:mt-4">{item.title}</h3>
-                  <p className="mt-1.5 flex-1 text-sm leading-6 text-muted">{item.body}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-teal">
-                    Open
-                    <Icon name="arrow-right" size={14} className="transition-transform group-hover:translate-x-0.5" />
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F3EC] text-navy">
+                    <Icon name={item.icon} size={17} />
                   </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                      <span className="text-[15px] font-semibold text-ink">{item.title}</span>
+                      <span className="text-xs text-muted">{item.audience}</span>
+                    </span>
+                    <span className="mt-1 block text-sm leading-6 text-muted">{item.body}</span>
+                  </span>
+                  <Icon
+                    name="arrow-right"
+                    size={16}
+                    className="mt-1 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-navy"
+                  />
                 </Link>
               </Reveal>
             ))}

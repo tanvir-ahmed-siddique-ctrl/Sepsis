@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertActions } from "@/components/AlertActions";
+import { flash } from "@/components/FlashToast";
 import { RiskBadge, TrustBadge } from "@/components/RiskBadge";
 import { ApiError, EmptyState, PageHeader, Panel, Pill } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
@@ -70,7 +71,6 @@ export default function AlertsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Clinical review"
         title="Alert review"
         description="Same unit as the ICU board. Simulation ICU alerts live under Integration ICU — they are not Main ICU beds."
         actions={
@@ -85,7 +85,11 @@ export default function AlertsPage() {
                 ))}
               </select>
             </label>
-            <button type="button" className="auralis-btn-secondary auralis-btn-sm" onClick={() => void refresh()}>
+            <button
+              type="button"
+              className="auralis-btn-secondary auralis-btn-sm"
+              onClick={() => void refresh().then(() => flash("Alerts refreshed"))}
+            >
               <Icon name="refresh" size={14} />
               Refresh alerts
             </button>
@@ -129,13 +133,13 @@ export default function AlertsPage() {
             }
           />
         )}
-        <ul className="space-y-3">
+        <ul className="divide-y divide-border/80">
           {open.map((a) => {
             const clock = reviewClock(a);
             return (
               <li
                 key={a.alert_id}
-                className="grid gap-4 rounded-xl border border-[#D5DDE3] bg-white p-4 shadow-card lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)]"
+                className="grid gap-4 py-4 first:pt-1 last:pb-1 lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)]"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

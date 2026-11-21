@@ -42,7 +42,6 @@ export default function HospitalAdminPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Hospital administration"
         title="Hospital overview"
         description="Live site pulse for administrators — staffing, ICU burden and readiness. Deployment tools stay in the IT console."
       />

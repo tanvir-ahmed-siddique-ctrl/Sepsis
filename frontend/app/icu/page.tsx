@@ -101,12 +101,16 @@ export default function OverviewPage() {
     await refresh();
   }
 
+  const UNIT_LABEL: Record<string, string> = {
+    [DEMO_UNIT]: "Main ICU",
+    [API_UNIT]: "Integration ICU (simulation)",
+    "ward-demo-1": "General Ward",
+  };
   const description = `${data?.patients.length ?? "…"} ${t.icu.beds} · ${t.icu.model} ${data?.model_version ?? "…"} · ${t.icu.liveBoard}`;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={t.icu.eyebrow}
         title={t.icu.title}
         description={description}
         actions={
@@ -116,11 +120,11 @@ export default function OverviewPage() {
               <select
                 value={unit ?? ""}
                 onChange={(event) => chooseUnit(event.target.value)}
-                className="auralis-input !h-10 w-full max-w-[14rem] min-w-0 sm:w-auto sm:min-w-[10rem]"
+                className="auralis-input !h-10 w-full max-w-[16rem] min-w-0 sm:w-auto sm:min-w-[12rem]"
               >
                 {units.data.units.map((value) => (
                   <option key={value} value={value}>
-                    {value}
+                    {UNIT_LABEL[value] ?? value}
                   </option>
                 ))}
               </select>

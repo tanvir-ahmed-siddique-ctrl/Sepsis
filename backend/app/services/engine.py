@@ -672,12 +672,11 @@ class Engine:
                     replay_meta={"public_demo_seed": True, "data_class": "synthetic commissioning feed"},
                 )
                 self.patients[icu.encounter_key] = icu
-                # Only raise interruptive alerts for simulation beds when the public
-                # simulation loop is enabled — otherwise Alerts fills with Integration
-                # ICU A-08/09/10 while Main ICU board shows PhysioNet beds only.
+                # Emit Integration ICU drill alerts in demo/local so Alerts → Integration
+                # ICU is populated. Main ICU stays separate via unit_id filtering.
                 self._score(
                     icu,
-                    emit_alerts=settings.public_simulation_enabled,
+                    emit_alerts=settings.demo_mode or settings.public_simulation_enabled,
                     raw_frame=raw,
                     audit_event="synthetic_feed_prediction",
                 )
@@ -1427,6 +1426,10 @@ class Engine:
             return False
         if clinical_context.alert_policy(p.context)[0] == "shadow_only":
             return False
+        # Demo Integration ICU seeds are api-mode commissioning beds; still raise
+        # open (interruptive) alerts so Alerts → Integration ICU is usable locally.
+        if settings.demo_mode and p.replay_meta.get("public_demo_seed"):
+            return True
         return p.source_mode == "replay" or self.site.state.interruptive_alerts_enabled
 
     def _maybe_alert(self, p: Patient, pred: dict, previous: str) -> None:

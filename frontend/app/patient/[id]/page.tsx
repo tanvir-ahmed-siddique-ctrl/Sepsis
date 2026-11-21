@@ -90,7 +90,6 @@ export default function PatientPage({ params }: { params: Promise<{ id: string }
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Patient risk"
         title={title}
         description={`ICU hour ${current.hour} · ${current.unit_id} · ${sourceLabel} · model ${current.model_version}`}
         back={{ href: "/icu", label: "ICU board" }}

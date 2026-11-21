@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RiskBadge, TrustBadge } from "@/components/RiskBadge";
-import { ApiError, EmptyState, PageHeader, Panel, Pill } from "@/components/ui";
+import { ApiError, EmptyState, PageHeader, Pill } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { api, DEMO_UNIT, pct, type RiskBand, type TrustState } from "@/lib/api";
 import { humanize, minutesLabel } from "@/lib/pilot";
@@ -54,7 +54,6 @@ export default function HandoffPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Shift continuity"
         title="Shift handoff"
         description={`Unit ${unit ?? "…"} · assembled from recorded scores, alerts, actions and clinician notes — no generated text.`}
         actions={
@@ -79,17 +78,22 @@ export default function HandoffPage() {
         <EmptyState icon="handoff" title="No visible beds" body="No visible beds for this unit." />
       )}
 
-      <div className="space-y-3">
-        {data?.beds.map((bed) => (
-          <Panel key={bed.patient_id} className={bed.open_alert?.overdue ? "border-risk-high" : ""}>
+      <div className="overflow-hidden rounded-xl border border-[#D5DDE3] bg-white shadow-card">
+        {data?.beds.map((bed, index) => (
+          <article
+            key={bed.patient_id}
+            className={`px-4 py-4 sm:px-5 ${index > 0 ? "border-t border-border/80" : ""} ${
+              bed.open_alert?.overdue ? "bg-risk-high/[0.03]" : ""
+            }`}
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 max-w-full">
                 <Link
                   href={`/patient/${encodeURIComponent(bed.patient_id)}`}
-                  className="inline-flex max-w-full items-center gap-1.5 text-lg font-semibold text-ink hover:text-teal"
+                  className="inline-flex max-w-full items-center gap-1.5 text-base font-semibold text-ink hover:text-teal"
                 >
                   <span className="truncate">{bed.display_name}</span>
-                  <Icon name="arrow-right" size={15} className="shrink-0" />
+                  <Icon name="arrow-right" size={14} className="shrink-0" />
                 </Link>
                 <p className="mt-0.5 break-words text-xs text-muted">
                   ICU hour {bed.hour} · {bed.source_mode === "api" ? "hospital connector" : "scored encounter"} · owner{" "}
@@ -112,35 +116,35 @@ export default function HandoffPage() {
                 </Pill>
               </div>
             </div>
-            <div className="mt-4 grid gap-4 text-sm md:grid-cols-3">
+            <div className="mt-3 grid gap-3 text-sm md:grid-cols-3">
               <div>
-                <p className="auralis-eyebrow">Alert status</p>
+                <p className="text-xs font-medium text-muted">Alert</p>
                 {bed.open_alert ? (
-                  <p className={`mt-1.5 ${bed.open_alert.overdue ? "font-medium text-risk-high" : "text-ink"}`}>
+                  <p className={`mt-1 ${bed.open_alert.overdue ? "font-medium text-risk-high" : "text-ink"}`}>
                     Open {minutesLabel(bed.open_alert.minutes_open)}
                     {bed.open_alert.overdue ? ` — past ${data.review_sla_minutes} min SLA` : ""}
                   </p>
                 ) : (
-                  <p className="mt-1.5 text-muted">No open alert</p>
+                  <p className="mt-1 text-muted">No open alert</p>
                 )}
                 {bed.last_alert_action && (
                   <p className="mt-1 text-xs text-muted">
-                    Last action: {bed.last_alert_action.action} by {bed.last_alert_action.user_id}
+                    Last: {bed.last_alert_action.action} by {bed.last_alert_action.user_id}
                     {bed.last_alert_action.reason ? ` — ${bed.last_alert_action.reason}` : ""}
                   </p>
                 )}
               </div>
               <div>
-                <p className="auralis-eyebrow">Data gaps & TrustGate</p>
-                <p className="mt-1.5 text-ink">{bed.data_gaps.length ? bed.data_gaps.join(" · ") : "Required vitals current"}</p>
+                <p className="text-xs font-medium text-muted">Data & TrustGate</p>
+                <p className="mt-1 text-ink">{bed.data_gaps.length ? bed.data_gaps.join(" · ") : "Required vitals current"}</p>
                 <p className="mt-1 text-xs text-muted">{bed.trust_reasons.map(humanize).join(" · ")}</p>
               </div>
               <div>
-                <p className="auralis-eyebrow">Top score drivers</p>
-                <ul className="mt-1.5 space-y-1 text-ink">
+                <p className="text-xs font-medium text-muted">Top drivers</p>
+                <ul className="mt-1 space-y-0.5 text-ink">
                   {bed.top_factors.map((factor) => (
-                    <li key={factor} className="flex items-start gap-2">
-                      <Icon name="chevron-right" size={14} className="mt-0.5 shrink-0 text-muted" />
+                    <li key={factor} className="flex items-start gap-1.5">
+                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted" aria-hidden="true" />
                       {factor}
                     </li>
                   ))}
@@ -148,7 +152,7 @@ export default function HandoffPage() {
               </div>
             </div>
             {bed.notes.length > 0 && (
-              <ul className="mt-4 space-y-2 border-t border-border pt-3 text-sm">
+              <ul className="mt-3 space-y-1.5 border-t border-border/70 pt-3 text-sm">
                 {bed.notes.map((note) => (
                   <li key={note.note_id}>
                     <span className="text-xs text-muted">
@@ -159,7 +163,7 @@ export default function HandoffPage() {
                 ))}
               </ul>
             )}
-          </Panel>
+          </article>
         ))}
       </div>
       {data && <p className="auralis-help">{data.disclaimer}</p>}

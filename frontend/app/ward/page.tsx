@@ -34,7 +34,6 @@ export default function WardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={bn ? "ওয়ার্ড কেয়ার" : "Ward care"}
         title={bn ? "ওয়ার্ড NEWS2 বোর্ড" : "Ward NEWS2 board"}
         description={
           bn

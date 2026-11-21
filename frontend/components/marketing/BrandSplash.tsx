@@ -50,7 +50,7 @@ export function BrandSplash() {
       <div className="auralis-splash-mark">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/app-icon.png"
+          src="/app-icon.svg"
           alt=""
           width={160}
           height={160}

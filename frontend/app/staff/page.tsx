@@ -93,9 +93,8 @@ export default function StaffPage() {
   const currentWindow = data?.current.shift;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5">
+    <div className="space-y-6">
       <PageHeader
-        eyebrow="Current team"
         title="Who is on this shift?"
         description="Clinical responsibility and handoff visibility, not payroll attendance. The list changes automatically at the configured shift boundary."
       />
@@ -110,7 +109,7 @@ export default function StaffPage() {
         }
       >
         {currentWindow && (
-          <p className="mb-4 text-sm text-muted">
+          <p className="mb-3 text-sm text-muted">
             Shift window <span className="font-semibold tabular-nums text-ink">{currentWindow.start}</span>
             {" → "}
             <span className="font-semibold tabular-nums text-ink">{currentWindow.end}</span>
@@ -119,23 +118,23 @@ export default function StaffPage() {
         {(data?.current.staff.length ?? 0) === 0 ? (
           <p className="text-sm text-ink/60">No one is assigned to the current shift yet. An admin can add people below.</p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="divide-y divide-border/80 border-t border-border/80">
             {data?.current.staff.map((person) => {
               const shift = shiftById.get(person.shift_id) ?? currentWindow;
               return (
-                <article key={person.id} className="flex items-start justify-between gap-3 rounded-xl border border-border bg-white p-4">
+                <li key={person.id} className="flex items-start justify-between gap-3 py-3.5 first:pt-3">
                   <div className="min-w-0">
                     <p className="truncate font-medium text-ink">{person.display_name}</p>
                     <p className="text-xs capitalize text-muted">{person.role} · {person.unit_id ?? "all units"}</p>
-                    <p className="mt-1 text-xs font-medium tabular-nums text-teal-dark">
+                    <p className="mt-1 text-xs font-medium tabular-nums text-muted">
                       {shift ? `${shift.start}–${shift.end}` : "Time not set"}
                     </p>
                   </div>
                   <Pill tone="success">On shift</Pill>
-                </article>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
       </Panel>
 

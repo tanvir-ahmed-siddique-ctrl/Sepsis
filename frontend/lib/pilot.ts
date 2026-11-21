@@ -3,11 +3,11 @@ import type { Alert, ConnectorHealth, Gate, SiteMode } from "@/lib/api";
 export type Tone = "neutral" | "info" | "warning" | "danger" | "success";
 
 export const TONE_CLASS: Record<Tone, string> = {
-  neutral: "border-border bg-white text-ink",
-  info: "border-teal/25 bg-teal-soft/50 text-teal-dark",
-  warning: "border-risk-watch/30 bg-risk-watch/[0.06] text-[#7A4505]",
-  danger: "border-risk-high/30 bg-risk-high/[0.06] text-risk-high",
-  success: "border-risk-stable/30 bg-risk-stable/[0.06] text-risk-stable",
+  neutral: "border-transparent bg-muted-surface text-ink",
+  info: "border-transparent bg-teal-soft/70 text-teal-dark",
+  warning: "border-transparent bg-risk-watch/[0.1] text-[#7A4505]",
+  danger: "border-transparent bg-risk-high/[0.08] text-risk-high",
+  success: "border-transparent bg-risk-stable/[0.1] text-risk-stable",
 };
 
 export function humanize(value: string): string {

@@ -1,16 +1,18 @@
 import type { SVGProps } from "react";
 
 /**
- * Single icon language for Auralis: 24px grid, 1.75 stroke, round caps.
+ * Single icon language for Auralis: 24px grid, 2 stroke for crisp UI chrome.
  * Directional rules: arrow-left = back, arrow-right = forward action,
  * chevron-right = nested navigation, chevron-down = expand.
  */
 const PATHS = {
-  "arrow-right": "M5 12h14M13 6l6 6-6 6",
-  "arrow-left": "M19 12H5M11 18l-6-6 6-6",
-  "chevron-right": "M9 6l6 6-6 6",
-  "chevron-left": "M15 6l-6 6 6 6",
-  "chevron-down": "M6 9l6 6 6-6",
+  "arrow-right": "M4 12h14M13 5l7 7-7 7",
+  "arrow-left": "M20 12H6M11 5l-7 7 7 7",
+  "chevron-right": "M10 5l7 7-7 7",
+  "chevron-left": "M14 5l-7 7 7 7",
+  "chevron-down": "M5 9l7 7 7-7",
+  "panel-left": "M4 5h16v14H4zM9 5v14",
+  "panel-right": "M4 5h16v14H4zM15 5v14",
   external: "M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5",
   upload: "M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3",
   download: "M12 4v12M7 11l5 5 5-5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3",
@@ -57,7 +59,7 @@ export type IconName = keyof typeof PATHS;
 export function Icon({
   name,
   size = 16,
-  strokeWidth = 1.75,
+  strokeWidth = 2,
   className = "",
   title,
   ...rest

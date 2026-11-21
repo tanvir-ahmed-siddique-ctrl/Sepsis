@@ -41,7 +41,7 @@ export const COPY = {
     scoreLabel: "Challenge-label early warning",
     icu: {
       eyebrow: "Clinical workspace",
-      title: "ICU command centre",
+      title: "ICU board",
       beds: "beds",
       model: "model",
       liveBoard: "live board",
@@ -100,7 +100,7 @@ export const COPY = {
     scoreLabel: "চ্যালেঞ্জ-লেবেল আর্লি ওয়ার্নিং",
     icu: {
       eyebrow: "ক্লিনিক্যাল ওয়ার্কস্পেস",
-      title: "আইসিইউ কমান্ড সেন্টার",
+      title: "আইসিইউ বোর্ড",
       beds: "বেড",
       model: "মডেল",
       liveBoard: "লাইভ বোর্ড",
