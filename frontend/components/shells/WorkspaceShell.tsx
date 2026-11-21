@@ -7,6 +7,7 @@ import { BrandGlyph, BrandMark } from "@/components/ui/BrandMark";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { AppUtilityFooter } from "@/components/shells/AppUtilityFooter";
 import { InstallAppControl } from "@/components/InstallAppControl";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { useSession } from "@/lib/session";
 import { humanize } from "@/lib/pilot";
 
@@ -226,6 +227,10 @@ export function WorkspaceShell({
             <div className="mt-4 flex-1 overflow-y-auto px-3 pb-4">{nav(false)}</div>
             <div className="space-y-2 border-t border-border p-3">
               {showInstallApp && <InstallAppControl />}
+              <div className="flex items-center justify-between gap-2 px-1">
+                <span className="text-xs font-medium text-muted">Language</span>
+                <LanguageSelect />
+              </div>
               <button type="button" onClick={handleSignOut} className="auralis-btn-secondary w-full">
                 <Icon name="logout" size={16} />
                 Sign out
@@ -275,6 +280,7 @@ export function WorkspaceShell({
                 </>
               )}
               {topAccessory}
+              <LanguageSelect />
               <div className="relative" ref={menuRef}>
                 <button
                   type="button"
