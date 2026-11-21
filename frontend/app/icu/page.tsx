@@ -9,7 +9,6 @@ import { ApiError, BAND_COLOR, EmptyState, PageHeader, Pill, Sparkline, Stat } f
 import { Icon } from "@/components/ui/Icon";
 import { api, API_UNIT, DEMO_UNIT, pct, type PatientOverview, type UnitOverview } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
-import { minutesLabel } from "@/lib/pilot";
 import { useSession } from "@/lib/session";
 import { usePoll } from "@/lib/usePoll";
 
