@@ -628,7 +628,7 @@ Deep dive (hypothesis-aware): [business-model](docs/business/business-model.md) 
 
 ## 🗣️ Language policy · বাংলা UI + English clinical terms
 
-**Shipped on the website/app:** header **Language** dropdown — `English` / `বাংলা` (`LanguageSelect` in public + hospital nav).
+**Shipped in hospital / vendor workspace chrome** (not the public marketing home): compact **EN / বাং** control beside Menu.
 
 | Surface | Language | Why |
 |:--------|:---------|:---|
