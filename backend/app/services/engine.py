@@ -827,17 +827,27 @@ class Engine:
                 ]
             advanced = 0
             for key in keys:
-                with self.lock:
-                    self._require_writable()
-                    if self.site.state.effective_mode != "demo":
-                        break
-                    patient = self.patients.get(key)
-                    if patient is None or patient.source is None:
-                        continue
-                    for _ in range(hours):
-                        if patient.cursor < len(patient.source):
-                            self._advance(patient, emit_alerts=True)
-                            advanced += 1
+                for _ in range(hours):
+                    with self.lock:
+                        self._require_writable()
+                        if self.site.state.effective_mode != "demo":
+                            break
+                        patient = self.patients.get(key)
+                        if patient is None or patient.source is None or patient.cursor >= len(patient.source):
+                            break
+                        row = patient.source.iloc[[patient.cursor]]
+                        patient.raw = pd.concat([patient.raw, row], ignore_index=True)
+                        patient.cursor += 1
+                        # Feature build + LightGBM must not hold the lock — that is what
+                        # froze ward / alerts / handoff / chart for the whole request timeout.
+                        frame = patient.raw.copy()
+                    pred = self._score_inner(patient, None, frame)
+                    with self.lock:
+                        current = self.patients.get(key)
+                        if current is None:
+                            continue
+                        self._commit_score(current, pred, emit_alerts=True)
+                        advanced += 1
             with self.lock:
                 self._persist_state()
                 return {"advanced_patient_hours": advanced, "open_alerts": self.open_alert_count()}
@@ -1254,6 +1264,9 @@ class Engine:
             METRICS.inference_failed()
             raise
         METRICS.observe_inference(time.perf_counter() - started)
+        return self._commit_score(p, pred, emit_alerts, audit_event)
+
+    def _commit_score(self, p: Patient, pred: dict, emit_alerts: bool, audit_event: str = "prediction") -> dict:
         if not p.predictions:
             previous = "insufficient_data"
         else:

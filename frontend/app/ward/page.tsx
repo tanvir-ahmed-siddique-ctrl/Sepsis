@@ -19,7 +19,7 @@ export default function WardPage() {
   const bn = locale === "bn";
   const units = usePoll(() => api<{ units: CareUnit[] }>("/v1/care/units"), 30000);
   const wards = useMemo(() => units.data?.units.filter((unit) => unit.kind === "ward") ?? [], [units.data]);
-  const [unit, setUnit] = useState("");
+  const [unit, setUnit] = useState("ward-demo-1");
   useEffect(() => {
     if (!unit && wards.length) setUnit(wards[0].unit_id);
   }, [unit, wards]);
@@ -66,15 +66,7 @@ export default function WardPage() {
 
       {(board.error || units.error) && <ApiError error={(board.error || units.error)!} />}
 
-      {!units.data && !units.error && (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="auralis-skeleton h-36 rounded-xl" />
-          ))}
-        </div>
-      )}
-
-      {wards.length > 0 && !board.data && !board.error && (
+      {!board.data && !board.error && (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="auralis-skeleton h-36 rounded-xl" />

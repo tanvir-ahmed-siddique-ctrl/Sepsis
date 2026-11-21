@@ -74,7 +74,7 @@ export default function ChartPage() {
   const { locale } = useLocale();
   const bn = locale === "bn";
   const units = usePoll(() => api<{ units: CareUnit[] }>("/v1/care/units"), 30000);
-  const [unit, setUnit] = useState("");
+  const [unit, setUnit] = useState(DEMO_UNIT);
   const census = usePoll(() => loadCensus(unit), 10000, [unit], {
     enabled: Boolean(unit),
     cacheKey: unit ? `census:${unit}` : undefined,
@@ -102,7 +102,8 @@ export default function ChartPage() {
   });
 
   useEffect(() => {
-    if (unit || !units.data?.units.length) return;
+    if (!units.data?.units.length) return;
+    if (units.data.units.some((row) => row.unit_id === unit)) return;
     const preferred =
       units.data.units.find((row) => row.unit_id === DEMO_UNIT) ||
       units.data.units.find((row) => row.kind === "icu") ||

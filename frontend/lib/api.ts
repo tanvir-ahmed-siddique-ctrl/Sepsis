@@ -354,8 +354,9 @@ export async function api<T = unknown>(path: string, init?: RequestInit): Promis
   if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  // Bound waits so a long engine lock (replay step/reset) cannot leave boards hung forever.
-  const timeoutMs = 45000;
+  // Reads must fail fast. A 45s wait is what made ward/alerts/handoff/chart feel stuck.
+  const method = (init?.method || "GET").toUpperCase();
+  const timeoutMs = method === "GET" ? 8000 : 45000;
   const controller = new AbortController();
   const outer = init?.signal;
   const onAbort = () => controller.abort();

@@ -36,7 +36,7 @@ const TREND_ICON = { rising: "trend-up", falling: "trend-down", steady: "trend-f
 const UNIT_KEY = "predictrx-unit-v3";
 
 export default function HandoffPage() {
-  const [unit, setUnit] = useState<string | null>(null);
+  const [unit, setUnit] = useState<string>(DEMO_UNIT);
   useEffect(() => {
     try {
       setUnit(window.localStorage.getItem(UNIT_KEY) ?? DEMO_UNIT);
