@@ -140,7 +140,7 @@ export default function OverviewPage() {
       </p>
 
       {data && (
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="flex flex-wrap gap-y-3 border-b border-border/80 pb-4">
           <Stat label="Alert" value={data.high_risk_count} color="text-risk-high" />
           <Stat label="Watch" value={data.watch_count} color="text-risk-watch" />
           <Stat label="Verify" value={data.verify_count} color="text-teal" />
@@ -185,16 +185,16 @@ export default function OverviewPage() {
       )}
 
       {data && data.patients.length > 0 && (
-        <section className="grid gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+        <section className="grid gap-0 sm:grid-cols-2 lg:grid-cols-3 sm:gap-x-8">
           {data.patients.map((p) => (
             <article
               key={p.patient_id}
-              className={`min-w-0 rounded-xl border bg-white p-3.5 shadow-soft sm:p-4 ${
+              className={`min-w-0 border-b py-4 ${
                 p.review_overdue
                   ? "border-risk-high"
                   : p.unresolved_alerts
-                    ? "border-risk-high/40"
-                    : "border-border"
+                    ? "border-risk-high/50"
+                    : "border-border/80"
               }`}
             >
               <Link href={`/patient/${encodeURIComponent(p.patient_id)}`} className="block group">
@@ -279,7 +279,7 @@ export default function OverviewPage() {
                   </button>
                 </div>
               )}
-              <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted">
+              <div className="mt-3 flex items-center justify-between gap-2 pt-1 text-xs text-muted">
                 <span className="min-w-0 truncate">
                   Vitals age {p.data_freshness_minutes == null ? "—" : `${p.data_freshness_minutes} min`} · owner{" "}
                   <strong className="font-medium text-ink">{p.owner ?? "unassigned"}</strong>

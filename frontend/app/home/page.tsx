@@ -237,13 +237,13 @@ export default function HomePage() {
           </Reveal>
           <Reveal delayMs={100} variant="right">
             <ParallaxFrame speed={0.05}>
-              <dl className="overflow-hidden rounded-2xl border border-[#D5E8EC] bg-[#F7FBFC]/80 shadow-soft">
+              <dl className="border-y border-[#D5E8EC]">
                 {SCORE_PARTS.map((part) => (
                   <div
                     key={part.label}
-                    className="grid gap-1 border-b border-border/70 px-4 py-3 last:border-b-0 sm:grid-cols-[8.5rem_1fr] sm:gap-5 sm:px-5 sm:py-3.5"
+                    className="grid gap-1 border-b border-[#D5E8EC]/80 py-3 last:border-b-0 sm:grid-cols-[8.5rem_1fr] sm:gap-5 sm:py-3.5"
                   >
-                    <dt className="text-sm font-semibold text-ink">{part.label}</dt>
+                    <dt className="font-display text-sm font-semibold text-ink">{part.label}</dt>
                     <dd className="text-sm leading-6 text-muted">{part.value}</dd>
                   </div>
                 ))}

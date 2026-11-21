@@ -53,7 +53,7 @@ const DEMO_BEDS = [
     bed: "ICU-A · Bed 04",
     patient: "Encounter #4019 · 64y M",
     band: "High Risk",
-    bandClass: "bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]",
+    bandClass: "bg-[#FEF3F2] text-[#B42318]",
     score: "74%",
     scoreColor: "#B42318",
     freshness: "4 min ago",
@@ -65,7 +65,7 @@ const DEMO_BEDS = [
     bed: "ICU-A · Bed 07",
     patient: "Encounter #4022 · 51y F",
     band: "Watch",
-    bandClass: "bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]",
+    bandClass: "bg-[#FFFAEB] text-[#B54708]",
     score: "46%",
     scoreColor: "#C4500A",
     freshness: "7 min ago",
@@ -77,7 +77,7 @@ const DEMO_BEDS = [
     bed: "ICU-A · Bed 09",
     patient: "Encounter #4025 · 72y M",
     band: "TrustGate Hold",
-    bandClass: "bg-[#F2F4F7] text-[#475467] border-[#E4E7EC]",
+    bandClass: "bg-[#F2F4F7] text-[#475467]",
     score: "Abstain",
     scoreColor: "#667085",
     freshness: "Lactate >8h stale",
@@ -89,7 +89,7 @@ const DEMO_BEDS = [
     bed: "ICU-A · Bed 12",
     patient: "Encounter #4031 · 39y F",
     band: "Stable",
-    bandClass: "bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]",
+    bandClass: "bg-[#ECFDF3] text-[#027A48]",
     score: "11%",
     scoreColor: "#1F7A4D",
     freshness: "2 min ago",
@@ -133,13 +133,13 @@ export function ProductShowcaseCarousel() {
 
   return (
     <div
-      className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-white p-2.5 shadow-lift sm:p-4"
+      className="min-w-0 max-w-full overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Mobile: select + arrows. Desktop: tab strip. */}
-      <div className="flex items-center gap-2 px-0.5 pb-2.5 sm:px-1 sm:pb-3">
-        <label className="min-w-0 flex-1 sm:hidden">
+      {/* Mobile: select + arrows. Desktop: underline tabs — no pill chrome. */}
+      <div className="flex items-end gap-2 border-b border-[#C9E6D6]/90 pb-0">
+        <label className="min-w-0 flex-1 pb-2 sm:hidden">
           <span className="sr-only">Product view</span>
           <select
             value={current.id}
@@ -160,7 +160,7 @@ export function ProductShowcaseCarousel() {
           </select>
         </label>
         <div className="hidden min-w-0 flex-1 overflow-x-auto [scrollbar-width:none] sm:block" role="tablist" aria-label="Product views">
-          <div className="inline-flex min-w-max gap-1 rounded-lg bg-muted-surface p-1">
+          <div className="inline-flex min-w-max gap-0">
             {SLIDES.map((slide, idx) => {
               const active = idx === index;
               return (
@@ -173,13 +173,17 @@ export function ProductShowcaseCarousel() {
                     setIndex(idx);
                     setPaused(true);
                   }}
-                  className={`relative min-h-10 overflow-hidden rounded-md px-3 py-2 text-xs font-medium transition-all ${
-                    active ? "bg-white text-ink shadow-soft" : "text-muted hover:text-ink"
+                  className={`relative min-h-10 overflow-hidden px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+                    active ? "text-navy" : "text-muted hover:text-ink"
                   }`}
                 >
                   {slide.badge}
+                  <span
+                    className={`absolute inset-x-2 bottom-0 h-0.5 origin-left rounded-full ${active ? "bg-teal" : "bg-transparent"}`}
+                    aria-hidden="true"
+                  />
                   {active && !paused && (
-                    <span key={index} className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-[#5BB88A]" style={{ animation: "auralisProgress 7.8s linear both" }} aria-hidden="true" />
+                    <span key={index} className="absolute inset-x-2 bottom-0 h-0.5 origin-left bg-[#5BB88A]" style={{ animation: "auralisProgress 7.8s linear both" }} aria-hidden="true" />
                   )}
                 </button>
               );
@@ -187,32 +191,27 @@ export function ProductShowcaseCarousel() {
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <button type="button" onClick={prev} aria-label="Previous view" className="auralis-icon-btn h-9 w-9 sm:h-10 sm:w-10">
+        <div className="flex shrink-0 items-center gap-1 pb-2">
+          <button type="button" onClick={prev} aria-label="Previous view" className="auralis-btn-ghost h-9 w-9 !px-0">
             <Icon name="chevron-left" size={16} />
           </button>
-          <button type="button" onClick={next} aria-label="Next view" className="auralis-icon-btn h-9 w-9 sm:h-10 sm:w-10">
+          <button type="button" onClick={next} aria-label="Next view" className="auralis-btn-ghost h-9 w-9 !px-0">
             <Icon name="chevron-right" size={16} />
           </button>
         </div>
       </div>
 
       {/* Auto-height on mobile; fixed stage on desktop so hero column stays steady */}
-      <div
-        className="overflow-hidden rounded-xl border border-border bg-canvas sm:min-h-[30.5rem]"
-        aria-live="polite"
-      >
+      <div className="overflow-hidden bg-[#F7FBFC] sm:min-h-[30.5rem]" aria-live="polite">
         {/* Simulated Browser / App Topbar */}
-        <div className="flex items-center justify-between gap-2 border-b border-border bg-white px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
+        <div className="flex items-center justify-between gap-2 border-b border-[#D5E8EC] px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
           <div className="flex min-w-0 items-center gap-2">
             <span className="h-2 w-2 shrink-0 rounded-full bg-teal-light" />
             <span className="truncate text-[11px] font-semibold text-ink sm:text-xs">
               <span className="sm:hidden">Adult ICU · Unit A</span>
               <span className="hidden sm:inline">Auralis Hospital Workspace · Adult ICU Unit A</span>
             </span>
-            <span className="hidden rounded-full border border-border bg-muted-surface px-2.5 py-0.5 text-[11px] font-medium text-muted sm:inline-block">
-              Illustrative preview
-            </span>
+            <span className="hidden text-[11px] font-medium text-muted sm:inline">· Illustrative preview</span>
           </div>
           <span className="hidden shrink-0 font-mono text-[11px] text-muted sm:inline">Synthetic evaluation data</span>
         </div>
@@ -220,29 +219,29 @@ export function ProductShowcaseCarousel() {
         {/* SLIDE 1: REALISTIC ICU COMMAND BOARD */}
         {current.id === "icu-board" && (
           <div className="p-3 sm:p-6">
-            <div className="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:gap-3 sm:grid-cols-4">
+            <div className="mb-3 flex flex-wrap gap-y-2 border-b border-[#D5E8EC] pb-3 sm:mb-4">
               {[
                 { label: "High Risk Alerts", val: "1", tone: "text-[#B42318]" },
                 { label: "Watch Trajectory", val: "1", tone: "text-[#C4500A]" },
                 { label: "TrustGate Hold", val: "1", tone: "text-muted" },
                 { label: "Review SLA Target", val: "15 min", tone: "text-teal" },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-xl border border-border bg-white px-3 py-2.5 sm:px-4 sm:py-3">
-                  <p className="text-[10px] font-medium text-muted sm:text-[11px]">{stat.label}</p>
-                  <p className={`mt-0.5 text-lg font-bold sm:text-xl ${stat.tone}`}>{stat.val}</p>
+                <div key={stat.label} className="min-w-[6.5rem] flex-1 border-l border-[#D5E8EC] px-3 first:border-l-0 first:pl-0">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-muted sm:text-[11px]">{stat.label}</p>
+                  <p className={`mt-0.5 font-display text-lg font-bold sm:text-xl ${stat.tone}`}>{stat.val}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+            <div className="grid gap-0 sm:grid-cols-2 sm:gap-x-6">
               {DEMO_BEDS.slice(0, 2).map((b) => (
-                <div key={b.bed} className="rounded-xl border border-border bg-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] sm:p-4">
+                <div key={b.bed} className="border-b border-[#D5E8EC] py-3 sm:py-3.5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-ink">{b.bed}</p>
                       <p className="truncate text-xs text-muted">{b.patient}</p>
                     </div>
-                    <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:text-[11px] ${b.bandClass}`}>
+                    <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-semibold sm:text-[11px] ${b.bandClass}`}>
                       {b.band}
                     </span>
                   </div>
@@ -266,13 +265,13 @@ export function ProductShowcaseCarousel() {
                 </div>
               ))}
               {DEMO_BEDS.slice(2).map((b) => (
-                <div key={b.bed} className="hidden rounded-xl border border-border bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] sm:block">
+                <div key={b.bed} className="hidden border-b border-[#D5E8EC] py-3.5 sm:block">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-semibold text-ink">{b.bed}</p>
                       <p className="text-xs text-muted">{b.patient}</p>
                     </div>
-                    <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${b.bandClass}`}>
+                    <span className={`px-1.5 py-0.5 text-[11px] font-semibold ${b.bandClass}`}>
                       {b.band}
                     </span>
                   </div>
@@ -301,8 +300,8 @@ export function ProductShowcaseCarousel() {
 
         {/* SLIDE 2: BEDSIDE PATIENT TRAJECTORY & DRIVERS */}
         {current.id === "bedside-chart" && (
-          <div className="grid gap-3 p-3 sm:gap-5 sm:p-6 lg:grid-cols-[1.25fr_0.75fr]">
-            <div className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
+          <div className="grid gap-4 p-3 sm:gap-6 sm:p-6 lg:grid-cols-[1.25fr_0.75fr]">
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-ink sm:text-base">ICU-A · Bed 04 · 6-Hour Risk Curve</p>
@@ -361,7 +360,7 @@ export function ProductShowcaseCarousel() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-between rounded-xl border border-border bg-white p-3.5 sm:p-5">
+            <div className="flex flex-col justify-between border-t border-[#D5E8EC] pt-3 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-teal">Top Physiological Drivers</p>
                 <div className="mt-3 space-y-3">
@@ -383,7 +382,7 @@ export function ProductShowcaseCarousel() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-teal/20 bg-teal/[0.05] p-3.5 text-xs leading-5 text-ink">
+              <div className="mt-4 border-t border-teal/25 pt-3 text-xs leading-5 text-ink">
                 <strong className="text-teal">Aurie AI Context: </strong>
                  summarizes recent fluid balance and hospital Hour-1 bundle checklist without altering the 74% model output.
               </div>
@@ -393,7 +392,7 @@ export function ProductShowcaseCarousel() {
 
         {/* SLIDE 3: TRUSTGATE DATA QUALITY & QUARANTINE */}
         {current.id === "trustgate" && (
-          <div className="grid gap-3 p-3 sm:gap-4 sm:p-6 md:grid-cols-3">
+          <div className="grid gap-4 p-3 sm:gap-5 sm:p-6 md:grid-cols-3">
             {[
               {
                 status: "Verified Stream",
@@ -414,11 +413,11 @@ export function ProductShowcaseCarousel() {
                 body: "Catches µmol/L vs mg/dL creatinine mismatches at the connector before they touch the patient chart.",
               },
             ].map((card) => (
-              <div key={card.title} className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
-                <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${card.badge}`}>
+              <div key={card.title} className="border-t border-[#D5E8EC] pt-3 sm:border-t-0 sm:border-l sm:pl-4 sm:pt-0 first:border-l-0 first:pl-0">
+                <span className={`inline-block px-1 text-[11px] font-semibold ${card.badge}`}>
                   {card.status}
                 </span>
-                <h4 className="mt-3 text-sm font-semibold text-ink sm:text-base">{card.title}</h4>
+                <h4 className="mt-2 font-display text-sm font-semibold text-ink sm:text-base">{card.title}</h4>
                 <p className="mt-2 text-xs leading-5 text-muted">{card.body}</p>
               </div>
             ))}
@@ -427,31 +426,31 @@ export function ProductShowcaseCarousel() {
 
         {/* SLIDE 4: ALERT SLA & SHIFT HANDOFF */}
         {current.id === "handoff" && (
-          <div className="grid gap-3 p-3 sm:gap-4 sm:p-6 lg:grid-cols-2">
-            <div className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
-              <div className="flex items-center justify-between">
-                <span className="rounded-full bg-[#FEF3F2] px-2.5 py-0.5 text-xs font-semibold text-[#B42318]">
+          <div className="grid gap-5 p-3 sm:gap-6 sm:p-6 lg:grid-cols-2">
+            <div className="min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="bg-[#FEF3F2] px-2 py-0.5 text-xs font-semibold text-[#B42318]">
                   Active ICU Alert · SLA 09:14 remaining
                 </span>
                 <span className="text-xs text-muted">Bed 04</span>
               </div>
-              <h4 className="mt-3 text-base font-semibold text-ink sm:text-lg">
+              <h4 className="mt-3 font-display text-base font-semibold text-ink sm:text-lg">
                 Clinician review & one-tap bedside response
               </h4>
               <p className="mt-1.5 text-xs leading-5 text-muted">
                 Doctors acknowledge, snooze during active bedside resuscitation, or record diagnostic feedback in one click.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-lg bg-teal px-3 py-1.5 text-xs font-semibold text-white">Acknowledge & review</span>
-                <span className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-ink">Quiet 1h (Treating at bedside)</span>
+                <span className="auralis-btn-accent auralis-btn-sm pointer-events-none">Acknowledge & review</span>
+                <span className="auralis-btn-secondary auralis-btn-sm pointer-events-none">Quiet 1h</span>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-white p-3.5 sm:p-5">
-              <span className="rounded-full bg-teal/10 px-2.5 py-0.5 text-xs font-semibold text-teal">
+            <div className="min-w-0 border-t border-[#D5E8EC] pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-teal">
                 Incoming Shift Summary · 08:00 Handover
               </span>
-              <h4 className="mt-3 text-base font-semibold text-ink sm:text-lg">
+              <h4 className="mt-3 font-display text-base font-semibold text-ink sm:text-lg">
                 Structured nurse & consultant handoff
               </h4>
               <ul className="mt-2.5 space-y-2 text-xs text-muted">

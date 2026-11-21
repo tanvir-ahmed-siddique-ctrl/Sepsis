@@ -31,7 +31,7 @@ export function Panel({
       {(title || actions) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            {title && <h2 className="text-base font-semibold tracking-tight text-ink">{title}</h2>}
+            {title && <h2 className="font-display text-base font-semibold tracking-tight text-ink">{title}</h2>}
             {description && <p className="mt-1 text-sm text-muted">{description}</p>}
           </div>
           {actions}
@@ -94,9 +94,9 @@ export function SiteModeBanner({ mode, detail }: { mode: SiteMode; detail?: Reac
 
 export function Stat({ label, value, color = "text-ink", hint }: { label: string; value: ReactNode; color?: string; hint?: ReactNode }) {
   return (
-    <div className="min-w-0 flex-1 basis-[6.5rem] rounded-xl border border-border bg-white px-2.5 py-2.5 shadow-soft sm:min-w-[7rem] sm:flex-none sm:px-4 sm:py-3">
-      <p className="truncate text-[11px] font-medium text-muted sm:text-xs">{label}</p>
-      <p className={`mt-0.5 text-xl font-semibold tabular-nums tracking-tight sm:mt-1 sm:text-2xl ${color}`}>{value}</p>
+    <div className="min-w-0 flex-1 basis-[5.5rem] border-l border-border/80 px-2.5 py-1 first:border-l-0 first:pl-0 sm:min-w-[6.5rem] sm:flex-none sm:px-4">
+      <p className="truncate text-[11px] font-medium uppercase tracking-[0.08em] text-muted sm:text-[11px]">{label}</p>
+      <p className={`mt-0.5 font-display text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${color}`}>{value}</p>
       {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
     </div>
   );
@@ -113,11 +113,11 @@ export function KeyValue({ label, value }: { label: string; value: ReactNode }) 
 
 export function EmptyState({ title, body, action, icon = "layers" }: { title: string; body: string; action?: ReactNode; icon?: IconName }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-border bg-white px-6 py-10 text-center text-sm">
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted-surface text-muted">
+    <div className="flex flex-col items-center border-y border-border/80 px-6 py-10 text-center text-sm">
+      <span className="flex h-10 w-10 items-center justify-center text-muted">
         <Icon name={icon} size={18} />
       </span>
-      <h2 className="mt-3 text-base font-semibold text-ink">{title}</h2>
+      <h2 className="mt-3 font-display text-base font-semibold text-ink">{title}</h2>
       <p className="mt-1 max-w-md text-muted">{body}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>

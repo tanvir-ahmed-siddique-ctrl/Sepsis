@@ -34,20 +34,20 @@ export function ReplayControls({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-border bg-white p-3 shadow-soft sm:flex-row sm:flex-wrap sm:items-center">
-      <p className="text-xs leading-5 text-muted sm:mr-auto sm:max-w-lg">
+    <div className="flex flex-col gap-3 border-y border-border/80 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+      <p className="text-xs leading-5 text-muted sm:mr-auto sm:max-w-md">
         {modeBlocked
           ? `Site mode is ${siteMode}. Switch back to demo operating mode to advance the Main ICU timeline.`
-          : `Main ICU timeline: Advance 1h / 3h / 6h, or Reset. Auto-advance ~${
+          : `Main ICU timeline · auto ~${
               Number.isFinite(AUTO_HINT_SECONDS) && AUTO_HINT_SECONDS > 0 ? AUTO_HINT_SECONDS : 30
-            }s. Board also auto-refreshes every 3s — use Refresh to pull now.`}
+            }s · board polls every 3s`}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           disabled={busy || modeBlocked}
           onClick={() => void run("/v1/demo/replay/step?hours=1")}
-          className="border border-accent bg-accent px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="auralis-btn-accent auralis-btn-sm"
         >
           Advance 1h
         </button>
@@ -55,7 +55,7 @@ export function ReplayControls({
           type="button"
           disabled={busy || modeBlocked}
           onClick={() => void run("/v1/demo/replay/step?hours=3")}
-          className="border border-ink/20 bg-white px-3 py-1.5 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="auralis-btn-secondary auralis-btn-sm"
         >
           Advance 3h
         </button>
@@ -63,7 +63,7 @@ export function ReplayControls({
           type="button"
           disabled={busy || modeBlocked}
           onClick={() => void run("/v1/demo/replay/step?hours=6")}
-          className="border border-ink/20 bg-white px-3 py-1.5 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="auralis-btn-secondary auralis-btn-sm"
         >
           Advance 6h
         </button>
@@ -71,17 +71,12 @@ export function ReplayControls({
           type="button"
           disabled={busy || modeBlocked}
           onClick={() => void run("/v1/demo/replay/reset")}
-          className="px-3 py-1.5 text-sm text-ink/60 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+          className="auralis-btn-ghost auralis-btn-sm"
         >
           Reset timeline
         </button>
         {onRefresh && (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void onRefresh()}
-            className="border border-border bg-white px-3 py-1.5 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <button type="button" disabled={busy} onClick={() => void onRefresh()} className="auralis-btn-secondary auralis-btn-sm">
             Refresh board
           </button>
         )}
