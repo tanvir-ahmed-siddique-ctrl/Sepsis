@@ -1,0 +1,7 @@
+# Shell entrypoints must stay LF — CRLF shebangs break Linux/Render with
+# "exec /app/demo-start.sh: no such file or directory".
+*.sh text eol=lf
+infra/demo-start.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

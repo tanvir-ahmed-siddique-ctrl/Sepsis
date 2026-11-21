@@ -45,7 +45,12 @@ COPY --from=web /web/.next/static /app/web/.next/static
 COPY --from=web /web/public /app/web/public
 COPY infra/demo-start.sh /app/demo-start.sh
 
-RUN useradd --system --uid 10001 --home-dir /app predictrx && chmod +x /app/demo-start.sh
+# python:slim has bash; strip any CRLF so Render's exec does not look for /bin/bash\r
+# ("no such file or directory" with the script present = classic Windows line endings).
+RUN useradd --system --uid 10001 --home-dir /app predictrx \
+    && sed -i 's/\r$//' /app/demo-start.sh \
+    && chmod +x /app/demo-start.sh \
+    && head -1 /app/demo-start.sh | grep -q '^#!/bin/bash$'
 USER predictrx
 
 ENV DEMO_MODE=true \
