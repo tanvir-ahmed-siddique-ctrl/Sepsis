@@ -672,7 +672,15 @@ class Engine:
                     replay_meta={"public_demo_seed": True, "data_class": "synthetic commissioning feed"},
                 )
                 self.patients[icu.encounter_key] = icu
-                self._score(icu, emit_alerts=True, raw_frame=raw, audit_event="synthetic_feed_prediction")
+                # Only raise interruptive alerts for simulation beds when the public
+                # simulation loop is enabled — otherwise Alerts fills with Integration
+                # ICU A-08/09/10 while Main ICU board shows PhysioNet beds only.
+                self._score(
+                    icu,
+                    emit_alerts=settings.public_simulation_enabled,
+                    raw_frame=raw,
+                    audit_event="synthetic_feed_prediction",
+                )
                 self._upsert_encounter(icu, "demo-seed")
 
         # Ward encounters use the published NEWS2 rule only. They never enter

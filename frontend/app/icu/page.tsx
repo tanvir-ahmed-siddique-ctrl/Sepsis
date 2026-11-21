@@ -185,16 +185,16 @@ export default function OverviewPage() {
       )}
 
       {data && data.patients.length > 0 && (
-        <section className="grid gap-0 sm:grid-cols-2 lg:grid-cols-3 sm:gap-x-8">
+        <section className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {data.patients.map((p) => (
             <article
               key={p.patient_id}
-              className={`min-w-0 border-b py-4 ${
+              className={`min-w-0 rounded-xl border-2 bg-white p-4 shadow-card ${
                 p.review_overdue
                   ? "border-risk-high"
                   : p.unresolved_alerts
-                    ? "border-risk-high/50"
-                    : "border-border/80"
+                    ? "border-risk-high/45"
+                    : "border-[#D5DDE3]"
               }`}
             >
               <Link href={`/patient/${encodeURIComponent(p.patient_id)}`} className="block group">
@@ -285,7 +285,7 @@ export default function OverviewPage() {
                   <strong className="font-medium text-ink">{p.owner ?? "unassigned"}</strong>
                 </span>
                 {me && (
-                  <button type="button" onClick={() => void toggleOwnership(p)} className="auralis-btn-ghost auralis-btn-sm shrink-0">
+                  <button type="button" onClick={() => void toggleOwnership(p)} className="auralis-btn-secondary auralis-btn-sm shrink-0">
                     {p.owner === me.user_id ? "Release" : p.owner ? "Take over" : "Claim"}
                   </button>
                 )}

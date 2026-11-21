@@ -41,9 +41,9 @@ export function AlertActions({
   }
 
   return (
-    <div className="space-y-2">
-      <label className="block text-xs font-medium uppercase tracking-wide text-ink/50" htmlFor={`reason-${alertId}`}>
-        Review note <span className="normal-case tracking-normal">(required to dismiss)</span>
+    <div className="space-y-3 rounded-xl border border-[#D5DDE3] bg-muted-surface/50 p-3 shadow-soft">
+      <label className="auralis-label !mb-0" htmlFor={`reason-${alertId}`}>
+        Review note <span className="font-normal text-muted">(required to dismiss)</span>
       </label>
       <textarea
         id={`reason-${alertId}`}
@@ -52,14 +52,16 @@ export function AlertActions({
         rows={2}
         maxLength={500}
         placeholder="Clinical review note"
-        className="w-full border border-ink/20 bg-white px-2 py-1.5 text-sm outline-none focus:border-accent"
+        className="auralis-input"
       />
       <div className="flex flex-wrap gap-2">
-        <ActionButton disabled={busy !== null} onClick={() => void submit("acknowledged")}>
+        <button type="button" disabled={busy !== null} onClick={() => void submit("acknowledged")} className="auralis-btn-primary auralis-btn-sm">
           {busy === "acknowledged" ? "Recording…" : "Seen (ack)"}
-        </ActionButton>
-        <ActionButton
+        </button>
+        <button
+          type="button"
           disabled={busy !== null}
+          className="auralis-btn-secondary auralis-btn-sm"
           onClick={() => {
             setBusy("snoozed");
             void api(`/v1/alerts/${alertId}/acknowledge`, {
@@ -79,44 +81,23 @@ export function AlertActions({
           }}
         >
           {busy === "snoozed" ? "Recording…" : "Quiet 1h"}
-        </ActionButton>
-        <ActionButton disabled={busy !== null} onClick={() => void submit("escalated")}>
+        </button>
+        <button type="button" disabled={busy !== null} onClick={() => void submit("escalated")} className="auralis-btn-secondary auralis-btn-sm">
           {busy === "escalated" ? "Recording…" : "Escalate"}
-        </ActionButton>
-        <ActionButton danger disabled={busy !== null} onClick={() => void submit("dismissed")}>
+        </button>
+        <button type="button" disabled={busy !== null} onClick={() => void submit("dismissed")} className="auralis-btn-danger auralis-btn-sm">
           {busy === "dismissed" ? "Recording…" : "Dismiss"}
-        </ActionButton>
+        </button>
       </div>
-      <p className="text-[11px] text-ink/50">
-        Emergency tip: use <strong>Seen</strong> or <strong>Quiet 1h</strong> from the ICU board without leaving the
-        patient — treat first, write the long note when you can. Voice control is a later add-on, not required.
+      <p className="text-[11px] leading-5 text-muted">
+        Tip: use <strong className="text-ink">Seen</strong> or <strong className="text-ink">Quiet 1h</strong> from the ICU board
+        without leaving the patient.
       </p>
-      {error && <p role="alert" className="text-xs text-risk-high">{error}</p>}
+      {error && (
+        <p role="alert" className="text-xs font-medium text-risk-high">
+          {error}
+        </p>
+      )}
     </div>
-  );
-}
-
-function ActionButton({
-  children,
-  disabled,
-  danger = false,
-  onClick,
-}: {
-  children: React.ReactNode;
-  disabled: boolean;
-  danger?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`border px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger ? "border-risk-high/30 text-risk-high" : "border-ink/20 text-ink"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

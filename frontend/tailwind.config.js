@@ -61,9 +61,10 @@ module.exports = {
         public: "76rem",
       },
       boxShadow: {
-        soft: "0 1px 2px rgba(11, 20, 34, 0.04)",
-        card: "0 1px 2px rgba(11, 20, 34, 0.04), 0 8px 24px -12px rgba(11, 20, 34, 0.10)",
-        lift: "0 2px 4px rgba(11, 20, 34, 0.04), 0 18px 40px -18px rgba(11, 20, 34, 0.22)",
+        soft: "0 1px 2px rgba(11, 20, 34, 0.06), 0 2px 8px rgba(11, 20, 34, 0.06)",
+        card: "0 1px 3px rgba(11, 20, 34, 0.08), 0 10px 28px -14px rgba(11, 20, 34, 0.18)",
+        lift: "0 4px 12px rgba(11, 20, 34, 0.08), 0 20px 44px -18px rgba(11, 20, 34, 0.28)",
+        control: "0 1px 2px rgba(11, 20, 34, 0.08), 0 4px 12px -4px rgba(11, 20, 34, 0.14)",
       },
     },
   },
