@@ -68,6 +68,21 @@ describe("web session boundary", () => {
     expect(upstream).not.toHaveBeenCalled();
   });
 
+  it("allows anonymous GET for /health and /ready probes", async () => {
+    const upstream = vi.fn().mockResolvedValue(Response.json({ status: "ready", checks: {} }));
+    vi.stubGlobal("fetch", upstream);
+    const ready = new NextRequest("http://localhost:3000/api/hospital/ready");
+    expect((await hospitalGet(ready, hospitalContext(["ready"]))).status).toBe(200);
+    expect(upstream).toHaveBeenCalledWith(
+      expect.stringContaining("/ready"),
+      expect.objectContaining({ method: "GET" }),
+    );
+    const auth = new Headers(upstream.mock.calls[0][1].headers).get("Authorization");
+    expect(auth).toBeNull();
+    const health = new NextRequest("http://localhost:3000/api/hospital/health");
+    expect((await hospitalGet(health, hospitalContext(["health"]))).status).toBe(200);
+  });
+
   it("forwards an authenticated read with a server-held bearer token", async () => {
     const upstream = vi.fn().mockResolvedValue(Response.json({ units: [] }));
     vi.stubGlobal("fetch", upstream);

@@ -1,0 +1,47 @@
+name: GitHub Pages docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble static docs site
+        run: |
+          mkdir -p _site
+          # Serve the docs/ tree (Docsify hub + Markdown sources).
+          cp -a docs/. _site/
+          # Let relative ../README.md resolve from the Pages root.
+          cp README.md _site/README.md
+          # Friendly root redirect if someone opens /index vs Docsify hash routes.
+          test -f _site/index.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auralis · Engineering documentation</title>
+  <meta name="description" content="Evidence-backed engineering docs for Auralis / PredictRx Sentinel — layers, experiment matrix, TrustGate, deployment." />
+  <meta name="theme-color" content="#0b1c2c" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
+  <style>
+    :root {
+      --auralis-navy: #0b1c2c;
+      --auralis-ink: #e8eef4;
+      --auralis-muted: #9eb0c1;
+      --auralis-teal: #2a9d8f;
+      --auralis-line: #1e3347;
+      --theme-color: #2a9d8f;
+    }
+    html, body { background: var(--auralis-navy); }
+    body {
+      font-family: "Segoe UI", "IBM Plex Sans", system-ui, sans-serif;
+      color: #d7e0ea;
+      font-size: 15.5px;
+      line-height: 1.65;
+    }
+    .sidebar {
+      background: #081521;
+      border-right: 1px solid var(--auralis-line);
+      color: #c5d2de;
+    }
+    .sidebar ul li a { color: #a8b8c8 !important; }
+    .sidebar ul li.active > a { color: var(--auralis-teal) !important; }
+    .sidebar .app-name a {
+      color: #f3f7fb !important;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+    .sidebar-nav > ul > li > a { font-weight: 600; }
+    .content { background: var(--auralis-navy); }
+    .markdown-section { max-width: 920px; color: #d7e0ea; }
+    .markdown-section h1, .markdown-section h2, .markdown-section h3 {
+      color: #f4f8fc;
+      font-weight: 650;
+      border-bottom-color: var(--auralis-line);
+    }
+    .markdown-section a { color: #5ecfc0; }
+    .markdown-section code {
+      background: #122433;
+      color: #d9efe9;
+    }
+    .markdown-section pre {
+      background: #07131e !important;
+      border: 1px solid var(--auralis-line);
+      border-radius: 8px;
+    }
+    .markdown-section table { display: block; overflow-x: auto; }
+    .markdown-section th {
+      background: #122433;
+      color: #eef5fb;
+      border-color: var(--auralis-line);
+    }
+    .markdown-section td { border-color: var(--auralis-line); }
+    .markdown-section blockquote {
+      border-left: 3px solid var(--auralis-teal);
+      background: #0f2233;
+      color: #b8c7d6;
+    }
+    .app-nav a { color: #cfe0ee !important; }
+    .search input {
+      background: #0f2233 !important;
+      color: #e8eef4 !important;
+      border: 1px solid var(--auralis-line) !important;
+    }
+    .disclaimer {
+      margin: 0;
+      padding: 0.65rem 1rem;
+      background: #122433;
+      border-bottom: 1px solid var(--auralis-line);
+      color: #9eb0c1;
+      font-size: 12.5px;
+      letter-spacing: 0.01em;
+    }
+    .disclaimer strong { color: #e8eef4; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <p class="disclaimer">
+    <strong>Research prototype — not approved for clinical use.</strong>
+    Public demo = synthetic / PhysioNet replay only. Frozen LightGBM Run 4 is the sole active sepsis scorer; Qwen is terminology mapping only.
+  </p>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: "Auralis",
+      repo: "tanvir-ahmed-siddique-ctrl/Sepsis",
+      // Project Pages live under /Sepsis/ — keep MD/sidebar fetches on that prefix.
+      basePath: "/Sepsis/",
+      homepage: "DOCUMENTATION_INDEX.md",
+      loadSidebar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      relativePath: true,
+      routerMode: "hash",
+      search: {
+        placeholder: "Search engineering docs",
+        noData: "No matches",
+        depth: 3,
+      },
+      alias: {
+        "/.*/_sidebar.md": "/_sidebar.md",
+      },
+      plugins: [
+        function (hook) {
+          hook.afterEach(function (html) {
+            return (
+              html +
+              '<hr/><p style="color:#8fa3b5;font-size:13px">Source of truth: GitHub <code>docs/</code> · Live app whitepaper: demo <code>/docs</code> · API OpenAPI: demo <code>/api/docs</code></p>'
+            );
+          });
+        },
+      ],
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/zoom-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-mermaid@2/dist/docsify-mermaid.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: "dark" });</script>
+</body>
+</html>

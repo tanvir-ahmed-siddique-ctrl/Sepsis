@@ -82,3 +82,20 @@ docs/submission/video/
 
 # Founder chronicle / prompt archive — local only (not for public GitHub)
 docs/PROJECT_BUILD_CHRONICLE.md
+docs/MASTER_AGENT_IMPLEMENTATION_PROMPT.md
+
+# Competition / invention scratch dumps — keep local; not the public face of the repo
+/COMPETITION ALL INFO MAIN.md
+/Integrated_Research_Innovation_Playbook.md
+/PredictRx_Sentinel_AI_Research_and_Originality_Report.md
+/complete_invention_suite.md
+/golden_safe_stack_reality_check.md
+/honest_risk_assessment.md
+/overfit_proof_inventions.md
+/three_inventions.md
+
+# Local backups of untracked dumps (never publish)
+LOCAL_ONLY/
+
+# Agent prompt packs stay local (product AGENTS.md at root remains public)
+predictrx-codex-pack/

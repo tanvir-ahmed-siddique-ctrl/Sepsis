@@ -1,212 +1,259 @@
-# Auralis (PredictRx Sentinel)
+# Auralis
 
-Hospital-local ICU early-warning software with **forward deployed engineering**.  
-Public brand: **Auralis** · Research track name: PredictRx Sentinel.
+**Hospital-local ICU early-warning intelligence** with forward-deployed engineering.  
+Public brand: **Auralis** · Research track: **PredictRx Sentinel**
 
-> Research prototype — **not approved for clinical use**. Synthetic / PhysioNet replay on the public demo. The risk score supports, but does not replace, clinical judgment.
+<p align="center">
+  <strong>Research prototype — not approved for clinical use.</strong><br/>
+  Public demo = synthetic / PhysioNet replay only. Risk scores support clinical judgment; they do not replace it.<br/>
+  Not validated on Bangladeshi patients. No claim of lives saved, paid pilots, or regulatory approval.
+</p>
 
-**Live demo:** https://predictrx-sentinel-demo.onrender.com  
-**Layers (visual):** [docs/LAYERS.md](docs/LAYERS.md) — open this first for judges
-
-## Challenge
-
-- **Domain:** HealthSphere AI  
-- **Track:** PredictRx  
-- **Event:** International AI Builders Congress 2026  
+| | |
+|---|---|
+| **Live demo** | https://predictrx-sentinel-demo.onrender.com |
+| **In-app docs** | `/docs` (live model hash + architecture) |
+| **API OpenAPI** | Demo `/api/docs` (Swagger; FastAPI `/docs` behind the proxy) |
+| **GitHub Pages** | https://tanvir-ahmed-siddique-ctrl.github.io/Sepsis/ |
+| **Layers** | [docs/LAYERS.md](docs/LAYERS.md) |
+| **Experiment matrix** | [docs/EXPERIMENT_MATRIX.md](docs/EXPERIMENT_MATRIX.md) |
+| **Doc index** | [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) |
+| **Challenge** | HealthSphere AI · PredictRx · International AI Builders Congress 2026 |
 
 ---
 
-## System at a glance (layers)
+## What it is
+
+Auralis is an **on-premises decision-support stack** for adult ICU early warning:
+
+1. **Connect** hospital feeds (FHIR R4, HL7 v2, CSV) with unit/LOINC quarantine  
+2. **Score** with a **frozen** LightGBM model (past-only features, TreeSHAP drivers)  
+3. **Guard** with **TrustGate** (Alert / Watch / Verify data / Abstain) before interruptive alerts  
+4. **Work** in role-separated doctor, nurse, admin, and clinical-IT surfaces  
+5. **Deploy** site-by-site via forward-deployed engineering — not a cloud EHR plug-in fantasy  
+
+A **side branch** (never the score path) uses optional on-prem Qwen for Bangla / local lab → LOINC proposals with human sign-off.
+
+---
+
+## System architecture
+
+```mermaid
+flowchart TB
+  subgraph HOSPITAL["Hospital boundary — LAN / on-prem"]
+    SRC["Monitors · LIS · HIS · Bedside"]
+    CONN["Connectors<br/>FHIR · HL7 · CSV"]
+    MAP["Map + quarantine"]
+    FEAT["Past-only features"]
+    ML["Frozen LightGBM Run 4<br/>+ TreeSHAP"]
+    TG["TrustGate"]
+    UI["ICU · Patient · Alerts · Handoff"]
+    DB[("Local DB + hash-chained audit")]
+    SRC --> CONN --> MAP --> FEAT --> ML --> TG --> UI
+    FEAT --> DB
+    ML --> DB
+    TG --> DB
+    UI --> DB
+  end
+
+  subgraph SIDE["Side branch — never edits sepsis probability"]
+    BN["Bangla / local names"]
+    QW["Optional Qwen 3.5 4B + hybrid RAG"]
+    LO["LOINC candidates · human SHA sign-off"]
+    BN --> QW --> LO -.-> MAP
+  end
+
+  subgraph VENDOR["Vendor plane — metadata only"]
+    FLEET["Fleet · licences · readiness<br/>no patient payload"]
+  end
+  UI -.-> FLEET
+```
+
+More diagrams (roles, safety stack, Congress I→AI→O): **[docs/LAYERS.md](docs/LAYERS.md)**.
+
+---
+
+## Seven-layer engineering map
+
+| Layer | Responsibility | Evidence |
+|-------|----------------|----------|
+| **L1 Connect** | FHIR / HL7 / CSV, idempotency, quarantine | `backend/app/integrations/` |
+| **L2 Map** | Local/Bangla → LOINC (proposal only) | `backend/app/integrations/copilot.py` |
+| **L3 Features** | Past-only 24h window; no future leak | `ml/`, `backend/app/services/engine.py` |
+| **L4 Score** | Frozen LightGBM Run 4 + isotonic + TreeSHAP | `ml/artifacts/models/run4_frozen/` |
+| **L5 Guard** | TrustGate Verify / Abstain | `backend/app/trustgate.py` |
+| **L6 Mode** | demo · silent · readiness gates | `backend/app/site.py`, `pilot.py` |
+| **L7 Work** | Role workspaces + audit | `frontend/app/` |
+
+---
+
+## ML evidence (what was actually decided)
+
+**Active artifact only:** Frozen LightGBM **Run 4** `v0.2.0-202609281906`
+
+| | |
+|---|---|
+| SHA-256 | `a7dcf5f4b2f00927c17d2468cba144b3db4642ccb5a9c946b484958a0413532d` |
+| Pointer | `ml/artifacts/models/ACTIVE.json` → `run4_frozen/model.joblib` |
+| Train | PhysioNet Challenge 2019 Dataset A (patient split, seed 42) |
+| Holdout | Dataset B scored **once** after freeze — AUROC **0.808**, high-risk utility **0.238** (beats preregistered clinical-rule / logistic baselines) |
+| Calibration | Isotonic on A validation; B slope ~0.80 → local recalibration required before any live use |
+
+**Rejected for production** (artifacts / ledger exist; not the live scorer): 36-trial LightGBM/CatBoost search · GRU-D · TCN · Graph-Hazard ablations · Run4+TCN blend · Residual-Hazard · same-family bootstrap ensemble.
+
+**Not claimed:** a trained time-series Transformer (no evidence in repo).  
+**Qwen** is terminology normalization — **not** the sepsis-risk model.
+
+Full table: **[docs/EXPERIMENT_MATRIX.md](docs/EXPERIMENT_MATRIX.md)** · narrative: [experiment-ledger](docs/experiment-ledger.md) · [model-card](docs/model-card.md) · [data-card](docs/data-card.md).
 
 ```mermaid
 flowchart LR
-  SRC["Hospital feeds<br/>FHIR · HL7 · CSV"] --> MAP["Map + quarantine<br/>Bangla → LOINC RAG"]
-  MAP --> ML["Frozen LightGBM<br/>TreeSHAP"]
-  ML --> TG["TrustGate"]
-  TG --> UI["ICU · Alerts · Handoff"]
-  TG --> AUD["Local audit DB"]
+  A["Dataset A<br/>train / select / calibrate"] --> F["Freeze Run 4<br/>hash-locked"]
+  F --> B["Dataset B<br/>one-shot eval"]
+  F --> P["Production score path"]
+  C["Challengers"] -.->|rejected| X["Not ACTIVE"]
 ```
-
-| Layer | Job |
-|-------|-----|
-| **Connect** | FHIR R4 · HL7 v2 · CSV · vendor adapter · quarantine |
-| **Score** | Past-only features · frozen LightGBM Run 4 · AUROC ~0.81 on Dataset B (once) |
-| **Guard** | TrustGate Verify / Abstain before interruptive alerts |
-| **Work** | Role-separated doctor · nurse · admin · clinical IT · vendor |
-| **Deploy** | FDE: assess → integrate → silent eval → train → support · worldwide site-by-site |
-
-Full stack diagrams (safety, roles, packages, evidence, Congress map): **[docs/LAYERS.md](docs/LAYERS.md)**.
 
 ---
 
-## What V1 does
+## TrustGate & site readiness
 
-Every hour, for each adult ICU patient with ≥4 hours of observations:
+**TrustGate** is a deterministic data-quality gate on every score: coverage, freshness, unit/shift signals → **Alert / Watch / Verify data / Abstain**.  
+Code: `backend/app/trustgate.py`. Docs: [trustgate-layers](docs/trustgate-layers.md).  
+Honest limit: at matched sensitivity, false-alert *benefit* is **not** statistically established.
 
-1. Ingest latest vitals / labs / history (24-hour window)
-2. Produce a calibrated PhysioNet Challenge-label early-warning score
-3. Classify: Stable · Watch · High risk · Insufficient data
-4. Apply TrustGate: Alert · Watch · Verify data · Abstain
-5. Show grouped TreeSHAP influence, per-signal freshness, perturbation stability, and a data-availability shift proxy
-6. Interrupt only when High Risk passes the reliability gate; clinician acknowledgement / dismissal / escalation remains mandatory
-7. Persist encounter state and a hash-chained audit trail in SQLite or PostgreSQL
+**Transfer Shield / readiness** (silent pilot, freeze, quarantine, habit fingerprint, context policy) is implemented as site gates and product surfaces — see [innovation-adoption-barriers](docs/innovation-adoption-barriers.md).  
+**S7 subgroup stop** is primarily a fairness-audit governance trigger (`docs/evidence/fairness-audit.md`), not a separate auto-stop microservice. Playbook “S0–S8” proposals are **not** the same taxonomy as the shipped product labels.
 
-The historical frozen model uses a Challenge-compatible label that becomes
-positive six hours before defined onset and remains positive afterward. Its
-score is not presented as an exact incident six-hour probability. Separate
-1/3/6/12-hour incident targets are implemented and used by the temporal
-multi-horizon hazard challengers (research only).
+---
+
+## Local terminology AI (isolated)
+
+| | |
+|---|---|
+| Runtime | Optional Ollama `qwen3.5:4b` + optional embeddings |
+| Job | Propose Bangla / BD lab aliases → LOINC from retrieved candidates only |
+| Contract | JSON schema; out-of-candidate answers discarded; human registry SHA |
+| Isolation | Score path never calls the LLM (`engine.py` → frozen joblib only) |
+
+Benchmark (internal): [docs/evaluation/copilot-retrieval-bench-v1.json](docs/evaluation/copilot-retrieval-bench-v1.json).
+
+---
+
+## Backend, frontend, security
+
+| Plane | Stack | Notes |
+|-------|--------|------|
+| Clinical API | FastAPI · SQLAlchemy · SQLite/Postgres | `/v1/*`, OpenAPI at `/docs` |
+| UI | Next.js · TypeScript · Tailwind · ECharts | Public site + hospital app + vendor portal |
+| Auth | Local accounts / OIDC / demo roles | Doctor · nurse · admin · clinical IT · operator |
+| Audit | Hash-chained prediction / action log | Hospital-local |
+| MCP | 3 read-only servers | Ops · docs · mapping — **no PHI tools** (`mcp-server/`) |
+| Edge | Optional HL7 MLLP / spool | `edge/` |
+
+Route & role matrices: `docs/architecture/`.
+
+---
+
+## Synthetic public demo vs hospital-local design
+
+| | Public demo | Intended hospital install |
+|---|-------------|---------------------------|
+| Data | PhysioNet replay + synthetic | Hospital-local observations only |
+| Mode | `demo` | Silent → gated live |
+| EHR | **Not** a live hospital integration | FHIR / HL7 / CSV connectors on LAN |
+| Vendor | N/A | Metadata-only fleet heartbeat |
+
+Deployment guides: [operator-guide](docs/operator-guide.md) · [operations](docs/operations.md) · Compose: `docker-compose.yml` + `docker-compose.site.yml`.
+
+---
+
+## FDE service lifecycle (business model)
+
+Auralis is positioned as **hospital technology enablement**, not model-file licensing alone.
+
+| Stage | Intent | Status label |
+|-------|--------|----------------|
+| **Discover** | Workflow + infrastructure readiness | Implemented as product surfaces / checklists |
+| **Bridge Start** | CSV / batch | Implemented connectors |
+| **Bridge Connect** | HL7 / FHIR / approved APIs | Implemented + edge path |
+| **Validated Evaluation** | Silent / retrospective under governance | Protocol + pilot gates; **no paid pilot claimed** |
+| **Clinical Workflow Licence** | Annual site licence | **Commercial hypothesis** |
+| **Managed Edge** | Local install + ops | Playbooks; delivery is FDE work |
+| **Expansion** | More units / sites | Hypothesis / roadmap |
+
+Details: [business-model](docs/business/business-model.md) · [fde-delivery-playbook](docs/business/fde-delivery-playbook.md).  
+Outside-repo blockers: [REAL_WORLD_ACTION_PLAN.md](REAL_WORLD_ACTION_PLAN.md).  
+Pricing / market / grants = **hypotheses** unless separately evidenced.
+
+---
 
 ## Repo layout
 
 ```
-docs/           Product, architecture, LAYERS.md, ethics, cards
-ml/             Data pipeline, training, evaluation
-backend/        FastAPI inference + TrustGate + connectors
-frontend/       Next.js hospital + public site (Auralis)
-demo/           Held-out patient replay assets
-knowledge/      Versioned non-causal evidence graph
-control-plane/  Vendor fleet (patient-free)
-infra/          Docker helpers
-.github/        CI checks
+backend/        FastAPI · TrustGate · connectors · scoring
+frontend/       Next.js · Auralis UI · /docs hub
+ml/             Pipeline · frozen Run 4 · (local) challenger artifacts
+docs/           Cards · ledger · layers · FDE · evidence
+mcp-server/     Read-only operator / docs / mapping MCP
+control-plane/  Patient-free vendor fleet
+infra/          Docker · Congress preflight
+edge/           Optional HL7 edge relay
+knowledge/      Versioned non-causal evidence graphs
+demo/           Replay assets (manifest + samples)
 ```
 
-## Quick start (local)
+---
+
+## Quick start
 
 ```powershell
-Set-Location "C:\Users\Tanvir Ahmed\Downloads\PredictRx Sentinel 2\PredictRx Sentinel"
+Set-Location "…\PredictRx Sentinel"
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
 pip install -r ml\requirements.txt
 pip install -e .\ml
 pip install -r backend\requirements.txt
 
-# Terminal 1
+# API
 Set-Location backend
 alembic upgrade head
 uvicorn app.main:app --reload
 
-# Terminal 2
+# UI (other terminal)
 Set-Location frontend
 npm ci
 npm run dev
 ```
 
-Dashboard: http://localhost:3000  
-API docs: http://localhost:8000/docs  
+- UI: http://localhost:3000  
+- API OpenAPI: http://localhost:8000/docs  
+- Tests: `cd backend && pytest -q` · `cd frontend && npm test`  
+- Compose: `docker compose up --build`  
+- Congress preflight: `python infra\congress_demo.py check`
 
-For a non-demo site using local accounts, create the first administrator before
-starting the API:
+---
 
-```powershell
-Set-Location backend
-python -m app.ops_cli bootstrap-admin --user-id site.admin --display-name "Site Administrator" --password "temporary-12+-character-password"
-```
+## Documentation map
 
-The administrator must change that password at first sign-in. Local accounts
-support unit scoping, scrypt password hashes, lockout, optional TOTP, revocable
-sessions, and a short-lived personal PIN for shared ward tablets.
+Prefer the curated index over dumping every markdown file:
 
-Tests: `cd backend && pytest -q` and `cd frontend && npm test`.
+→ **[docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md)**
 
-Offline/local Compose path: `docker compose up --build`. A hospital silent
-pilot uses the site override, which disables demo mode and requires every
-secret:
+Core set: [LAYERS](docs/LAYERS.md) · [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) · [DOCUMENTATION_INDEX](docs/DOCUMENTATION_INDEX.md) · [GAPS_AND_RISKS](docs/GAPS_AND_RISKS.md) · [architecture](docs/architecture.md) · [trustgate](docs/trustgate-layers.md) · [judge-evidence-matrix](docs/judge-evidence-matrix.md) · [safety-ethics](docs/safety-ethics.md) · [AGENTS.md](AGENTS.md)
 
-Congress preflight after the local stack is healthy:
+---
 
-```powershell
-.\.venv\Scripts\python.exe infra\congress_demo.py check
-```
+## Limitations & roadmap
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.site.yml --env-file .env.site up -d --build
-```
+- US PhysioNet training distribution ≠ Bangladesh ICU reality  
+- No claim of clinical outcome improvement  
+- TrustGate alert-burden benefit unproven at matched sensitivity  
+- Live HIS connection requires hospital MoU, legal basis, and FDE work outside this repo  
+- Frozen Run 4 is **immutable** — challengers stay off `ACTIVE.json` until a new ledgered promotion  
 
-See [operations](docs/operations.md) for authentication, monitoring, backup and
-the readiness gates. Direct public deployment is intentionally outside this
-implementation pass.
-
-## Data
-
-Primary dataset: [PhysioNet 2019 Sepsis Challenge](https://physionet.org/content/challenge-2019/1.0.0/) (CC BY 4.0).  
-Raw data is **not** committed. See `docs/data-card.md` and `ml/README.md`.
-
-Raw PSV files for training sets A (20,336 patients) and B (20,000 patients)
-are present locally and match the recorded checksum manifest. Feature files
-were rebuilt on 2026-09-30 with a streaming, atomic writer; the Dataset A
-patient split is byte-identical to Run 4, and the frozen model reproduces its
-recorded internal-test metrics on the rebuilt file. The earlier truncated
-Parquet files are kept in `ml/data/processed/corrupt_backup_20260930/`.
-
-## Evidence at a glance
-
-- **Dataset B (site-held-out, retrospective):** frozen Run 4 AUROC 0.808
-  (95% CI 0.797–0.820), AUPRC 0.079 (0.071–0.090), high-risk utility 0.238
-  (0.213–0.263). It beat the clinical-rule (utility 0.053) and logistic (0.124)
-  baselines in a preregistered one-time comparison. Calibration slope 0.80
-- **Challenger search:** a 36-trial Dataset A-only LightGBM/CatBoost search
-  lost to Run 4 on the locked internal test and was rejected
-- **Temporal / Graph-Hazard:** 7 sequence models (GRU-D, TCN, organ-graph
-  Graph-Hazard ablations). None beat the tree on utility; a Run 4 + TCN blend
-  raised test AUPRC from 0.109 to 0.117 but not utility, so it was rejected
-- **Residual-Hazard:** healthy-reference residuals passed an internal
-  development gate, but the frozen candidate lost its one-time Dataset B
-  comparison (utility 0.109 against Run 4's 0.238) and was rejected
-- **TrustGate:** at matched sensitivity, the false-alert benefit is not
-  statistically established
-- **Honest finding:** measurement-pattern features alone reach ~89% of the
-  full model's cross-validated utility, so local validation is essential
-
-Details: [model card](docs/model-card.md) and
-[experiment ledger](docs/experiment-ledger.md).
-
-## Documentation
-
-- [Founder operator guide: map, deploy, live link, install, security, offboarding](docs/operator-guide.md)
-- [Strategic plan: research, commercial and public-interest tracks, finance, GTM](docs/business/strategic-plan.md)
-- [Deployment innovation plan: adoption barriers, integration, monitoring, business and 10-year gates](docs/business/deployment-innovation-plan.md)
-- [Locked decisions](docs/DECISIONS.md)
-- [Product brief](docs/product-brief.md)
-- [Production operating model](docs/product-operating-model.md)
-- [Visual layers (Mermaid)](docs/LAYERS.md)
-- [Architecture](docs/architecture.md)
-- [Hospital data integration](docs/integration.md)
-- [Hospital onboarding and data operations](docs/hospital-onboarding.md)
-- [AI Congress demo runbook](docs/congress-demo-runbook.md)
-- [Site operations and readiness gates](docs/operations.md)
-- [Scalability and production hardening](docs/scalability.md)
-- [Safety case](docs/safety-case.md)
-- [Judge evidence matrix](docs/judge-evidence-matrix.md)
-- [Technical production evidence](docs/technical-production-evidence.md)
-- [Global corroboration (published alignment)](docs/global-corroboration.md)
-- [International deployment validation (timeline)](docs/international-deployment-validation.md)
-- [Innovation: adoption barriers (lock-in + transfer)](docs/innovation-adoption-barriers.md)
-- [Vendor Adapter contract v1](docs/adapters/vendor-adapter-contract.v1.json)
-- [Standards alignment](docs/standards-alignment.md)
-- [NRB / global builder pack](docs/nrb-global-builder-pack.md)
-- [Fleet enrolment & release rings](docs/fleet-enrolment-and-release-rings.md)
-- [Contributing](CONTRIBUTING.md)
-- [FDE pilot and business pack](docs/business/business-model.md)
-- [Congress evidence sprint](docs/business/congress-evidence-sprint.md)
-- [Congress judge one-pager](docs/business/congress-judge-one-pager.md)
-- [Top-band judging evidence plan](docs/business/top-band-evidence-plan.md)
-- [Investor memo](docs/business/investor-memo.md)
-- [Investor data-room index](docs/business/investor-data-room-index.md)
-- [Hospital, LOI, adviser and NRB proof kit](docs/business/external-proof-kit.md)
-- [Congress portal answers](docs/submission/congress-portal-answers.md)
-- [Read-only MCP server](mcp-server/) and [agent invariants](AGENTS.md)
-- [Vendor fleet console (patient-free control plane)](control-plane/README.md)
-- [Mapping-copilot benchmark results](docs/evaluation/copilot-retrieval-bench-v1.json)
-- [Data card](docs/data-card.md)
-- [Model card](docs/model-card.md)
-- [Safety & ethics](docs/safety-ethics.md)
-- [Current readiness passport](docs/hospital-readiness-passport-current.md)
-- [Adoption / SafeLaunch plan](docs/adoption-plan.md)
-- [Experiment ledger](docs/experiment-ledger.md)
-- [Build schedule](docs/schedule.md)
+---
 
 ## Disclaimer
 
-Trained on publicly available US ICU data. Not validated for Bangladeshi patients. Not for clinical use.
+Trained on publicly available US ICU data. **Not** for clinical use. **Not** a live hospital EHR integration on the public demo. Patient data is never a product for sale.

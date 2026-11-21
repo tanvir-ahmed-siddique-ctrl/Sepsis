@@ -5,6 +5,8 @@
 
 GitHub renders these diagrams on this page. Start here if a judge asks “show me the layers.”
 
+Also: [DOCUMENTATION_INDEX](DOCUMENTATION_INDEX.md) · [EXPERIMENT_MATRIX](EXPERIMENT_MATRIX.md) · [README](../README.md)
+
 ---
 
 ## L0 — One picture: hospital-local product

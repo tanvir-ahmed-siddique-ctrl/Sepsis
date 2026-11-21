@@ -99,6 +99,16 @@ export default function DocsPage() {
           Research prototype. Not approved for clinical use. Not validated on Bangladeshi patients.
         </p>
 
+        <Panel title="Repository documentation map">
+          <p className="max-w-3xl text-sm leading-6 text-muted">
+            For the full engineering evidence pack (layers, experiment matrix, model/data cards, FDE playbooks), start in the
+            GitHub repo at <code className="text-xs text-ink">docs/DOCUMENTATION_INDEX.md</code>, then{" "}
+            <code className="text-xs text-ink">docs/LAYERS.md</code> and{" "}
+            <code className="text-xs text-ink">docs/EXPERIMENT_MATRIX.md</code>. This page is the live whitepaper + readiness
+            hash; it does not replace the frozen-model ledger.
+          </p>
+        </Panel>
+
         <Panel title="Live system status">
           {ready.error && <p className="text-sm text-risk-high">API unreachable: {ready.error.message}</p>}
           {ready.data && (
