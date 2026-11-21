@@ -653,32 +653,31 @@ Design for optional cloud assist + co-pilot scope: **[docs/auralis-copilot-byo-l
 
 ---
 
-## 🤖 Auralis Co-pilot (local first · optional BYO cloud)
+## 🤖 Auri AI (local co-pilot · licence-bundled cloud optional)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Local_default-Qwen_3.5_4B_+_hybrid_RAG-2A9D8F?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/Auri_AI-Medical_assistant_⧸_co--pilot-2A9D8F?style=for-the-badge&labelColor=0B1C2C" />
+  <img src="https://img.shields.io/badge/Local_default-Qwen_3.5_4B_+_RAG-00897B?style=for-the-badge&labelColor=0B1C2C" />
   <img src="https://img.shields.io/badge/Never_scores_sepsis-Isolated_from_Run_4-B00020?style=for-the-badge&labelColor=0B1C2C" />
 </p>
 
-**Today:** mapping proposals (Bangla/local → LOINC), JSON-schema, human SHA sign-off.  
-**Profile → Auralis AI:** explains capabilities; **credentials never live in the browser**.  
-**Clinical IT:** can point the site at on-prem Ollama **or** an approved OpenAI-compatible API (key stored only on the **hospital-local server**, encrypted/config secret — not `localStorage`).
+**Language:** header **Language** dropdown (`English` / `বাংলা`) — medical terms stay English.  
+**Auri AI:** mapping + explainers (+ gated drafts). Cloud assist is **bundled into the hospital deal** when quoted — admin installs the key on the **local server** (`/app/admin/setup`), not in the browser.  
+**Profile → Auri AI** for clinicians · **Hospital setup → Auri AI** for admin/IT.
 
 ```mermaid
 flowchart LR
-  UI["Browser profile / IT settings<br/>no raw key stored"] --> API["Hospital API"]
-  API --> VAULT["Local secret store / env"]
+  DEAL["Site licence / FDE deal<br/>Auri assist included"] --> ADMIN["Admin · Hospital setup"]
+  ADMIN --> API["PUT /v1/site/auri-ai"]
+  API --> VAULT["Encrypted local DB"]
   VAULT --> LOCAL["Default: Ollama Qwen"]
-  VAULT --> CLOUD["Optional: site-approved<br/>OpenAI-compatible API"]
-  LOCAL --> JOBS["Allowed jobs only"]
+  VAULT --> CLOUD["Optional OpenAI-compatible"]
+  LOCAL --> JOBS["Mapping · explain · drafts"]
   CLOUD --> JOBS
-  JOBS --> MAP["Mapping propose"]
-  JOBS --> HAND["Handoff draft"]
-  JOBS --> HELP["UI / protocol explain"]
   JOBS -.->|blocked| SCORE["Sepsis probability"]
 ```
 
-Full security + allowed/forbidden jobs → [docs/auralis-copilot-byo-llm.md](docs/auralis-copilot-byo-llm.md)
+Plan + security → [docs/auralis-copilot-byo-llm.md](docs/auralis-copilot-byo-llm.md) · product → [/aurie](https://predictrx-sentinel-demo.onrender.com/aurie)
 
 ---
 

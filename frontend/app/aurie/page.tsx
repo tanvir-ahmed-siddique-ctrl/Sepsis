@@ -5,22 +5,22 @@ import { Reveal } from "@/components/marketing/MotionPrimitives";
 import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
-  title: "Aurie AI | Auralis",
-  description: "Bounded clinical context and guideline checklists beside each ICU risk review.",
+  title: "Auri AI | Auralis",
+  description: "Local co-pilot for mapping and bounded clinical assist — never overrides the frozen sepsis score.",
 };
 
 export default function AuriePage() {
   return (
     <div className="bg-white">
       <MarketingHero
-        eyebrow="Aurie AI"
+        eyebrow="Auri AI"
         title={
           <>
             Clinical context that{" "}
             <span className="text-teal">never overrides the doctor.</span>
           </>
         }
-        description="Aurie is the bedside context track: deterministic guideline retrieval matched to SHAP drivers. It never modifies the frozen sepsis probability and never writes orders."
+        description="Auri AI is the site-local co-pilot: mapping, explainers, and gated drafts. Local Qwen by default; optional licence-bundled cloud LLM. It never modifies the frozen sepsis probability and never writes orders."
         specs={[
           { label: "Risk Engine", value: "Frozen Run-4 Classifier" },
           { label: "Context Layer", value: "Cited guideline retrieval" },
@@ -49,7 +49,7 @@ export default function AuriePage() {
 
           <Reveal delayMs={80} className="rounded-2xl border border-teal/25 bg-white p-7">
             <span className="rounded-full bg-teal/10 px-3 py-1 text-xs font-semibold text-teal">
-              Track 2 · Aurie Bedside Context
+              Track 2 · Auri AI co-pilot
             </span>
             <h3 className="mt-4 font-display text-xl font-semibold text-ink">
               Readable shift & guideline summary

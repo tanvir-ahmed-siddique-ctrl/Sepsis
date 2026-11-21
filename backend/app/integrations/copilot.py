@@ -164,8 +164,23 @@ EMBED_QUERY_INSTRUCTION = (
 )
 
 
-def _headers() -> dict[str, str]:
-    key = settings.copilot_llm_api_key.get_secret_value() if settings.copilot_llm_api_key else ""
+def _runtime():
+    """Site-encrypted Auri AI config wins over process env."""
+    try:
+        from app.auri import runtime
+        from app.services.engine import get_engine
+
+        return runtime(get_engine().records)
+    except Exception:
+        from app.auri import runtime
+
+        return runtime(None)
+
+
+def _headers(api_key: str | None = None) -> dict[str, str]:
+    key = api_key if api_key is not None else (
+        settings.copilot_llm_api_key.get_secret_value() if settings.copilot_llm_api_key else ""
+    )
     return {"Authorization": f"Bearer {key}"} if key else {}
 
 
@@ -182,26 +197,32 @@ def endpoint_is_external(url: str) -> bool:
 
 
 def llm_endpoint() -> dict[str, Any]:
-    url = settings.copilot_llm_url
+    rt = _runtime()
+    url = rt.url
     return {
-        "provider": "openai-compatible" if settings.copilot_llm_provider == "openai" else "ollama",
+        "provider": "openai-compatible" if rt.provider == "openai" else "ollama",
         "host": urlsplit(url).hostname if url else None,
         "external": bool(url) and endpoint_is_external(url),
+        "source": rt.source,
+        "brand": "Auri AI",
     }
 
 
 def _external_blocked() -> bool:
-    url = settings.copilot_llm_url
-    return bool(url) and endpoint_is_external(url) and not settings.demo_mode and not settings.copilot_external_llm_approved
+    rt = _runtime()
+    url = rt.url
+    return bool(url) and endpoint_is_external(url) and not settings.demo_mode and not rt.external_approved
 
 
 @lru_cache(maxsize=512)
-def _embed_cached(provider: str, url: str, model: str, texts: tuple[str, ...]) -> tuple[tuple[float, ...], ...]:
+def _embed_cached(
+    provider: str, url: str, model: str, texts: tuple[str, ...], api_key: str = ""
+) -> tuple[tuple[float, ...], ...]:
     if provider == "openai":
         response = httpx.post(
             f"{url.rstrip('/')}/embeddings",
             json={"model": model, "input": list(texts)},
-            headers=_headers(),
+            headers=_headers(api_key),
             timeout=settings.copilot_llm_timeout_seconds,
         )
         response.raise_for_status()
@@ -228,19 +249,21 @@ def _registry_documents(registry: MappingRegistry) -> list[tuple[str, str]]:
 
 def semantic_scores(registry: MappingRegistry, local_display: str) -> tuple[dict[str, float] | None, dict[str, Any]]:
     """Vector half of hybrid retrieval: cosine similarity from the configured embedding model."""
-    if not (settings.copilot_llm_url and settings.copilot_embed_model):
+    rt = _runtime()
+    if not (rt.url and rt.embed_model):
         return None, {"mode": "lexical", "detail": "No embedding model configured."}
     if _external_blocked():
         return None, {"mode": "lexical", "detail": "External embedding endpoint is not approved for this site."}
     documents = _registry_documents(registry)
-    provider, url, model = settings.copilot_llm_provider, settings.copilot_llm_url, settings.copilot_embed_model
+    provider, url, model = rt.provider, rt.url, rt.embed_model
+    key = rt.api_key or ""
     try:
-        vectors = _embed_cached(provider, url, model, tuple(text for _, text in documents))
-        (query,) = _embed_cached(provider, url, model, (EMBED_QUERY_INSTRUCTION + local_display,))
+        vectors = _embed_cached(provider, url, model, tuple(text for _, text in documents), key)
+        (query,) = _embed_cached(provider, url, model, (EMBED_QUERY_INSTRUCTION + local_display,), key)
     except (httpx.HTTPError, KeyError, ValueError) as error:
         return None, {"mode": "lexical", "detail": f"Embedding model unavailable ({type(error).__name__})."}
     scores = {code: _cosine(query, vector) for (code, _), vector in zip(documents, vectors)}
-    return scores, {"mode": "hybrid", "embedding_model": settings.copilot_embed_model, "documents": len(documents)}
+    return scores, {"mode": "hybrid", "embedding_model": rt.embed_model, "documents": len(documents)}
 
 
 def retrieve(
@@ -393,7 +416,7 @@ def _json_object(content: str) -> str:
 
 
 @lru_cache(maxsize=256)
-def _ask_llm_cached(provider: str, url: str, model: str, payload: str) -> str:
+def _ask_llm_cached(provider: str, url: str, model: str, payload: str, api_key: str) -> str:
     timeout = settings.copilot_llm_timeout_seconds
     if provider != "openai":
         response = httpx.post(f"{url.rstrip('/')}/api/chat", content=payload, timeout=timeout)
@@ -401,7 +424,12 @@ def _ask_llm_cached(provider: str, url: str, model: str, payload: str) -> str:
         return response.json()["message"]["content"]
     bodies = _openai_bodies(json.loads(payload))
     for index, body in enumerate(bodies):
-        response = httpx.post(f"{url.rstrip('/')}/chat/completions", json=body, headers=_headers(), timeout=timeout)
+        response = httpx.post(
+            f"{url.rstrip('/')}/chat/completions",
+            json=body,
+            headers=_headers(api_key),
+            timeout=timeout,
+        )
         if response.status_code in (400, 422) and index < len(bodies) - 1:
             continue
         response.raise_for_status()
@@ -410,13 +438,14 @@ def _ask_llm_cached(provider: str, url: str, model: str, payload: str) -> str:
 
 
 def ask_llm(local_code: str, local_display: str, local_unit: str | None, candidates: list[Candidate]) -> dict[str, Any]:
-    if not settings.copilot_llm_url:
-        return {"status": "disabled", "detail": "COPILOT_LLM_URL is not configured; deterministic retrieval only."}
+    rt = _runtime()
+    if not rt.url:
+        return {"status": "disabled", "detail": "Auri AI LLM URL is not configured; deterministic retrieval only."}
     endpoint = llm_endpoint()
     if _external_blocked():
         return {"status": "blocked", **endpoint,
                 "detail": "The LLM endpoint is outside the hospital network and the site has not approved it "
-                          "(COPILOT_EXTERNAL_LLM_APPROVED)."}
+                          "(Auri AI external approval / COPILOT_EXTERNAL_LLM_APPROVED)."}
     if not candidates:
         return {"status": "skipped", "detail": "No retrieved candidates to choose from."}
     codes = [item.code for item in candidates]
@@ -426,10 +455,10 @@ def ask_llm(local_code: str, local_display: str, local_unit: str | None, candida
         for c in candidates
     ]
     user = json.dumps({"local_field": {"code": local_code, "display": local_display, "unit": local_unit}, "candidates": context})
-    system = SYSTEM_PROMPT if settings.copilot_llm_provider == "ollama" else f"{SYSTEM_PROMPT} {JSON_INSTRUCTION}"
+    system = SYSTEM_PROMPT if rt.provider == "ollama" else f"{SYSTEM_PROMPT} {JSON_INSTRUCTION}"
     payload = json.dumps(
         {
-            "model": settings.copilot_llm_model,
+            "model": rt.model,
             "messages": [{"role": "system", "content": system}, *FEW_SHOT, {"role": "user", "content": user}],
             "format": _response_schema(codes),
             "stream": False,
@@ -442,7 +471,7 @@ def ask_llm(local_code: str, local_display: str, local_unit: str | None, candida
         return {"status": "rate_limited", **endpoint,
                 "detail": "Model call budget for this minute is used up; deterministic retrieval shown."}
     try:
-        content = _ask_llm_cached(settings.copilot_llm_provider, settings.copilot_llm_url, settings.copilot_llm_model, payload)
+        content = _ask_llm_cached(rt.provider, rt.url, rt.model, payload, rt.api_key or "")
         answer = json.loads(content)
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as error:
         return {"status": "unavailable", **endpoint,
@@ -456,7 +485,7 @@ def ask_llm(local_code: str, local_display: str, local_unit: str | None, candida
     return {
         "status": "ok",
         **endpoint,
-        "model": settings.copilot_llm_model,
+        "model": rt.model,
         "choice_code": choice,
         "confidence": answer.get("confidence"),
         "rationale": str(answer.get("rationale", ""))[:300],

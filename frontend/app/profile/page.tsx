@@ -43,7 +43,7 @@ const TABS: Array<{ id: TabId; label: string; icon: "user" | "doc" | "building" 
   { id: "access", label: "Organization & access", icon: "building" },
   { id: "security", label: "Security", icon: "shield" },
   { id: "preferences", label: "Preferences", icon: "settings" },
-  { id: "auralis-ai", label: "Auralis AI", icon: "layers" },
+  { id: "auralis-ai", label: "Auri AI", icon: "layers" },
   { id: "activity", label: "Activity", icon: "clock" },
 ];
 
@@ -434,27 +434,49 @@ function SecurityTab({
 }
 
 function AuralisAiTab({ role }: { role: string }) {
-  const isIt =
-    role === "admin" ||
-    role === "operator" ||
-    role === "clinical_it" ||
-    role === "clinical-it" ||
-    role === "integrator";
+  const isIt = role === "admin" || role === "clinical_it" || role === "operator";
+  const [status, setStatus] = useState<{
+    configured: boolean;
+    mode: string;
+    model: string | null;
+    has_api_key: boolean;
+    source: string;
+    note: string;
+  } | null>(null);
+
+  useEffect(() => {
+    void api<{
+      configured: boolean;
+      mode: string;
+      model: string | null;
+      has_api_key: boolean;
+      source: string;
+      note: string;
+    }>("/v1/site/auri-ai")
+      .then(setStatus)
+      .catch(() => setStatus(null));
+  }, []);
 
   return (
     <div className="space-y-5">
-      <Panel title="Auralis Co-pilot">
+      <Panel title="Auri AI · medical assistant / co-pilot">
         <p className="max-w-3xl text-sm leading-6 text-muted">
-          Assistive AI for this hospital site. Default runtime is on-premises{" "}
-          <strong className="text-ink">Qwen 3.5 4B</strong> with hybrid RAG for terminology. It never writes the sepsis
-          risk score — Frozen LightGBM Run 4 + TrustGate stay on a separate path.
+          <strong className="text-ink">Auri AI</strong> is the site-local assistant: local Qwen by default, optional
+          vendor-bundled cloud LLM for better drafts — still never writes sepsis risk (Frozen Run 4 + TrustGate only).
         </p>
+        {status && (
+          <p className="mt-3 text-sm text-ink">
+            Status: {status.configured ? "LLM configured" : "Deterministic retrieval"} · {status.mode}
+            {status.model ? ` · ${status.model}` : ""} · source {status.source}
+            {status.has_api_key ? " · cloud key on server" : ""}
+          </p>
+        )}
         <ul className="mt-4 space-y-2 text-sm text-ink">
           {[
-            "Propose Bangla / local lab names → LOINC (human SHA sign-off)",
-            "Explain TrustGate / UI terms in EN or বাংলা chrome",
-            "Draft handoff text from fields already on screen (roadmap-gated)",
-            "Optional site-approved cloud LLM to improve those jobs only",
+            "Bangla / local lab → LOINC proposals (human SHA sign-off)",
+            "Explain TrustGate, boards, and workflows in EN or বাংলা chrome",
+            "Draft handoff / shift notes from fields already on screen (gated)",
+            "Optional cloud model (licence-bundled) improves those jobs only",
           ].map((item) => (
             <li key={item} className="flex items-start gap-2">
               <Icon name="check" size={16} className="mt-0.5 shrink-0 text-teal" />
@@ -463,39 +485,39 @@ function AuralisAiTab({ role }: { role: string }) {
           ))}
         </ul>
         <p className="mt-4 text-sm text-muted">
-          Forbidden: diagnosis, prescriptions, changing Run 4 thresholds, dumping full identifiable charts to a public cloud
-          by default.
+          Forbidden: diagnosis, prescriptions, changing Run 4, sending full identifiable charts to a public cloud by
+          default. Product page:{" "}
+          <a className="text-teal underline" href="/aurie">
+            /aurie
+          </a>
+          .
         </p>
       </Panel>
 
       <Panel title="Language">
         <p className="text-sm leading-6 text-muted">
-          Use the nav <strong className="text-ink">বাংলা / EN</strong> toggle for menus and help text. Keep disease names,
-          LOINC, and drug-class labels in <strong className="text-ink">English</strong> on clinical boards so charts stay
-          interoperable — local slang is accepted as input and mapped to English codes.
+          Use the header <strong className="text-ink">Language</strong> dropdown (English / বাংলা) for menus and help.
+          Disease names, LOINC, and drug-class labels stay <strong className="text-ink">English</strong> on clinical
+          boards.
         </p>
       </Panel>
 
       <Panel title="Credentials & privacy">
         <p className="text-sm leading-6 text-muted">
-          API keys for optional cloud models are <strong className="text-ink">not stored in this browser</strong>. They
-          belong on the hospital-local server (environment / encrypted site secret). The UI may only show whether a
-          provider is configured — never the secret itself.
+          API keys are <strong className="text-ink">not stored in this browser</strong>. When Auralis includes cloud
+          assist in a hospital deal, admin installs the key on the <strong className="text-ink">local server</strong>{" "}
+          (encrypted). Clinicians only use Auri — they do not paste keys here.
         </p>
         {isIt ? (
           <p className="mt-3 text-sm text-ink">
-            As clinical IT / admin, configure <code className="text-xs">COPILOT_LLM_*</code> on the site host (or future
-            encrypted store). See Integration hub and{" "}
-            <a className="text-teal underline" href="/docs">
-              /docs
+            Configure under{" "}
+            <a className="text-teal underline" href="/app/admin/setup">
+              Hospital setup → Auri AI
             </a>
-            . Design notes: <code className="text-xs">docs/auralis-copilot-byo-llm.md</code>.
+            . Plan: <code className="text-xs">docs/auralis-copilot-byo-llm.md</code>.
           </p>
         ) : (
-          <p className="mt-3 text-sm text-muted">
-            Ask clinical IT if your site should enable an approved external model. Clinicians use the co-pilot; they do not
-            paste vendor API keys here.
-          </p>
+          <p className="mt-3 text-sm text-muted">Ask clinical IT / admin if your site&apos;s licence includes cloud Auri assist.</p>
         )}
       </Panel>
     </div>

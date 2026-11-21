@@ -1,104 +1,103 @@
-# Auralis Co-pilot · local AI + optional BYO cloud LLM
+# Auri AI · local co-pilot + vendor-bundled cloud assist
 
 > Research prototype — **not** approved for clinical use.  
-> The co-pilot **never** writes sepsis probabilities. Frozen LightGBM Run 4 + TrustGate remain the only score path.
+> **Auri AI never writes sepsis probabilities.** Frozen LightGBM Run 4 + TrustGate remain the only score path.
 
-## Why this exists
+Brand: **Auri AI** (product page `/aurie`, Profile tab, Hospital setup). Same assistant formerly described as mapping copilot / Aurie.
 
-Hospitals want:
+---
 
-1. **Bangla-friendly** charting help and mapping for local lab slang  
-2. Optional **stronger cloud models** when the site approves egress  
-3. A **medical assistant style** helper for workflow — without turning Auralis into an unregulated diagnostic chatbot  
+## Can we implement this? — Yes (phased)
 
-## What we already ship
+| Phase | What | Status |
+|-------|------|--------|
+| **P0** | Local Qwen / Ollama + hybrid RAG mapping; EN⇄বাংলা Language dropdown; medical terms stay English | **Shipped** |
+| **P1** | Admin stores optional LLM URL + API key encrypted on **hospital-local** DB; UI never reads key back | **Shipped** (`GET/PUT /v1/site/auri-ai`, Hospital setup panel) |
+| **P2** | Handoff draft + “explain TrustGate” chat over allowlisted fields/docs | Roadmap |
+| **P3** | Vendor console pushes **licence-bundled** model entitlement (hospital still runs Auri locally; key material delivered offline / FDE) | Roadmap |
 
-| Piece | Status | Path |
-|-------|--------|------|
-| Hybrid RAG (lexical + embeddings + RRF) | Implemented | `backend/app/integrations/copilot.py` |
-| On-prem Ollama default (`qwen3.5:4b`) | Implemented (optional runtime) | `settings.copilot_llm_*` |
-| OpenAI-compatible provider switch | Implemented (env / site config) | `copilot_llm_provider=openai` + URL + API key |
-| External endpoint refusal unless approved | Implemented | `copilot_external_llm_approved` |
-| Field-metadata-only prompts | Implemented | No full chart dump to LLM |
-| EN ⇄ বাংলা UI chrome | Implemented | `frontend/lib/copy.ts` |
+---
 
-## Why we did **not** adopt n8n
+## Commercial model (how money works without looking like a weird bolt-on)
 
-- ICU edge needs **deterministic** connectors, idempotency, quarantine, and hash-chained audit  
-- n8n is a general automation plane — easy to accidentally route PHI to SaaS nodes  
-- Our integration passport already covers FHIR / HL7 / CSV / spool in-repo  
-- Fewer moving parts on air-gapped or low-bandwidth hospital networks  
+Hospitals buy **Auralis enablement** (Discover → Bridge → Silent eval → Licence → Managed Edge).
 
-RAG **is** used — narrowly — for **terminology mapping**, not for open-ended diagnosis over the patient record.
+**Auri AI cloud assist** is not sold as “buy ChatGPT from us separately.” It is:
 
-## Language policy (Bangla + English clinical terms)
+1. **Included in the site deal** when the quotation says so (professional services / annual licence line: “Auri AI cloud assist entitlement”).  
+2. Auralis (vendor) provisions the **approved OpenAI-compatible credential** during FDE / admin setup — or the hospital brings its own key.  
+3. The key lives **only on that hospital’s local server** (encrypted config). Browser / demo screenshots never hold it.  
+4. Usage stays inside **that site’s Auri jobs** (mapping, explain, drafts). No free-range access to other hospitals’ data, no sepsis re-scoring, no auto-orders.
 
-| Layer | Policy |
-|-------|--------|
-| Navigation, buttons, help text | User locale EN or বাংলা |
-| Disease names, LOINC display names, drug classes | **English (Latin)** on clinical boards |
-| Local aliases (নাড়ি, RBS, Hb%) | Accepted as **input**; mapped to English canonical codes |
-| Audit / export | English codes primary; Bangla gloss optional |
+So the taka is **bundled into the deal** (implementation + licence), not a confusing consumer API marketplace. Internally you still track cloud COGS; publicly it reads as “assistant included in the clinical system.”
 
-This does **not** look unprofessional in Bangladesh ICU software — mixed Bangla UX + English medical tokens is the safe default.
+---
 
-## Co-pilot job list
+## What Auri AI does (now + next)
 
-### Allowed (assistive · proposal / draft only)
+### Does now
 
-| Job | Behaviour | Human gate |
-|-----|-----------|------------|
-| **Mapping propose** | Bangla/local → LOINC candidates from retrieved set only | Analyst SHA sign-off |
-| **Unmapped triage** | Explain why a code is quarantined | Clinical IT |
-| **Handoff draft** | Summarize *already displayed* board fields into a draft note | Clinician edits/sends |
-| **UI / protocol explain** | “What does TrustGate Verify mean?” from local docs | N/A (non-patient) |
-| **Bangla UI paraphrase** | Rephrase chrome strings; not invent disease names | N/A |
-
-### Forbidden
-
-| Job | Reason |
+| Job | Notes |
 |-----|--------|
-| Change Run 4 score / thresholds | Safety + freeze policy |
-| Diagnose / prescribe / “what antibiotic?” | Clinical device risk · not approved |
-| Send full patient timeline to a public cloud by default | Privacy |
-| Store API keys in `localStorage` / frontend bundle | Credential theft |
-| Silent auto-apply mapping without sign-off | Governance |
+| Mapping propose | Bangla/local → LOINC from retrieved candidates only |
+| Hybrid RAG | Lexical + embeddings + RRF |
+| Local LLM | Ollama `qwen3.5:4b` default |
+| Cloud LLM (optional) | OpenAI-compatible URL + key on local server |
+| Language chrome | Header **Language** dropdown · English / বাংলা |
 
-## BYO cloud credentials — security model
+### Add next (same security envelope)
+
+| Job | Notes |
+|-----|--------|
+| Handoff draft | From fields already on the board |
+| Protocol / TrustGate explain | Local docs + allowlisted glossary |
+| Unmapped triage helper | Why quarantine fired |
+
+### Never
+
+Diagnosis · prescribe · change Run 4 · dump full identifiable charts to public cloud by default · store keys in `localStorage`.
+
+---
+
+## Security architecture
 
 ```
-Browser  --(HTTPS, session cookie)-->  Hospital API
-                                         |
-                                         +--> encrypted secret / env on local server
-                                         |       (never returned in full to UI)
-                                         +--> Ollama (default) OR approved OpenAI-compatible URL
+Clinician browser  --session-->  Hospital API
+                                    |
+                                    +--> encrypted auri_ai_llm config (local DB)
+                                    +--> Ollama on LAN  OR  approved cloud API
+                                    |
+                                    X--> no path into Run 4 scorer
 ```
 
-Rules:
+- **Admin / clinical IT** configure via Hospital setup (`AuriAiAdminPanel`).  
+- **GET `/v1/site/auri-ai`** returns status only (`has_api_key`, model, host) — never the secret.  
+- **Public demo** refuses ingesting customer cloud keys (`public_demo_lockdown`).  
+- External hosts need `external_approved` (same spirit as `COPILOT_EXTERNAL_LLM_APPROVED`).
 
-1. **Keys never persist in the frontend.** Profile UI may show `configured: true/false` and model name only.  
-2. **Storage** = hospital-local process env or encrypted config table (same trust boundary as DB). Local DB is acceptable; browser storage is not.  
-3. **Who can set keys** = clinical IT / admin / operator — not every clinician.  
-4. **Egress** = denied unless `copilot_external_llm_approved` (or equivalent site gate).  
-5. **Payload allowlist** = field names, units, short aliases, retrieved candidate codes — not free-text full notes with identifiers unless a future DPIA says otherwise.  
-6. **Audit** = every external LLM call logs actor, purpose, host, prompt version — no secret key in logs.  
-7. **Fallback** = if cloud fails, deterministic retrieval still works.
+Local DB storage is **fine** (same trust boundary as the clinical DB). Frontend storage is **not**.
 
-## Profile → “Auralis AI”
+---
 
-- **Clinician view:** capabilities, language policy, “does not diagnose,” link to mapping hub  
-- **Admin / IT view:** points to site LLM settings (env or future encrypted store); never pastes keys into a public demo screenshot  
+## Language policy
 
-## Roadmap (not claimed done)
+| Surface | Language |
+|---------|----------|
+| Menus, buttons, help | English or বাংলা (dropdown) |
+| Disease names, LOINC, drug classes | **English** |
+| Local slang input | Bangla/English aliases → English codes |
 
-1. Encrypted site-secret CRUD API (admin-only) replacing raw env for BYO keys  
-2. Handoff-draft endpoint with the same allowlist discipline as mapping  
-3. Richer Bangla chrome strings without translating LOINC  
-4. Optional local-only “ask the docs” RAG over `docs/` — still no chart diagnosis  
+---
 
-## Related
+## Why not n8n?
 
-- [EXPERIMENT_MATRIX](EXPERIMENT_MATRIX.md) — Qwen is not the sepsis model  
-- [trustgate-layers](trustgate-layers.md)  
-- [safety-ethics](safety-ethics.md)  
-- Mapping UI: `frontend/components/MappingCopilot.tsx`
+Deterministic hospital connectors + quarantine + audit already live in-repo. n8n adds PHI egress risk and another ops plane. RAG **is** used — for mapping only.
+
+---
+
+## Operator pointers
+
+- Profile → **Auri AI** (clinician view)  
+- `/app/admin/setup` → **Auri AI · site assistant runtime** (admin)  
+- Marketing → `/aurie`  
+- Code → `backend/app/auri.py`, `backend/app/integrations/copilot.py`

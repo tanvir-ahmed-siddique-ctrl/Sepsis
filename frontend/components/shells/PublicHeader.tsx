@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { Icon } from "@/components/ui/Icon";
 
@@ -15,7 +16,7 @@ const NAV: NavItem[] = [
     label: "Platform",
     children: [
       { href: "/product", label: "ICU clinical platform", detail: "Six-hour sepsis risk board and bedside chart" },
-      { href: "/aurie", label: "Aurie assistant", detail: "Bounded clinical context and protocol help" },
+      { href: "/aurie", label: "Auri AI", detail: "Local co-pilot · mapping · bounded clinical assist" },
       { href: "/model", label: "Model transparency", detail: "Frozen model card and TrustGate rules" },
       { href: "/workflows", label: "Clinical workflows", detail: "Alert SLA, ward NEWS2 and shift handoff" },
     ],
@@ -193,6 +194,7 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <LanguageSelect className="hidden sm:inline-flex" />
           <Link href="/signin" className="auralis-btn-ghost hidden h-9 text-ink sm:inline-flex">
             Sign in
           </Link>
@@ -246,6 +248,9 @@ export function PublicHeader() {
                 </Link>
               ),
             )}
+            <div className="pt-3">
+              <LanguageSelect />
+            </div>
             <div className="grid gap-2 pt-3 sm:grid-cols-2">
               <Link href="/signin" className="auralis-btn-secondary">
                 Sign in

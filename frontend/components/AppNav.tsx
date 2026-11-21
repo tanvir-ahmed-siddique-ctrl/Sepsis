@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { ShiftStrip } from "@/components/ShiftStrip";
 import { api } from "@/lib/api";
 import { useLocale } from "@/lib/locale";
@@ -38,7 +39,7 @@ export function AppNav() {
   const previousY = useRef(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [workspaces, setWorkspaces] = useState<Array<{ id: string; label: string; path: string }>>([]);
-  const { locale, setLocale, t } = useLocale();
+  const { t } = useLocale();
   const { me, account, isAdmin, isOperator, loading, signOut } = useSession();
   useEffect(() => {
     if (!me) { setWorkspaces([]); return; }
@@ -106,7 +107,7 @@ export function AppNav() {
           {me && <Link href="/app/profile" className="hidden text-sm text-slate hover:text-forest sm:inline" title={"Signed in · " + humanize(me.auth_mode)}>{me.display_name || humanize(me.role)}</Link>}
           {account && <span className="hidden text-sm text-slate sm:inline">{account.display_name}</span>}
           {me || account ? <button type="button" onClick={signOut} className="border border-[#C6CECA] px-3 py-2 text-xs font-semibold hover:border-forest">Sign out</button> : <Link href="/signin" className="bg-forest px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#1E443D]">{t.nav.signIn}</Link>}
-          <button type="button" onClick={() => setLocale(locale === "en" ? "bn" : "en")} className="border border-[#C6CECA] px-2.5 py-2 text-xs text-slate hover:border-forest" aria-label="Toggle language">{locale === "en" ? "বাংলা" : "EN"}</button>
+          <LanguageSelect />
           {me && <button type="button" className="border border-[#C6CECA] px-2.5 py-2 text-xs lg:hidden" aria-expanded={menuOpen} aria-label="Toggle workspace navigation" onClick={() => setMenuOpen((v)=>!v)}>Menu</button>}
         </div>
         {me && menuOpen && <div className="order-3 flex w-full flex-wrap gap-x-5 gap-y-3 border-t border-[#D6DCD8] pt-3 lg:hidden">{links.map((item)=><Link key={item.href} href={item.href} onClick={()=>setMenuOpen(false)} className={linkClass(item.href)}>{item.label}</Link>)}{workspaces.length > 1 && <div className="basis-full border-t border-[#D6DCD8] pt-3"><p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate">Workspaces</p>{workspaces.map((workspace)=><Link key={workspace.id} href={workspace.path} onClick={()=>setMenuOpen(false)} className="mr-5 text-sm text-forest">{workspace.label}</Link>)}</div>}{isAdmin && !isOperator && <div className="basis-full border-t border-[#D6DCD8] pt-3"><p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate">Hospital administration</p><div className="flex flex-wrap gap-x-5 gap-y-3">{admin.map((item)=><Link key={item.href} href={item.href} onClick={()=>setMenuOpen(false)} className={linkClass(item.href)}>{item.label}</Link>)}</div></div>}</div>}

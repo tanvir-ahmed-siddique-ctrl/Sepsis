@@ -6,6 +6,7 @@ import { RiskBadge, TrustBadge } from "@/components/RiskBadge";
 import { ApiError, BAND_COLOR } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { api, pct, type RiskCurrent, type RiskPoint, type Thresholds } from "@/lib/api";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { useLocale } from "@/lib/locale";
 
 type Status = {
@@ -17,7 +18,7 @@ type Status = {
 
 /** Replay presentation using the current site's declared source provenance. */
 export default function PresentationPage() {
-  const { t, locale, setLocale } = useLocale();
+  const { t, locale } = useLocale();
   const [status, setStatus] = useState<Status | null>(null);
   const [bed, setBed] = useState<string | null>(null);
   const [current, setCurrent] = useState<RiskCurrent | null>(null);
@@ -121,14 +122,7 @@ export default function PresentationPage() {
           <button onClick={() => void beginPitch()} className="bg-accent px-6 py-2 font-medium text-white">
             {t.presentation.startPitch}
           </button>
-          <button
-            type="button"
-            onClick={() => setLocale(locale === "en" ? "bn" : "en")}
-            className="border border-ink/20 px-4 py-2 text-sm font-medium text-ink/70"
-            aria-label="Toggle language"
-          >
-            {locale === "en" ? "বাংলা" : "EN"}
-          </button>
+          <LanguageSelect />
           {pitchSeconds != null && (
             <span
               className={`min-w-24 border px-4 py-2 font-mono text-lg ${pitchSeconds === 0 ? "border-risk-high text-risk-high" : "border-ink/20"}`}
