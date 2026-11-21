@@ -60,8 +60,8 @@ export function InstallAppControl({ compact = false }: { compact?: boolean }) {
         onClick={() => void install()}
         className={
           compact
-            ? "auralis-icon-btn h-10 w-10"
-            : "auralis-btn-secondary auralis-btn-sm hidden sm:inline-flex"
+            ? "inline-flex h-9 w-9 items-center justify-center rounded-full border border-ink bg-white text-ink transition-colors hover:bg-navy hover:text-white"
+            : "hidden h-9 items-center gap-1.5 rounded-full border border-ink bg-ink px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-white hover:text-ink sm:inline-flex"
         }
         aria-label="Install Auralis app"
         title="Install app on this device"

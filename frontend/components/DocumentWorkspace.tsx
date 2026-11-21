@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { accountApi } from "@/lib/account-api";
+import { flash } from "@/components/FlashToast";
 import { EmptyState, FileDrop, PageHeader, Pill } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 
@@ -37,14 +38,34 @@ export function DocumentWorkspace({ vendor }: { vendor: boolean }) {
   useEffect(() => { void load(); }, []);
   async function upload(event: React.FormEvent) {
     event.preventDefault();
-    if (!file || file.size > MAX_DOCUMENT_BYTES || file.type !== "application/pdf") { setError("Choose a PDF below 1 MB"); return; }
+    const looksPdf = Boolean(file && (file.type === "application/pdf" || file.type === "application/x-pdf" || file.name.toLowerCase().endsWith(".pdf")));
+    if (!file) {
+      const msg = "Choose a PDF first.";
+      setError(msg);
+      flash(msg, "err");
+      return;
+    }
+    if (file.size > MAX_DOCUMENT_BYTES || !looksPdf) {
+      const msg = "Choose a PDF below 1 MB.";
+      setError(msg);
+      flash(msg, "err");
+      return;
+    }
     setError(null);
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte);
       await accountApi("/v1/vendor/documents", { method: "POST", body: JSON.stringify({ ...form, site_id: form.site_id || null, expires_on: form.expires_on || null, content_b64: btoa(binary) }) });
-      setNotice("Encrypted PDF recorded as a draft. Customer access begins only after scan and approval."); setFile(null); await load();
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Document upload failed"); }
+      const ok = "Encrypted PDF recorded as a draft. Customer access begins only after scan and approval.";
+      setNotice(ok);
+      flash(ok);
+      setFile(null);
+      await load();
+    } catch (cause) {
+      const msg = cause instanceof Error ? cause.message : "Document upload failed";
+      setError(msg);
+      flash(msg, "err");
+    }
   }
   async function approve(document: Document) {
     const reason = window.prompt("Approval reason and source reference"); if (!reason || reason.length < 3) return;
@@ -255,7 +276,7 @@ export function DocumentWorkspace({ vendor }: { vendor: boolean }) {
           <div className="sm:col-span-2">
             <FileDrop label="PDF document" accept="application/pdf,.pdf" acceptLabel="PDF" maxBytes={MAX_DOCUMENT_BYTES} limitLabel="1 MB" file={file} onFile={setFile} required />
           </div>
-          <button type="submit" disabled={!file} className="auralis-btn-primary justify-self-start sm:col-span-2">
+          <button type="submit" className="auralis-btn-primary justify-self-start sm:col-span-2">
             <Icon name="upload" size={16} />
             Upload draft
           </button>

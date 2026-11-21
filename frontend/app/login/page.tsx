@@ -23,29 +23,24 @@ const QUICK_FALLBACK: DemoAccount[] = [
   { user_id: "demo-nurse", label: "Bedside ICU Nurse", role: "nurse", default_path: "/app/chart", password: "auralis-demo-2026" },
   { user_id: "demo-admin", label: "Hospital Admin", role: "admin", default_path: "/app/admin/overview", password: "auralis-demo-2026" },
   { user_id: "demo-it", label: "Clinical IT & Deployment", role: "clinical_it", default_path: "/deploy", password: "auralis-demo-2026" },
-  { user_id: "demo-operator", label: "Fleet Operator", role: "operator", default_path: "/platform/overview", password: "auralis-demo-2026" },
+  { user_id: "demo-operator", label: "Auralis fleet operator", role: "operator", default_path: "/platform/overview", password: "auralis-demo-2026" },
 ];
 
-const VENDOR_DEMO = { user_id: "vendor@auralis.demo", label: "Vendor control plane", password: "auralis-demo-2026", default_path: "/platform/accounts" };
+const VENDOR_DEMO = {
+  user_id: "vendor@auralis.demo",
+  label: "Vendor control plane",
+  password: "auralis-demo-2026",
+  default_path: "/platform/accounts",
+};
 
 const ROLE_META: Record<string, { icon: IconName; detail: string }> = {
   clinician: { icon: "grid", detail: "ICU board, alerts, handoff" },
   nurse: { icon: "clipboard", detail: "Charting and ward NEWS2" },
   admin: { icon: "building", detail: "Staff, unit settings, evaluation" },
   clinical_it: { icon: "server", detail: "Connectors and feed health" },
-  operator: { icon: "gauge", detail: "Fleet health overview" },
-  vendor: { icon: "layers", detail: "Tenants, licences, documents" },
+  operator: { icon: "gauge", detail: "Auralis fleet / site health (not CRM)" },
+  vendor: { icon: "layers", detail: "Tenants, licences, documents (CRM)" },
 };
-
-const WORKSPACES = [
-  { title: "Product tour", detail: "Pitch → evidence → live ICU board", href: "/judge", icon: "shield" as IconName },
-  { title: "180s presentation", detail: "Timed pitch with live board", href: "/presentation", icon: "activity" as IconName },
-  { title: "ICU board", detail: "Live risk board, alerts and handoff", href: "/app/icu", icon: "grid" as IconName },
-  { title: "Bedside charting", detail: "Flowsheet vitals and ward NEWS2", href: "/app/chart", icon: "clipboard" as IconName },
-  { title: "Hospital administration", detail: "Staff access, unit settings, evaluation", href: "/app/admin/overview", icon: "building" as IconName },
-  { title: "Deployment console", detail: "Connectors, quarantine, commissioning", href: "/deploy", icon: "server" as IconName },
-  { title: "Vendor control plane", detail: "Tenants, licences, FDE projects", href: "/platform/accounts", icon: "layers" as IconName },
-];
 
 function safeNext(raw: string | null): string | null {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
@@ -86,6 +81,7 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNext(searchParams.get("next"));
+  const queryError = searchParams.get("error");
   const { me, account, signInLocal, signInPin, signInWithToken, signOut } = useSession();
 
   const [demoEnabled, setDemoEnabled] = useState(true);
@@ -101,7 +97,18 @@ function LoginPageContent() {
   const [accountNotice, setAccountNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [quickBusyId, setQuickBusyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!queryError) return;
+    const messages: Record<string, string> = {
+      accounts: "Vendor sign-in needs the local account service on :8101.",
+      vendor: "Vendor demo sign-in failed. Check the account service on :8101.",
+      hospital: "Hospital demo sign-in failed. Check the API on :8000.",
+      unknown: "Unknown demo account.",
+      missing: "Choose a demo role to continue.",
+    };
+    setError(messages[queryError] || "Sign-in failed. Try again.");
+  }, [queryError]);
 
   useEffect(() => {
     let active = true;
@@ -176,19 +183,7 @@ function LoginPageContent() {
       setError(friendlyError(cause instanceof Error ? cause.message : String(cause)));
     } finally {
       setBusy(false);
-      setQuickBusyId(null);
     }
-  }
-
-  async function instantRoleLogin(uid: string, pwd: string, targetPath: string) {
-    setUserId(uid);
-    setPassword(pwd);
-    setQuickBusyId(uid);
-    await run(async () => {
-      const result = await signInLocal(uid, pwd);
-      if (result.must_change_password) return "/signin";
-      return nextPath || result.destination || targetPath;
-    });
   }
 
   function signOutHere() {
@@ -319,52 +314,37 @@ function LoginPageContent() {
             )}
             {accountNotice && <p role="status" className="mt-3 text-sm text-teal">{accountNotice}</p>}
 
-            {/* Hospital session */}
+            {/* Hospital session — keep this screen short; security lives on Profile */}
             {me && (
-              <>
-                <SignedInCard name={me.display_name || me.user_id} detail={me.role.replace(/_/g, " ")}>
-                  <div className="mt-5 flex flex-wrap gap-2.5">
-                    <Link href={destinationForRole(me.role)} className="group auralis-btn-primary">
-                      {workspaceLabel(me.role)}
-                      <Icon name="arrow-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                    <button type="button" onClick={signOutHere} className="auralis-btn-secondary">
-                      Sign out
-                    </button>
-                  </div>
-                  {me.role === "operator" && (
-                    <p className="mt-4 text-xs leading-5 text-muted">
-                      Fleet overview uses the hospital operator session. For tenants, CRM and documents, sign out and use{" "}
-                      <code className="rounded bg-muted-surface px-1 font-mono">vendor@auralis.demo</code>.
-                    </p>
-                  )}
-                </SignedInCard>
-                {["password", "pin"].includes(me.auth_mode) && (
+              <section className="mt-6">
+                <p className="text-sm text-muted">Signed in</p>
+                <h1 className="mt-1 text-[1.5rem] font-semibold tracking-tight text-ink">
+                  {me.display_name || me.user_id}
+                </h1>
+                <p className="mt-1 text-sm capitalize text-muted">{me.role.replace(/_/g, " ")}</p>
+                <div className="mt-6 flex flex-wrap gap-2.5">
+                  <Link href={destinationForRole(me.role)} className="group auralis-btn-primary">
+                    {workspaceLabel(me.role)}
+                    <Icon name="arrow-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                  <Link href="/app/profile" className="auralis-btn-secondary">
+                    Profile & security
+                  </Link>
+                  <button type="button" onClick={signOutHere} className="auralis-btn-ghost">
+                    Sign out
+                  </button>
+                </div>
+                {me.must_change_password && (
                   <div className="mt-6">
-                    <AccountSecurity onDone={signOutHere} mustChange={me.must_change_password} />
+                    <AccountSecurity onDone={signOutHere} mustChange />
                   </div>
                 )}
-              </>
-            )}
-
-            {signedIn && (
-              <section className="mt-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Workspaces</p>
-                <div className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border">
-                  {WORKSPACES.map((item) => (
-                    <Link key={item.href} href={item.href} className="group flex items-center gap-3.5 bg-white px-4 py-3 transition-colors hover:bg-canvas">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted-surface text-navy">
-                        <Icon name={item.icon} size={16} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium text-ink">{item.title}</span>
-                        <span className="block text-xs text-muted">{item.detail}</span>
-                      </span>
-                      <Icon name="chevron-right" size={16} className="text-muted transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                  ))}
-                </div>
-                <p className="mt-2 text-xs text-muted">Workspaces outside your role will ask you to sign in with a different account.</p>
+                {me.role === "operator" && (
+                  <p className="mt-5 text-sm leading-6 text-muted">
+                    This is the Auralis fleet operator view (site health). Vendor CRM / tenants use a separate account:{" "}
+                    <code className="rounded border border-border bg-canvas px-1.5 py-0.5 font-mono text-ink">vendor@auralis.demo</code>.
+                  </p>
+                )}
               </section>
             )}
 
@@ -426,8 +406,8 @@ function LoginPageContent() {
                   />
                 </Field>
                 <button type="submit" disabled={busy} className="auralis-btn-primary mt-1 h-12 w-full">
-                  {busy && !quickBusyId ? <Spinner /> : null}
-                  {busy && !quickBusyId ? "Signing in…" : "Sign in"}
+                  {busy ? <Spinner /> : null}
+                  {busy ? "Signing in…" : "Sign in"}
                 </button>
                 <p className="text-center text-xs text-muted">Forgotten passwords are reset by your hospital IT administrator.</p>
               </form>
@@ -437,8 +417,7 @@ function LoginPageContent() {
             {!signedIn && demoEnabled && (
               <section className="mt-8" aria-labelledby="role-access-heading">
                 <div className="flex items-center gap-3">
-                  <span className="h-px flex-1 bg-border" />
-                  <h2 id="role-access-heading" className="text-xs font-medium text-muted">
+                  <h2 id="role-access-heading" className="shrink-0 text-xs font-medium text-muted">
                     Quick role access
                   </h2>
                   <span className="h-px flex-1 bg-border" />
@@ -459,50 +438,52 @@ function LoginPageContent() {
                   <div className="mt-3.5 grid gap-2 sm:grid-cols-2">
                     {demoAccounts.map((acct) => {
                       const meta = ROLE_META[acct.role] ?? ROLE_META.clinician;
-                      const launching = quickBusyId === acct.user_id;
                       return (
-                        <button
-                          key={acct.user_id}
-                          type="button"
-                          disabled={busy}
-                          onClick={() => void instantRoleLogin(acct.user_id, acct.password, acct.default_path)}
-                          className="group flex items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
-                            {launching ? <Spinner /> : <Icon name={meta.icon} size={16} />}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[13px] font-semibold text-ink">{acct.label}</span>
-                            <span className="block truncate text-xs text-muted">{launching ? "Signing in…" : meta.detail}</span>
-                          </span>
-                        </button>
+                        <form key={acct.user_id} action="/api/demo-login" method="post" className="min-w-0">
+                          <input type="hidden" name="user_id" value={acct.user_id} />
+                          {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
+                          <button
+                            type="submit"
+                            className="group flex w-full items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card"
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
+                              <Icon name={meta.icon} size={16} />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[13px] font-semibold text-ink">{acct.label}</span>
+                              <span className="block truncate text-xs text-muted">{meta.detail}</span>
+                            </span>
+                          </button>
+                        </form>
                       );
                     })}
                   </div>
                 </div>
 
-                <div className="my-5 flex items-center gap-3" aria-hidden="true">
-                  <span className="h-px flex-1 bg-border" />
-                  <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Vendor plane</span>
-                  <span className="h-px flex-1 bg-border" />
+                <div className="mt-5 flex items-center gap-3">
+                  <span className="shrink-0 text-xs font-medium text-muted">Vendor CRM</span>
+                  <span className="h-px flex-1 bg-border" aria-hidden="true" />
                 </div>
+                <p className="mt-2 text-xs leading-5 text-muted sm:max-w-md">
+                  Separate from fleet operator — tenants, licences and documents only.
+                </p>
 
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void instantRoleLogin(VENDOR_DEMO.user_id, VENDOR_DEMO.password, VENDOR_DEMO.default_path)}
-                  className="group flex w-full items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
-                    {quickBusyId === VENDOR_DEMO.user_id ? <Spinner /> : <Icon name={ROLE_META.vendor.icon} size={16} />}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold text-ink">{VENDOR_DEMO.label}</span>
-                    <span className="block truncate text-xs text-muted">
-                      {quickBusyId === VENDOR_DEMO.user_id ? "Signing in…" : ROLE_META.vendor.detail}
+                <form action="/api/demo-login" method="post" className="mt-3 sm:max-w-md">
+                  <input type="hidden" name="user_id" value={VENDOR_DEMO.user_id} />
+                  {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
+                  <button
+                    type="submit"
+                    className="group flex w-full items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-all hover:border-[#C3CDD3] hover:shadow-card"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted-surface text-navy transition-colors group-hover:bg-teal-soft group-hover:text-teal-dark">
+                      <Icon name={ROLE_META.vendor.icon} size={16} />
                     </span>
-                  </span>
-                </button>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-semibold text-ink">{VENDOR_DEMO.label}</span>
+                      <span className="block truncate text-xs text-muted">{ROLE_META.vendor.detail}</span>
+                    </span>
+                  </button>
+                </form>
 
                 <p className="mt-3 text-center text-xs text-muted">
                   Synthetic patients only. Shared password{" "}

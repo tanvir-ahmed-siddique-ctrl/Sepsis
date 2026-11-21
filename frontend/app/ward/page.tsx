@@ -105,11 +105,11 @@ export default function WardPage() {
         />
       )}
 
-      <ul className="divide-y divide-border/70">
+      <ul className="divide-y divide-border">
         {patients.map((patient) => {
           const news = patient.latest_news2;
           return (
-            <li key={patient.encounter_key} className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-1">
+            <li key={patient.encounter_key} className="flex flex-wrap items-start justify-between gap-4 border-border py-4 first:pt-1">
               <div className="min-w-0">
                 <p className="font-semibold text-ink">
                   {patient.bed_id || "—"} · {patient.display_name}

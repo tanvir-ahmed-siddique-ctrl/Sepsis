@@ -133,7 +133,7 @@ export default function AlertsPage() {
             }
           />
         )}
-        <ul className="divide-y divide-border/80">
+        <ul className="divide-y divide-[#C5CED6]">
           {open.map((a) => {
             const clock = reviewClock(a);
             return (

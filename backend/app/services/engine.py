@@ -1358,9 +1358,12 @@ class Engine:
             pred = {"probability": prob, "uncertainty": unc, "risk_band": band, "data_quality": quality,
                     "factors": factors}
 
+        # Fast ticks skip SHAP, but demo still needs TrustGate stability so
+        # high-risk beds can open interruptive alerts (otherwise they stick on
+        # verify_data / alert_stability_not_evaluated forever).
         perturbations = (
             []
-            if fast or pred["risk_band"] != "high_risk"
+            if pred["risk_band"] != "high_risk" or (fast and not settings.demo_mode)
             else self._perturbed_probabilities(raw)
         )
         trustgate = assess_prediction(
@@ -1434,11 +1437,9 @@ class Engine:
 
     def _maybe_alert(self, p: Patient, pred: dict, previous: str) -> None:
         band = pred["risk_band"]
-        if (
-            band != "high_risk"
-            or pred.get("trustgate", {}).get("state") != TrustState.alert.value
-            or BAND_ORDER[band] <= BAND_ORDER[previous]
-        ):
+        # Demo Main ICU soft-path: see _demo_soft_trust_ok.
+        trust_ok = self._demo_soft_trust_ok(p, pred.get("trustgate"))
+        if band != "high_risk" or not trust_ok or BAND_ORDER[band] <= BAND_ORDER[previous]:
             return
         active_alert = next((a for a in self.alerts.values()
                              if a.get("encounter_key") == p.encounter_key
@@ -1497,6 +1498,18 @@ class Engine:
             "site_mode": self.site.state.effective_mode,
         })
 
+    def _demo_soft_trust_ok(self, patient: Patient, trust: dict | None) -> bool:
+        trust = trust or {}
+        if trust.get("state") == TrustState.alert.value:
+            return True
+        if not (settings.demo_mode and patient.source_mode == "replay"):
+            return False
+        if trust.get("state") != TrustState.verify_data.value:
+            return False
+        reasons = set(trust.get("reasons") or [])
+        soft = {"alert_unstable_under_perturbation", "alert_stability_not_evaluated"}
+        return bool(reasons) and reasons <= soft
+
     def _reconcile_alerts(self, patient: Patient) -> None:
         for prediction in patient.predictions:
             prediction["alert_id"] = None
@@ -1505,7 +1518,7 @@ class Engine:
         for prediction in patient.predictions:
             trusted_alert = (
                 prediction["risk_band"] == "high_risk"
-                and prediction.get("trustgate", {}).get("state") == TrustState.alert.value
+                and self._demo_soft_trust_ok(patient, prediction.get("trustgate"))
             )
             if trusted_alert and previous != "high_risk":
                 desired = (prediction, previous)
@@ -1515,10 +1528,7 @@ class Engine:
                 else ("watch" if prediction["risk_band"] == "high_risk" else prediction["risk_band"])
             )
         desired_id = None
-        if (
-            desired
-            and patient.predictions[-1].get("trustgate", {}).get("state") == TrustState.alert.value
-        ):
+        if desired and self._demo_soft_trust_ok(patient, patient.predictions[-1].get("trustgate")):
             prediction, prior_band = desired
             self._maybe_alert(patient, prediction, prior_band)
             desired_id = prediction["alert_id"]

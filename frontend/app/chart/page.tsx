@@ -286,7 +286,7 @@ export default function ChartPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:gap-10">
-        <section>
+        <section className="flex min-h-0 flex-col">
           <h2 className="text-base font-semibold tracking-tight text-ink">{bn ? "বেড তালিকা" : "Bed list"}</h2>
           {!census.data?.encounters.length ? (
             <EmptyState
@@ -295,30 +295,32 @@ export default function ChartPage() {
               body={bn ? "রোগী ভর্তি করে শুরু করুন।" : "Admit a patient below to start charting."}
             />
           ) : (
-            <div className="mt-2 divide-y divide-border/70">
-              {census.data.encounters.map((row) => (
-                <button
-                  type="button"
-                  key={row.encounter_key}
-                  onClick={() => setSelected(row.encounter_key)}
-                  className={`flex w-full min-h-11 items-center justify-between gap-3 py-3 text-left transition-colors ${
-                    selected === row.encounter_key ? "bg-teal-soft/35" : "bg-transparent hover:bg-muted-surface/60"
-                  }`}
-                >
-                  <span className="min-w-0 px-1">
-                    <strong className="block truncate text-ink">
-                      {row.bed_id || "—"} · {row.display_name}
-                    </strong>
-                    <span className="mt-0.5 block truncate font-mono text-xs text-muted">{row.encounter_id}</span>
-                  </span>
-                  <span className="flex shrink-0 flex-wrap justify-end gap-1.5 px-1">
-                    {row.source_mode === "replay" && <Pill>{bn ? "বোর্ড সিঙ্ক" : "board sync"}</Pill>}
-                    {row.risk_band && <Pill>{row.risk_band.replace(/_/g, " ")}</Pill>}
-                    {row.observations_due && <Pill tone="warning">{bn ? "বাকি" : "due"}</Pill>}
-                    {row.latest_news2?.score != null && <Pill>NEWS2 {row.latest_news2.score}</Pill>}
-                  </span>
-                </button>
-              ))}
+            <div className="mt-2 max-h-[min(28rem,55vh)] overflow-y-auto overscroll-contain rounded-lg border border-[#D5DDE3] [scrollbar-width:thin]">
+              <div className="divide-y divide-[#C5CED6]">
+                {census.data.encounters.map((row) => (
+                  <button
+                    type="button"
+                    key={row.encounter_key}
+                    onClick={() => setSelected(row.encounter_key)}
+                    className={`flex w-full min-h-11 items-center justify-between gap-3 py-3 text-left transition-colors ${
+                      selected === row.encounter_key ? "bg-teal-soft/35" : "bg-transparent hover:bg-muted-surface/60"
+                    }`}
+                  >
+                    <span className="min-w-0 px-2">
+                      <strong className="block truncate text-ink">
+                        {row.bed_id || "—"} · {row.display_name}
+                      </strong>
+                      <span className="mt-0.5 block truncate font-mono text-xs text-muted">{row.encounter_id}</span>
+                    </span>
+                    <span className="flex shrink-0 flex-wrap justify-end gap-1.5 px-2">
+                      {row.source_mode === "replay" && <Pill>{bn ? "বোর্ড সিঙ্ক" : "board sync"}</Pill>}
+                      {row.risk_band && <Pill>{row.risk_band.replace(/_/g, " ")}</Pill>}
+                      {row.observations_due && <Pill tone="warning">{bn ? "বাকি" : "due"}</Pill>}
+                      {row.latest_news2?.score != null && <Pill>NEWS2 {row.latest_news2.score}</Pill>}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </section>
@@ -466,7 +468,7 @@ export default function ChartPage() {
         </section>
       </div>
 
-      <details className="group rounded-xl bg-[#F7F9FA] p-5">
+      <details className="group rounded-xl bg-[#EEF5F3] p-5">
         <summary className="cursor-pointer list-none text-sm font-semibold text-ink marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
             <Icon name="chevron-right" size={16} className="transition-transform group-open:rotate-90" />

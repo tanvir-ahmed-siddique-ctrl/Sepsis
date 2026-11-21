@@ -54,30 +54,38 @@ export async function POST(request: NextRequest, context: Context) {
     token = typeof body?.token === "string" ? body.token.trim() : "";
     if (!token) return NextResponse.json({ detail: "Token required" }, { status: 422 });
   } else {
-    const body = await request.json().catch(() => null);
+    let body = await request.json().catch(() => null);
     if (!body || typeof body.user_id !== "string") return NextResponse.json({ detail: "Invalid sign-in request" }, { status: 422 });
     if (action === "login" && body.user_id.includes("@")) {
       const loginUrl = accountApiUrl("v1/auth/login");
       const identityUrl = accountApiUrl("v1/auth/me");
-      if (!loginUrl || !identityUrl) return NextResponse.json({ detail: "Organization account service is not configured" }, { status: 503 });
-      const accountLogin = await fetch(loginUrl, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: body.user_id, password: body.password, totp_code: body.totp_code || null }), cache: "no-store",
-      });
-      const accountResult = await accountLogin.json().catch(() => ({}));
-      if (!accountLogin.ok) return NextResponse.json({ detail: accountResult.detail || "Sign-in failed" }, { status: accountLogin.status });
-      const accountIdentity = await fetch(identityUrl, { headers: { Authorization: `Bearer ${accountResult.access_token}` }, cache: "no-store" });
-      if (!accountIdentity.ok) return NextResponse.json({ detail: "Identity validation failed" }, { status: 401 });
-      const identity = await accountIdentity.json() as { workspaces?: Array<{ path: string }> };
-      const destination = identity.workspaces?.[0]?.path;
-      if (!destination || !["/portal", "/platform/accounts"].includes(destination)) return NextResponse.json({ detail: "No account workspace assigned" }, { status: 403 });
-      const response = NextResponse.json({ signed_in: true, must_change_password: Boolean(accountResult.must_change_password), destination });
-      response.cookies.set(ACCOUNT_SESSION_COOKIE, accountResult.access_token, {
-        httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/",
-        maxAge: Math.min(Number(accountResult.expires_in_seconds) || 900, 8 * 3600),
-      });
-      response.cookies.delete(SESSION_COOKIE);
-      return response;
+      if (loginUrl && identityUrl) {
+        const accountLogin = await fetch(loginUrl, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: body.user_id, password: body.password, totp_code: body.totp_code || null }), cache: "no-store",
+        });
+        const accountResult = await accountLogin.json().catch(() => ({}));
+        if (!accountLogin.ok) return NextResponse.json({ detail: accountResult.detail || "Sign-in failed" }, { status: accountLogin.status });
+        const accountIdentity = await fetch(identityUrl, { headers: { Authorization: `Bearer ${accountResult.access_token}` }, cache: "no-store" });
+        if (!accountIdentity.ok) return NextResponse.json({ detail: "Identity validation failed" }, { status: 401 });
+        const identity = await accountIdentity.json() as { workspaces?: Array<{ path: string }> };
+        const destination = identity.workspaces?.[0]?.path;
+        if (!destination || !["/portal", "/platform/accounts"].includes(destination)) return NextResponse.json({ detail: "No account workspace assigned" }, { status: 403 });
+        const response = NextResponse.json({ signed_in: true, must_change_password: Boolean(accountResult.must_change_password), destination });
+        response.cookies.set(ACCOUNT_SESSION_COOKIE, accountResult.access_token, {
+          httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/",
+          maxAge: Math.min(Number(accountResult.expires_in_seconds) || 900, 8 * 3600),
+        });
+        response.cookies.delete(SESSION_COOKIE);
+        return response;
+      }
+      return NextResponse.json(
+        {
+          detail:
+            "Vendor / organisation sign-in needs the account service (start control-plane on :8101 and set ACCOUNT_API_INTERNAL_URL). Hospital fleet operator is a different role — use demo-operator.",
+        },
+        { status: 503 },
+      );
     }
     const upstream = await fetch(hospitalApiUrl(action === "pin" ? "v1/auth/pin-login" : "v1/auth/login"), {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store",
@@ -90,7 +98,12 @@ export async function POST(request: NextRequest, context: Context) {
   }
   const identity = await fetch(hospitalApiUrl("v1/auth/me"), { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
   if (!identity.ok) return NextResponse.json({ detail: "Identity validation failed" }, { status: 401 });
-  const response = NextResponse.json({ signed_in: true, must_change_password: mustChange, destination: null });
+  const me = await identity.json().catch(() => ({})) as { role?: string; default_path?: string };
+  const destination =
+    me.role === "operator" || me.default_path?.startsWith("/platform")
+      ? me.default_path || "/platform/overview"
+      : null;
+  const response = NextResponse.json({ signed_in: true, must_change_password: mustChange, destination });
   response.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/", maxAge });
   response.cookies.delete(ACCOUNT_SESSION_COOKIE);
   return response;

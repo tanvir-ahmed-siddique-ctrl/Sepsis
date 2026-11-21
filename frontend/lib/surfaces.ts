@@ -35,15 +35,13 @@ const PUBLIC_PREFIXES = [
   "/api-reference",
 ];
 
-/** Integration / commissioning surfaces — not general hospital-admin pages. */
+/**
+ * Dedicated deployment / fleet commissioning surfaces.
+ * Hospital-admin Technical pages stay under /app/admin/* so the hospital nav
+ * hierarchy does not swap to a different role shell.
+ */
 const DEPLOY_PREFIXES = [
   "/deploy",
-  "/app/admin/integrations",
-  "/app/admin/connections",
-  "/app/admin/readiness",
-  "/app/admin/operations",
-  "/app/admin/pilot",
-  "/app/admin/licence",
   "/hospital-admin",
   "/admin/setup",
   "/integration",
@@ -53,11 +51,18 @@ const DEPLOY_PREFIXES = [
   "/operations",
 ];
 
-/** Hospital-admin product pages stay in the hospital shell. */
+/** Hospital-admin product pages stay in the hospital shell (including Technical). */
 const HOSPITAL_ADMIN_PREFIXES = [
   "/app/admin/overview",
   "/app/admin/users",
   "/app/admin/setup",
+  "/app/admin/shift-roster",
+  "/app/admin/integrations",
+  "/app/admin/connections",
+  "/app/admin/readiness",
+  "/app/admin/operations",
+  "/app/admin/pilot",
+  "/app/admin/licence",
   "/admin/users",
 ];
 

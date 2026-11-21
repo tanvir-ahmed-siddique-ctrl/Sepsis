@@ -25,8 +25,6 @@ const SLIDES: Array<{
     badge: "Patient trend",
     title: "See why the risk rose — never an unexplained black-box number",
     caption: "Inspect serial MAP, heart rate, lactate slopes and Aurie AI guideline checklists right beside the trend.",
-    ctaHref: "/signin?next=/app/chart",
-    ctaLabel: "Open bedside charting",
   },
   {
     id: "trustgate",

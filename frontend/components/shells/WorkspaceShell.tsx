@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FlashHost } from "@/components/FlashToast";
 import { BrandGlyph, BrandMark } from "@/components/ui/BrandMark";
@@ -48,6 +49,7 @@ export function WorkspaceShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const { locale } = useLocale();
   const { me, account, signOut } = useSession();
   const [open, setOpen] = useState(false);
@@ -251,20 +253,10 @@ export function WorkspaceShell({
       )}
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-md">
+        <header className="sticky top-0 z-40 bg-white/80 shadow-[0_8px_30px_-18px_rgba(18,28,38,0.45)] backdrop-blur-xl">
           <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
             <button type="button" className="auralis-icon-btn h-10 w-10 shrink-0 lg:hidden" aria-expanded={open} aria-label="Open navigation" onClick={() => setOpen(true)}>
               <Icon name="menu" size={18} />
-            </button>
-            <button
-              type="button"
-              className="auralis-icon-btn hidden h-10 w-10 shrink-0 lg:inline-flex"
-              onClick={toggleCollapsed}
-              aria-pressed={collapsed}
-              aria-label={collapsed ? "Expand navigation" : "Minimize navigation"}
-              title={collapsed ? "Expand navigation" : "Minimize navigation"}
-            >
-              <Icon name={collapsed ? "panel-right" : "panel-left"} size={16} />
             </button>
             <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
               <Link href={homeHref} className="hidden truncate text-muted hover:text-ink sm:inline">
@@ -297,9 +289,9 @@ export function WorkspaceShell({
                   onClick={() => setMenuOpen((v) => !v)}
                   aria-expanded={menuOpen}
                   aria-haspopup="menu"
-                  className="flex items-center gap-2 rounded-full border border-border bg-white py-1 pl-1 pr-2.5 text-sm transition-colors hover:border-[#C3CDD3]"
+                  className="flex items-center gap-2 rounded-full border border-border bg-white py-1 pl-1 pr-2.5 text-sm transition-colors hover:border-[#C3CDD3] hover:shadow-soft"
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy text-[11px] font-semibold text-white">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full border border-navy/20 bg-navy text-[11px] font-semibold text-white">
                     {identity.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="hidden max-w-[10rem] truncate font-medium text-ink sm:inline">{identity}</span>
@@ -338,6 +330,29 @@ export function WorkspaceShell({
                 )}
               </div>
             </div>
+          </div>
+          {/* Liquid glass edge — soft gradient ribbon that drifts under the sticky bar */}
+          <div className="pointer-events-none relative h-px overflow-hidden" aria-hidden>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#D5DDE3] to-transparent opacity-80" />
+            {!reduceMotion && (
+              <motion.div
+                className="absolute inset-y-0 w-[42%] rounded-full"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent, rgba(79,168,183,0.15), rgba(40,122,136,0.85), rgba(79,168,183,0.15), transparent)",
+                  filter: "blur(0.4px)",
+                }}
+                animate={{ x: ["-20%", "180%"] }}
+                transition={{ duration: 4.8, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }}
+              />
+            )}
+            {!reduceMotion && (
+              <motion.div
+                className="absolute -bottom-[2px] left-1/2 h-[3px] w-28 -translate-x-1/2 rounded-full bg-[#287A88]/35 blur-[3px]"
+                animate={{ opacity: [0.25, 0.55, 0.25], scaleX: [0.85, 1.15, 0.85] }}
+                transition={{ duration: 3.2, ease: "easeInOut", repeat: Infinity }}
+              />
+            )}
           </div>
         </header>
         <main id="workspace-content" className="auralis-workspace min-w-0 flex-1 overflow-x-clip px-3 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">

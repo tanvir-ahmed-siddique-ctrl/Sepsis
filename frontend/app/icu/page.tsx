@@ -185,7 +185,7 @@ export default function OverviewPage() {
           {data.patients.map((p) => (
             <article
               key={p.patient_id}
-              className={`min-w-0 rounded-xl bg-[#F7F9FA] p-4 ${
+              className={`min-w-0 rounded-xl bg-[#EEF5F3] p-4 ${
                 p.review_overdue
                   ? "ring-2 ring-risk-high"
                   : p.unresolved_alerts

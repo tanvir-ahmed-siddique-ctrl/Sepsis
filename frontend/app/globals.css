@@ -11,15 +11,15 @@
 
   --navy: #0b1422;
   --navy-800: #142538;
-  --canvas: #f7f9fa;
+  --canvas: #fafbf9;
   --surface: #ffffff;
-  --surface-muted: #f1f4f6;
-  --ink: #17232d;
-  --muted: #63717d;
+  --surface-muted: #eef5f3;
+  --ink: #121c26;
+  --muted: #4f5c68;
   --teal: #287a88;
   --teal-dark: #1f6370;
   --teal-light: #4fa8b7;
-  --border: #e3e8ec;
+  --border: #d5dde3;
 
   /* Legacy aliases */
   --bg: #ffffff;
@@ -108,7 +108,7 @@
   }
 
   .auralis-eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-teal;
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-teal-dark;
   }
 
   .auralis-label {
@@ -186,13 +186,21 @@
   }
 
   /* ---------- Surfaces ---------- */
-  /* Soft surface — no box border (clinical boards already have enough chrome) */
+  /* Soft mint wash — replaces the flat blue-gray #F7F9FA fill */
   .auralis-panel {
-    @apply rounded-xl border-0 bg-[#F7F9FA] p-5 shadow-none;
+    @apply rounded-xl border-0 bg-[#EEF5F3] p-5 shadow-none;
+  }
+
+  .auralis-panel-flush {
+    @apply border-0 bg-transparent p-0 shadow-none rounded-none border-b border-border/80 pb-6 last:border-b-0 last:pb-0;
   }
 
   .auralis-card-link {
-    @apply block rounded-xl border-0 bg-[#F7F9FA] p-5 shadow-none transition-colors hover:bg-[#EEF2F4];
+    @apply block rounded-xl border-0 bg-[#EEF5F3] p-5 shadow-none transition-colors hover:bg-[#E4EFEC];
+  }
+
+  .auralis-soft-surface {
+    @apply rounded-xl bg-[#EEF5F3];
   }
 
   .auralis-table {
@@ -240,14 +248,26 @@
     @apply h-4 w-4 accent-[#287A88];
   }
 
+  /* Plain CSS only — do not @apply hover:* under `button…` selectors.
+     Tailwind + Lightning CSS was emitting invalid `:hoverbutton` and killing
+     the whole client stylesheet (ICU stuck on “Connecting…”, motion dead). */
   .auralis-workspace button:not([class*="auralis-"]):not([class*="risk-"]):not([role="tab"]) {
-    @apply rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-[#C3CDD3] hover:bg-[#FBFCFC] disabled:cursor-not-allowed disabled:opacity-50;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: #fff;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink);
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
   }
-
-  .auralis-workspace button.bg-accent:not([class*="auralis-"]),
-  .auralis-workspace button.bg-forest:not([class*="auralis-"]),
-  .auralis-workspace button.bg-ink:not([class*="auralis-"]) {
-    @apply border-transparent bg-navy text-white hover:bg-navy-800 hover:text-white;
+  .auralis-workspace button:not([class*="auralis-"]):not([class*="risk-"]):not([role="tab"]):hover {
+    border-color: #c3cdd3;
+    background-color: #fbfcfc;
+  }
+  .auralis-workspace button:not([class*="auralis-"]):not([class*="risk-"]):not([role="tab"]):disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .auralis-workspace table:not(.auralis-table) thead {

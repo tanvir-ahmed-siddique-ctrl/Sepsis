@@ -52,7 +52,7 @@ export function ReplayControls({
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-[#F7F9FA] px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-4">
+    <div className="flex flex-col gap-3 rounded-xl bg-[#EEF5F3] px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-4">
       <p className="text-xs leading-5 text-muted sm:mr-auto sm:max-w-md">
         {modeBlocked
           ? `Site mode is ${siteMode}. Switch back to demo operating mode to advance the Main ICU timeline.`

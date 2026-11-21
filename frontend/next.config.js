@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  // Local demo is often opened as http://127.0.0.1:3000 while Next prints
+  // localhost — without this, Turbopack blocks /_next HMR/chunks and the UI
+  // looks frozen (“Connecting to local feed…”, dead motion, dead clicks).
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   // Single-container demo: browser calls /api and /fleet on the same origin.
   // Use `fallback` so Next BFF routes (/api/session, /api/hospital, /api/account,
   // /api/demo-accounts, …) win first; only unmatched /api/* goes to FastAPI.

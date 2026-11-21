@@ -219,7 +219,7 @@ DEMO_QUICK_ROLES = [
     {"user_id": "demo-nurse", "label": "Bedside ICU Nurse", "role": "nurse", "default_path": "/app/chart", "password": "auralis-demo-2026"},
     {"user_id": "demo-admin", "label": "Hospital Admin", "role": "admin", "default_path": "/app/admin/overview", "password": "auralis-demo-2026"},
     {"user_id": "demo-it", "label": "Clinical IT / Deployment", "role": "clinical_it", "default_path": "/deploy", "password": "auralis-demo-2026"},
-    {"user_id": "demo-operator", "label": "Vendor Fleet Operator", "role": "operator", "default_path": "/platform/overview", "password": "auralis-demo-2026"},
+    {"user_id": "demo-operator", "label": "Auralis fleet operator", "role": "operator", "default_path": "/platform/overview", "password": "auralis-demo-2026"},
 ]
 
 

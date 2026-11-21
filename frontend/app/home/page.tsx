@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandSplash } from "@/components/marketing/BrandSplash";
+import { HeroAmbient } from "@/components/marketing/HeroAmbient";
 import { HeroEntrance } from "@/components/marketing/HeroEntrance";
 import { HeroHeadline } from "@/components/marketing/HeroHeadline";
 import { IntegrationOrbit } from "@/components/marketing/IntegrationOrbit";
@@ -107,13 +108,14 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-x-clip border-b border-[#C9E6D6]/80">
         <div className="auralis-mist auralis-mist-green pointer-events-none absolute inset-0" aria-hidden="true" />
+        <HeroAmbient />
         <HeroEntrance
           copy={
             <>
               <div data-hero-slot="1" className="min-w-0">
                 <HeroHeadline />
               </div>
-              <p data-hero-slot="2" className="mt-5 max-w-md text-[15px] leading-6 text-[#4A6356] sm:mt-8 sm:text-[16px] sm:leading-7">
+              <p data-hero-slot="2" className="mt-5 max-w-md font-sans text-[15px] leading-6 text-[#3F564A] sm:mt-8 sm:text-[16px] sm:leading-7">
                 Hospital-local intelligence. Explainable drivers. Clinician still in command.
               </p>
               <div data-hero-slot="3" className="mt-6 flex w-full flex-col gap-2.5 sm:mt-9 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
@@ -125,7 +127,7 @@ export default function HomePage() {
                   Book a consultation
                 </Link>
               </div>
-              <dl data-hero-slot="4" className="mt-8 grid max-w-md grid-cols-3 gap-2 border-t border-border/80 pt-5 sm:mt-12 sm:gap-3 sm:pt-6">
+              <dl data-hero-slot="4" className="mt-8 grid max-w-md grid-cols-3 gap-2 border-t border-border/80 pt-5 font-sans sm:mt-12 sm:gap-3 sm:pt-6">
                 {[
                   ["Horizon", "6 hours"],
                   ["Where", "On-prem"],
@@ -144,7 +146,7 @@ export default function HomePage() {
       </section>
 
       {/* Model + deployment — short */}
-      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-white py-12 sm:py-16 lg:py-20">
+      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-white py-16 sm:py-24 lg:py-32">
         <div className="auralis-container-public relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
           <Reveal className="max-w-2xl" variant="left">
             <h2 className="text-[1.65rem] font-semibold leading-tight tracking-[-0.03em] text-navy sm:text-[2.25rem]">
@@ -173,7 +175,7 @@ export default function HomePage() {
       </section>
 
       {/* Pipeline */}
-      <section className="border-b border-[#C9E6D6]/70 bg-[#EAF6EF] py-12 sm:py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-[#EAF6EF] py-16 sm:py-24 lg:py-32">
         <div className="auralis-container-public">
           <Reveal className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4" variant="up">
             <div className="max-w-xl">
@@ -187,14 +189,14 @@ export default function HomePage() {
               <Icon name="arrow-right" size={16} />
             </Link>
           </Reveal>
-          <Reveal delayMs={80} variant="scale" className="mt-8 min-w-0 sm:mt-10">
+          <Reveal delayMs={80} variant="scale" className="mt-10 min-w-0 sm:mt-14">
             <PipelineExplorer />
           </Reveal>
         </div>
       </section>
 
       {/* Connection story — mid page, wide, flat scroll-lit */}
-      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-white py-12 sm:py-16 lg:py-24">
+      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-white py-16 sm:py-24 lg:py-32">
         <div className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-[#A8D9BE]/45 blur-3xl sm:-right-24 sm:h-72 sm:w-72" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[110rem] px-4 sm:px-8 lg:px-12 xl:px-16">
           <Reveal className="mx-auto max-w-3xl text-center" variant="up">
@@ -205,10 +207,10 @@ export default function HomePage() {
               Scroll — sources wake, the LAN pipe lights, risk reaches the board.
             </p>
           </Reveal>
-          <Reveal delayMs={80} variant="up" className="mt-8 min-w-0 sm:mt-10">
+          <Reveal delayMs={80} variant="up" className="mt-10 min-w-0 sm:mt-14">
             <IntegrationOrbit />
           </Reveal>
-          <Reveal delayMs={120} className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-2">
+          <Reveal delayMs={120} className="mt-10 flex flex-wrap justify-center sm:mt-12 gap-x-5 gap-y-2">
             <Link href="/deployment-integration" className="auralis-link">
               Integration path
               <Icon name="arrow-right" size={15} />
@@ -222,7 +224,7 @@ export default function HomePage() {
       </section>
 
       {/* Score anatomy */}
-      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-12 sm:py-16 lg:py-20">
+      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-16 sm:py-24 lg:py-32">
         <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-full bg-[#B7E0C8]/40 blur-3xl sm:h-64 sm:w-64" aria-hidden="true" />
         <div className="auralis-container-public relative grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
           <Reveal variant="left">
@@ -256,14 +258,14 @@ export default function HomePage() {
       </section>
 
       {/* Product surfaces */}
-      <section className="border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-12 sm:py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-[#F4FAF6] py-16 sm:py-24 lg:py-32">
         <div className="auralis-container-public">
           <Reveal className="max-w-xl">
             <h2 className="text-[1.65rem] font-semibold leading-tight tracking-[-0.03em] text-navy sm:text-[2.25rem]">
               One platform. Every role.
             </h2>
           </Reveal>
-          <div className="mt-8 overflow-hidden rounded-2xl border border-[#D0E0D6] bg-white shadow-card sm:mt-10">
+          <div className="mt-10 overflow-hidden rounded-2xl sm:mt-14 border border-[#D0E0D6] bg-white shadow-card sm:mt-10">
             {SURFACES.map((item, idx) => (
               <Reveal key={item.title} delayMs={(idx % 3) * 40} variant="up">
                 <Link
@@ -295,7 +297,7 @@ export default function HomePage() {
       </section>
 
       {/* FDE */}
-      <section className="relative overflow-x-clip bg-navy py-12 text-white sm:py-16 lg:py-20">
+      <section className="relative overflow-x-clip bg-navy py-16 text-white sm:py-24 lg:py-32">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(115,195,207,0.18),transparent_55%)]" aria-hidden="true" />
         <div className="auralis-container-public relative">
           <Reveal className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-5">
@@ -312,7 +314,7 @@ export default function HomePage() {
               <Icon name="arrow-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
           </Reveal>
-          <div className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:mt-10 lg:grid-cols-3">
+          <div className="mt-10 grid gap-px sm:mt-14 overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:mt-10 lg:grid-cols-3">
             {ENGAGEMENT.map((tier, idx) => (
               <Reveal key={tier.badge} as="article" delayMs={idx * 90} variant="up" className="flex flex-col bg-navy/90 p-5 transition-colors hover:bg-navy-800 sm:p-6">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#73C3CF]">{tier.badge}</span>
@@ -329,13 +331,13 @@ export default function HomePage() {
       </section>
 
       {/* Safety + sign-in */}
-      <section className="border-b border-[#C9E6D6]/70 bg-white py-12 sm:py-16 lg:py-20">
+      <section className="border-b border-[#C9E6D6]/70 bg-white py-16 sm:py-24 lg:py-32">
         <div className="auralis-container-public grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16">
           <Reveal>
             <h2 className="text-[1.65rem] font-semibold leading-tight tracking-[-0.03em] text-navy sm:text-[2.25rem]">
               Data stays local. Clinicians decide.
             </h2>
-            <ul className="mt-7 space-y-4">
+            <ul className="mt-10 space-y-5">
               {[
                 ["shield", "TrustGate", "Stale or conflicting inputs → no misleading score."],
                 ["user", "Auri AI", "Local co-pilot for mapping & context — never changes the sepsis probability. Language: English / বাংলা."],
@@ -352,7 +354,7 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2">
+            <div className="mt-10 flex flex-wrap gap-x-5 gap-y-2">
               <Link href="/security" className="auralis-link">
                 Security
                 <Icon name="arrow-right" size={15} />

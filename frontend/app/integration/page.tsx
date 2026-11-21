@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { flash } from "@/components/FlashToast";
 import { MappingCopilot } from "@/components/MappingCopilot";
 import { ApiError, FileDrop, KeyValue, Panel, Pill, SiteModeBanner, Stat } from "@/components/ui";
 import { api, isStatus, pct, type ConnectorHealth, type SiteMode } from "@/lib/api";
 import { connectorTone, humanize, minutesLabel } from "@/lib/pilot";
 import { usePoll } from "@/lib/usePoll";
+import { useSession } from "@/lib/session";
 
 const INTEGRATION_MAX_BYTES = 10 * 1024 * 1024;
 
@@ -49,7 +51,10 @@ type QuarantineEvent = { audit_id: string; recorded_at: string; reason: string; 
 type Mapping = { code: string; system: string; display: string; target: string; unit: string; accepted_units: string[] };
 
 export default function IntegrationPage() {
+  const { me } = useSession();
+  const canIngest = me?.role === "admin" || me?.role === "clinical_it";
   const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvBackfill, setCsvBackfill] = useState(false);
   const [adtFile, setAdtFile] = useState<File | null>(null);
@@ -63,18 +68,31 @@ export default function IntegrationPage() {
   const quarantine = usePoll(() => api<{ events: QuarantineEvent[] }>("/v1/integrations/quarantine?limit=25"), 10000);
   const mappings = usePoll(() => api<{ entries: Mapping[]; version: string }>("/v1/integrations/mappings"), 60000);
 
+  function report(text: string, tone: "ok" | "err" = "ok") {
+    setMessage(text);
+    flash(text, tone);
+  }
+
   async function act(path: string, done: (body: Record<string, unknown>) => string) {
     try {
       const body = await api<Record<string, unknown>>(path, { method: "POST" });
-      setMessage(done(body));
+      report(done(body));
       await Promise.all([status.refresh(), events.refresh(), quarantine.refresh()]);
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : String(cause));
+      report(cause instanceof Error ? cause.message : String(cause), "err");
     }
   }
 
   async function uploadCsv() {
-    if (!csvFile) return;
+    if (!canIngest) {
+      report("Sign in as Clinical IT (demo-it) or Hospital Admin to import feeds.", "err");
+      return;
+    }
+    if (!csvFile) {
+      report("Choose a lab CSV file first.", "err");
+      return;
+    }
+    setBusy("csv");
     try {
       const body = await api<Record<string, unknown>>(`/v1/integrations/csv/lab?backfill=${csvBackfill}`, {
         method: "POST",
@@ -84,32 +102,52 @@ export default function IntegrationPage() {
         },
         body: await csvFile.text(),
       });
-      setMessage(`CSV import: ${body.accepted} accepted; ${(body.quarantined as unknown[])?.length ?? 0} quarantined.`);
+      report(`CSV import: ${body.accepted} accepted; ${(body.quarantined as unknown[])?.length ?? 0} quarantined.`);
       await Promise.all([status.refresh(), events.refresh(), quarantine.refresh()]);
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : String(cause));
+      report(cause instanceof Error ? cause.message : String(cause), "err");
+    } finally {
+      setBusy(null);
     }
   }
 
   async function uploadAdt() {
-    if (!adtFile) return;
+    if (!canIngest) {
+      report("Sign in as Clinical IT (demo-it) or Hospital Admin to import feeds.", "err");
+      return;
+    }
+    if (!adtFile) {
+      report("Choose an ADT .hl7 / .txt file first.", "err");
+      return;
+    }
+    setBusy("adt");
     try {
       const body = await api<{ event: string; duplicate: boolean; encounter: { display_name: string; unit_id: string; bed_id: string | null; status: string } }>(
         "/v1/integrations/hl7v2/adt",
         { method: "POST", headers: { "Content-Type": "text/plain; charset=utf-8" }, body: await adtFile.text() },
       );
-      setMessage(
+      report(
         `ADT ${body.event}${body.duplicate ? " replay" : ""}: ${body.encounter.display_name} · ${body.encounter.unit_id}` +
         `${body.encounter.bed_id ? ` / ${body.encounter.bed_id}` : ""} · ${body.encounter.status}.`,
       );
       await status.refresh();
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : String(cause));
+      report(cause instanceof Error ? cause.message : String(cause), "err");
+    } finally {
+      setBusy(null);
     }
   }
 
   async function uploadVendorAdapter() {
-    if (!vendorFile) return;
+    if (!canIngest) {
+      report("Sign in as Clinical IT (demo-it) or Hospital Admin to import feeds.", "err");
+      return;
+    }
+    if (!vendorFile) {
+      report("Choose a vendor adapter JSON file first.", "err");
+      return;
+    }
+    setBusy("vendor");
     try {
       const body = await api<Record<string, unknown>>(`/v1/integrations/vendor-adapter?backfill=${vendorBackfill}`, {
         method: "POST",
@@ -119,10 +157,12 @@ export default function IntegrationPage() {
         },
         body: await vendorFile.text(),
       });
-      setMessage(`Vendor adapter: ${body.accepted} accepted; ${(body.quarantined as unknown[])?.length ?? 0} quarantined.`);
+      report(`Vendor adapter: ${body.accepted} accepted; ${(body.quarantined as unknown[])?.length ?? 0} quarantined.`);
       await Promise.all([status.refresh(), events.refresh(), quarantine.refresh()]);
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : String(cause));
+      report(cause instanceof Error ? cause.message : String(cause), "err");
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -206,7 +246,23 @@ export default function IntegrationPage() {
           spooled until the active writer is available.
         </p>
       )}
-      {message && <p className="border border-accent/30 bg-accent/5 px-3 py-2 text-sm">{message}</p>}
+      {!canIngest && me && (
+        <p className="rounded-lg border border-risk-watch/30 bg-risk-watch/5 px-3 py-2 text-sm text-ink">
+          Signed in as <strong>{me.role}</strong>. Lab / ADT / adapter import needs Clinical IT (<code>demo-it</code>) or Hospital Admin.
+        </p>
+      )}
+      {message && (
+        <p
+          role="status"
+          className={`rounded-lg border px-3 py-2 text-sm ${
+            /insufficient|forbidden|403|choose a|sign in as|failed|error|lacks|unauthorized/i.test(message)
+              ? "border-risk-high/30 bg-risk-high/5 text-risk-high"
+              : "border-accent/30 bg-accent/5 text-ink"
+          }`}
+        >
+          {message}
+        </p>
+      )}
 
       {data && (
         <div className="flex flex-wrap gap-3">
@@ -315,8 +371,8 @@ export default function IntegrationPage() {
               <input type="checkbox" checked={csvBackfill} onChange={(event) => setCsvBackfill(event.target.checked)} />
               Retrospective backfill (shadow alerts only)
             </label>
-            <button type="button" disabled={!csvFile} onClick={() => void uploadCsv()} className="auralis-btn-primary auralis-btn-sm">
-              Validate and import
+            <button type="button" disabled={busy === "csv"} onClick={() => void uploadCsv()} className="auralis-btn-primary auralis-btn-sm">
+              {busy === "csv" ? "Importing…" : "Validate and import"}
             </button>
           </div>
         </Panel>
@@ -327,8 +383,8 @@ export default function IntegrationPage() {
           </p>
           <div className="space-y-3 text-sm">
             <FileDrop label="ADT message" accept=".hl7,.txt,text/plain" acceptLabel="HL7 v2 (.hl7 or .txt)" maxBytes={INTEGRATION_MAX_BYTES} file={adtFile} onFile={setAdtFile} compact />
-            <button type="button" disabled={!adtFile} onClick={() => void uploadAdt()} className="auralis-btn-primary auralis-btn-sm">
-              Validate and apply ADT
+            <button type="button" disabled={busy === "adt"} onClick={() => void uploadAdt()} className="auralis-btn-primary auralis-btn-sm">
+              {busy === "adt" ? "Applying…" : "Validate and apply ADT"}
             </button>
           </div>
         </Panel>
@@ -347,8 +403,8 @@ export default function IntegrationPage() {
               <input type="checkbox" checked={vendorBackfill} onChange={(event) => setVendorBackfill(event.target.checked)} />
               Retrospective backfill (shadow alerts only)
             </label>
-            <button type="button" disabled={!vendorFile} onClick={() => void uploadVendorAdapter()} className="auralis-btn-primary auralis-btn-sm">
-              Validate and import adapter batch
+            <button type="button" disabled={busy === "vendor"} onClick={() => void uploadVendorAdapter()} className="auralis-btn-primary auralis-btn-sm">
+              {busy === "vendor" ? "Importing…" : "Validate and import adapter batch"}
             </button>
           </div>
         </Panel>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { Icon } from "@/components/ui/Icon";
@@ -59,9 +60,11 @@ const NAV: NavItem[] = [
 
 export function PublicHeader() {
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [signinHover, setSigninHover] = useState(false);
   const root = useRef<HTMLElement>(null);
   const scrolledRef = useRef(false);
 
@@ -116,16 +119,16 @@ export function PublicHeader() {
           : "border-transparent bg-[#F3FAFB]/80 shadow-none"
       }`}
     >
-      <div className="auralis-container-public flex h-full items-center justify-between gap-2 sm:gap-4">
+      <div className="auralis-container-public flex h-full items-center justify-between gap-2 font-sans sm:gap-4">
         <div className="min-w-0 shrink">
           <BrandMark compact />
         </div>
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-0.5 font-sans lg:flex" aria-label="Primary">
           {NAV.map((item) => {
             const isCurrent = active(item);
             const isOpen = menu === item.href;
-            const base = `inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors sm:px-3 sm:text-[14px] ${
+            const base = `inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 font-sans text-[13px] font-medium tracking-normal transition-colors sm:px-3 sm:text-[13.5px] ${
               isCurrent || isOpen ? "text-ink" : "text-muted hover:text-ink"
             } ${isOpen ? "bg-muted-surface" : "hover:bg-muted-surface/70"}`;
             return (
@@ -194,8 +197,30 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <Link href="/signin" className="auralis-btn-ghost hidden h-9 text-ink sm:inline-flex">
+          <Link
+            href="/signin"
+            className="auralis-btn-ghost relative hidden h-9 overflow-hidden text-ink sm:inline-flex"
+            onMouseEnter={() => setSigninHover(true)}
+            onMouseLeave={() => setSigninHover(false)}
+            onFocus={() => setSigninHover(true)}
+            onBlur={() => setSigninHover(false)}
+          >
             Sign in
+            <motion.span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-2 bottom-1.5 h-[2px] origin-left rounded-full bg-[#287A88]"
+              initial={{ scaleX: 0, opacity: 0 }}
+              animate={{
+                scaleX: signinHover ? 1 : 0,
+                opacity: signinHover ? 1 : 0,
+              }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { type: "spring", stiffness: 420, damping: 28, mass: 0.6 }
+              }
+              style={{ originX: 0 }}
+            />
           </Link>
           <Link href="/contact" className="auralis-btn-primary h-9 min-h-0 px-3 sm:px-4">
             <span className="sm:hidden">Book</span>

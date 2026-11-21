@@ -18,20 +18,23 @@ export function Panel({
   description,
   actions,
   className = "",
+  flush = false,
   children,
 }: {
   title?: string;
   description?: ReactNode;
   actions?: ReactNode;
   className?: string;
+  /** Borderless section — no fill box (Profile and similar forms). */
+  flush?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className={`auralis-panel ${className}`}>
+    <section className={`${flush ? "auralis-panel-flush" : "auralis-panel"} ${className}`}>
       {(title || actions) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            {title && <h2 className="font-display text-base font-semibold tracking-tight text-ink">{title}</h2>}
+            {title && <h2 className="font-sans text-base font-semibold tracking-tight text-ink">{title}</h2>}
             {description && <p className="mt-1 text-sm text-muted">{description}</p>}
           </div>
           {actions}
@@ -281,10 +284,22 @@ export function FileDrop({
     if (!rules.length) return true;
     const fileName = candidate.name.toLowerCase();
     const type = (candidate.type || "").toLowerCase();
+    // Windows / some browsers leave MIME empty or use Excel/octet-stream for CSV/JSON.
+    const aliases: Record<string, string[]> = {
+      "text/csv": ["application/vnd.ms-excel", "application/csv", "text/plain"],
+      "application/json": ["text/json", "text/plain"],
+      "application/pdf": ["application/x-pdf"],
+      "text/plain": ["application/octet-stream", ""],
+    };
     return rules.some((rule) => {
       if (rule.startsWith(".")) return fileName.endsWith(rule);
-      if (rule.endsWith("/*")) return type.startsWith(rule.slice(0, -1));
-      return type === rule;
+      if (rule.endsWith("/*")) return !type || type.startsWith(rule.slice(0, -1));
+      if (!type) {
+        // No MIME from the OS — trust the extension rules already listed in `accept`.
+        return rules.some((ext) => ext.startsWith(".") && fileName.endsWith(ext));
+      }
+      if (type === rule) return true;
+      return (aliases[rule] || []).includes(type);
     });
   }
 

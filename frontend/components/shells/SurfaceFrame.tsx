@@ -311,6 +311,26 @@ export function SurfaceFrame({ children }: { children: ReactNode }) {
         />
       );
     }
+    // Hospital admins keep the same workspace nav when opening /deploy —
+    // Technical is hierarchy, not a different role shell.
+    const keepHospitalNav = Boolean(isAdmin && me?.role !== "clinical_it" && me?.role !== "operator");
+    if (keepHospitalNav) {
+      return (
+        <>
+          {clinicalHelpers}
+          <WorkspaceShell
+            surfaceLabel="Hospital Workspace"
+            homeHref="/app/admin/overview"
+            links={HOSPITAL_ADMIN}
+            context={me?.units?.length ? `Units · ${me.units.join(", ")}` : "Authorized clinical workspace"}
+            showInstallApp
+          >
+            {children}
+          </WorkspaceShell>
+          <EvaluationSwitcher />
+        </>
+      );
+    }
     const deployLinks = deploymentLinksForRole(me?.role);
     const operatorSurface = me?.role === "operator";
     return (

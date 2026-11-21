@@ -9,13 +9,13 @@ module.exports = {
           800: "#142538",
           700: "#1B2733",
         },
-        canvas: "#F7F9FA",
+        canvas: "#FAFBF9",
         surface: "#FFFFFF",
         muted: {
-          DEFAULT: "#63717D",
-          surface: "#F1F4F6",
+          DEFAULT: "#4F5C68",
+          surface: "#EEF5F3",
         },
-        ink: "#17232D",
+        ink: "#121C26",
         teal: {
           // #287A88 keeps 4.9:1 contrast on white for text; #4FA8B7 is decorative only.
           DEFAULT: "#287A88",
@@ -23,13 +23,13 @@ module.exports = {
           light: "#4FA8B7",
           soft: "#DCE8ED",
         },
-        border: "#E3E8EC",
+        border: "#D5DDE3",
         // Compatibility aliases used across existing screens
-        mist: "#F7F9FA",
-        paper: "#F7F9FA",
+        mist: "#EEF5F3",
+        paper: "#FAFBF9",
         warm: "#FFFFFF",
         forest: "#287A88",
-        olive: "#63717D",
+        olive: "#4F5C68",
         copper: "#8A6A4A",
         clinical: {
           critical: "#B42318",
@@ -39,8 +39,8 @@ module.exports = {
           unavailable: "#667085",
         },
         slate: {
-          DEFAULT: "#63717D",
-          panel: "#F1F4F6",
+          DEFAULT: "#4F5C68",
+          panel: "#EEF5F3",
         },
         risk: {
           stable: "#1F7A4D",

@@ -197,15 +197,20 @@ function OverviewTab({ profile, totp, authMode, go }: { profile: Profile; totp: 
     { title: "Recent activity", value: `${profile.delivery_history.length} alert action${profile.delivery_history.length === 1 ? "" : "s"}`, detail: "Acknowledge, snooze, escalate", target: "activity" },
   ];
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="divide-y divide-border">
       {cards.map((card) => (
-        <button key={card.title} type="button" onClick={() => go(card.target)} className="auralis-btn-reset group rounded-xl border border-border bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-px hover:shadow-card">
-          <span className="flex items-center justify-between text-xs font-medium text-muted">
-            {card.title}
-            <Icon name="chevron-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
+        <button
+          key={card.title}
+          type="button"
+          onClick={() => go(card.target)}
+          className="auralis-btn-reset group -mx-2 flex w-[calc(100%+1rem)] items-start justify-between gap-4 rounded-xl px-2 py-4 text-left transition-all first:pt-0 hover:-translate-y-px hover:bg-white hover:shadow-soft"
+        >
+          <span className="min-w-0">
+            <span className="block text-xs font-medium text-muted">{card.title}</span>
+            <span className="mt-1.5 block text-lg font-semibold text-ink transition-colors group-hover:text-teal">{card.value}</span>
+            <span className="mt-0.5 block text-sm text-muted">{card.detail}</span>
           </span>
-          <span className="mt-2 block text-lg font-semibold text-ink">{card.value}</span>
-          <span className="mt-0.5 block text-sm text-muted">{card.detail}</span>
+          <Icon name="chevron-right" size={16} className="mt-1 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-teal" />
         </button>
       ))}
     </div>
@@ -234,7 +239,7 @@ function PersonalTab({ profile, act }: { profile: Profile; act: (action: () => P
 
   return (
     <>
-      <Panel title="Profile photo" description="Shown to colleagues in rosters and handoff. Stored on this hospital's server.">
+      <Panel flush title="Profile photo" description="Shown to colleagues in rosters and handoff. Stored on this hospital's server.">
         <div className="grid gap-5 sm:grid-cols-[auto_1fr] sm:items-start">
           <Avatar profile={profile} size="lg" />
           <div className="space-y-3">
@@ -257,7 +262,7 @@ function PersonalTab({ profile, act }: { profile: Profile; act: (action: () => P
           </div>
         </div>
       </Panel>
-      <Panel title="Identity" description="Your name, username and role come from the hospital identity record and can only be changed by a hospital administrator.">
+      <Panel flush title="Identity" description="Your name, username and role come from the hospital identity record and can only be changed by a hospital administrator.">
         <dl>
           <KeyValue label="Display name" value={profile.display_name} />
           <KeyValue label="Username" value={<span className="font-mono">{profile.user_id}</span>} />
@@ -273,7 +278,7 @@ function AccessTab({ profile }: { profile: Profile }) {
   const workspaces = usePoll(() => api<Workspaces>("/v1/auth/workspaces"), 60000);
   return (
     <>
-      <Panel title="Role and scope">
+      <Panel flush title="Role and scope">
         <dl>
           <KeyValue label="Primary role" value={humanize(profile.role)} />
           <KeyValue label="All roles" value={me?.roles?.length ? me.roles.map(humanize).join(", ") : humanize(profile.role)} />
@@ -282,7 +287,7 @@ function AccessTab({ profile }: { profile: Profile }) {
           {me && <KeyValue label="Site mode" value={humanize(me.site_mode)} />}
         </dl>
       </Panel>
-      <Panel title="Workspaces you can open" description="Resolved by the server from your role. Other workspaces are not available to this account.">
+      <Panel flush title="Workspaces you can open" description="Resolved by the server from your role. Other workspaces are not available to this account.">
         {workspaces.error && <ApiError error={workspaces.error} />}
         {!workspaces.data && !workspaces.error && <Skeleton className="h-12 w-full" />}
         {workspaces.data && workspaces.data.workspaces.length === 0 && <p className="text-sm text-muted">No workspaces are assigned to this role.</p>}
@@ -332,7 +337,7 @@ function SecurityTab({
   return (
     <>
       {!localCredentials && (
-        <Panel title="Managed sign-in">
+        <Panel flush title="Managed sign-in">
           <p className="text-sm text-muted">
             This session uses <strong className="text-ink">{humanize(authMode || "external")}</strong> authentication. Password and PIN are managed by your hospital identity provider.
           </p>
@@ -340,7 +345,7 @@ function SecurityTab({
       )}
 
       {localCredentials && (
-        <Panel title="Change password" description="You'll be signed out on every device after changing it.">
+        <Panel flush title="Change password" description="You'll be signed out on every device after changing it.">
           <form
             className="grid max-w-md gap-4"
             onSubmit={(event) => {
@@ -370,7 +375,7 @@ function SecurityTab({
 
       <div className="grid gap-5 lg:grid-cols-2">
         {localCredentials && PIN_ROLES.has(role) && (
-          <Panel title="Ward tablet PIN" description="A 4–6 digit PIN for quick 15-minute unlocks on shared ward devices.">
+          <Panel flush title="Ward tablet PIN" description="A 4–6 digit PIN for quick 15-minute unlocks on shared ward devices.">
             <form
               className="grid gap-3"
               onSubmit={(event) => {
@@ -388,7 +393,7 @@ function SecurityTab({
           </Panel>
         )}
 
-        <Panel title="Two-factor authentication" description="Require a 6-digit authenticator code at sign-in.">
+        <Panel flush title="Two-factor authentication" description="Require a 6-digit authenticator code at sign-in.">
           {totpEnabled ? (
             <p className="flex items-center gap-2 text-sm text-risk-stable">
               <Icon name="check" size={16} />
@@ -459,7 +464,7 @@ function AuralisAiTab({ role }: { role: string }) {
 
   return (
     <div className="space-y-5">
-      <Panel title="Auri AI · medical assistant / co-pilot">
+      <Panel flush title="Auri AI · medical assistant / co-pilot">
         <p className="max-w-3xl text-sm leading-6 text-muted">
           <strong className="text-ink">Auri AI</strong> is the site-local assistant: local Qwen by default, optional
           vendor-bundled cloud LLM for better drafts — still never writes sepsis risk (Frozen Run 4 + TrustGate only).
@@ -494,7 +499,7 @@ function AuralisAiTab({ role }: { role: string }) {
         </p>
       </Panel>
 
-      <Panel title="Language">
+      <Panel flush title="Language">
         <p className="text-sm leading-6 text-muted">
           Use the header <strong className="text-ink">Language</strong> dropdown (English / বাংলা) for menus and help.
           Disease names, LOINC, and drug-class labels stay <strong className="text-ink">English</strong> on clinical
@@ -502,7 +507,7 @@ function AuralisAiTab({ role }: { role: string }) {
         </p>
       </Panel>
 
-      <Panel title="Credentials & privacy">
+      <Panel flush title="Credentials & privacy">
         <p className="text-sm leading-6 text-muted">
           API keys are <strong className="text-ink">not stored in this browser</strong>. When Auralis includes cloud
           assist in a hospital deal, admin installs the key on the <strong className="text-ink">local server</strong>{" "}
@@ -587,7 +592,7 @@ function PreferencesTab({
 
   return (
     <>
-      <Panel title="Alert notifications">
+      <Panel flush title="Alert notifications">
         <div className="divide-y divide-border">
           {toggles.map((toggle) => (
             <label key={toggle.key} className="flex cursor-pointer items-center justify-between gap-6 py-3.5">
@@ -629,7 +634,7 @@ function PreferencesTab({
         </div>
       </Panel>
 
-      <Panel
+      <Panel flush
         title="Devices"
         description={profile.delivery_capability.note}
         actions={
@@ -679,7 +684,7 @@ function ActivityTab({ profile }: { profile: Profile }) {
     return <EmptyState icon="clock" title="No alert actions yet" body="Acknowledgements, snoozes, escalations and dismissals you make will appear here." />;
   }
   return (
-    <Panel title="Alert actions" description="Your 50 most recent alert actions on this site.">
+    <Panel flush title="Alert actions" description="Your 50 most recent alert actions on this site.">
       <ol className="relative space-y-0 border-l border-border pl-5">
         {profile.delivery_history.map((row, index) => (
           <li key={`${row.alert_id}-${index}`} className="relative pb-4 last:pb-0">

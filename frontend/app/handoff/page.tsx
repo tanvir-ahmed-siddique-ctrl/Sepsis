@@ -78,7 +78,7 @@ export default function HandoffPage() {
         <EmptyState icon="handoff" title="No visible beds" body="No visible beds for this unit." />
       )}
 
-      <div className="divide-y divide-border/70">
+      <div className="divide-y divide-[#C5CED6]">
         {data?.beds.map((bed) => (
           <article
             key={bed.patient_id}
