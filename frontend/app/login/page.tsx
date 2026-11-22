@@ -116,15 +116,24 @@ function LoginPageContent() {
       .then((res) => res.json())
       .then((data: { enabled?: boolean; accounts?: DemoAccount[] }) => {
         if (!active) return;
-        if (data.enabled === false) {
+        // Only hide roles when the live API explicitly disables demo.
+        // Empty accounts / soft-fail → keep QUICK_FALLBACK visible.
+        if (data.enabled === false && Array.isArray(data.accounts)) {
           setDemoEnabled(false);
+          setDemoAccounts([]);
         } else if (Array.isArray(data.accounts) && data.accounts.length > 0) {
           setDemoEnabled(true);
           setDemoAccounts(data.accounts);
+        } else {
+          setDemoEnabled(true);
+          setDemoAccounts(QUICK_FALLBACK);
         }
       })
       .catch(() => {
         // Keep fallback presets visible while the API warms up.
+        if (!active) return;
+        setDemoEnabled(true);
+        setDemoAccounts(QUICK_FALLBACK);
       });
     return () => {
       active = false;

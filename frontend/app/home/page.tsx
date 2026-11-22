@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandSplash } from "@/components/marketing/BrandSplash";
+import { CinematicStory } from "@/components/marketing/CinematicStory";
 import { HeroAmbient } from "@/components/marketing/HeroAmbient";
 import { HeroEntrance } from "@/components/marketing/HeroEntrance";
 import { HeroHeadline } from "@/components/marketing/HeroHeadline";
@@ -12,8 +13,9 @@ import { ProductShowcaseCarousel } from "@/components/marketing/ProductShowcaseC
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
-  title: "Auralis | Clinical intelligence for hospital ICUs",
-  description: "Earlier signal. Risk you can explain. Six-hour sepsis risk on your hospital LAN.",
+  title: "Auralis | Six-hour ICU sepsis risk — frozen LightGBM",
+  description:
+    "Hospital-local six-hour sepsis risk from a frozen LightGBM model, with SHAP drivers and TrustGate. Clinician decides.",
 };
 
 const SURFACES: Array<{ title: string; body: string; href: string; icon: IconName; audience: string }> = [
@@ -116,12 +118,11 @@ export default function HomePage() {
                 <HeroHeadline />
               </div>
               <p data-hero-slot="2" className="mt-5 max-w-md font-sans text-[15px] leading-6 text-[#3F564A] sm:mt-8 sm:text-[16px] sm:leading-7">
-                Hospital-local intelligence. Explainable drivers. Clinician still in command.
+                Six-hour sepsis risk. A model you can audit — frozen LightGBM on your hospital LAN, SHAP drivers beside every score, TrustGate when data is unsafe. Clinician keeps the call.
               </p>
               <div data-hero-slot="3" className="mt-6 flex w-full flex-col gap-2.5 sm:mt-9 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-                <Link href="/signin?next=/app/icu" className="group auralis-btn-primary h-11 w-full justify-center px-5 sm:w-auto">
+                <Link href="/signin?next=/app/icu" className="auralis-btn-primary h-11 w-full justify-center px-5 sm:w-auto">
                   Open ICU board
-                  <Icon name="arrow-right" size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <Link href="/contact" className="auralis-btn-secondary h-11 w-full justify-center px-5 sm:w-auto">
                   Book a consultation
@@ -129,8 +130,8 @@ export default function HomePage() {
               </div>
               <dl data-hero-slot="4" className="mt-8 grid max-w-md grid-cols-3 gap-2 border-t border-border/80 pt-5 font-sans sm:mt-12 sm:gap-3 sm:pt-6">
                 {[
-                  ["Horizon", "6 hours"],
-                  ["Where", "On-prem"],
+                  ["Model", "LightGBM"],
+                  ["Target", "Sepsis · 6h"],
                   ["Feeds", "HL7 / FHIR"],
                 ].map(([label, value]) => (
                   <div key={label} className="min-w-0">
@@ -146,7 +147,7 @@ export default function HomePage() {
       </section>
 
       {/* Model + deployment — short */}
-      <section className="relative overflow-x-clip border-b border-[#C9E6D6]/70 bg-white py-16 sm:py-24 lg:py-32">
+      <section className="relative overflow-x-clip border-b-0 bg-white py-16 sm:py-24 lg:py-32">
         <div className="auralis-container-public relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
           <Reveal className="max-w-2xl" variant="left">
             <h2 className="text-[1.65rem] font-semibold leading-tight tracking-[-0.03em] text-navy sm:text-[2.25rem]">
@@ -174,7 +175,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pipeline */}
+      {/* Cinematic chapters — after ICU showcase + proof strip, before How it Works */}
+      <CinematicStory />
+
+      {/* Pipeline = How it Works */}
       <section className="border-b border-[#C9E6D6]/70 bg-[#EAF6EF] py-16 sm:py-24 lg:py-32">
         <div className="auralis-container-public">
           <Reveal className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4" variant="up">

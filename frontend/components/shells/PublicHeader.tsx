@@ -199,7 +199,7 @@ export function PublicHeader() {
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Link
             href="/signin"
-            className="auralis-btn-ghost relative hidden h-9 overflow-hidden text-ink sm:inline-flex"
+            className="relative hidden h-9 items-center px-1 text-sm font-semibold text-ink sm:inline-flex"
             onMouseEnter={() => setSigninHover(true)}
             onMouseLeave={() => setSigninHover(false)}
             onFocus={() => setSigninHover(true)}
@@ -208,7 +208,7 @@ export function PublicHeader() {
             Sign in
             <motion.span
               aria-hidden
-              className="pointer-events-none absolute inset-x-2 bottom-1.5 h-[2px] origin-left rounded-full bg-[#287A88]"
+              className="pointer-events-none absolute inset-x-0.5 bottom-2 h-px origin-left bg-[#287A88]"
               initial={{ scaleX: 0, opacity: 0 }}
               animate={{
                 scaleX: signinHover ? 1 : 0,
