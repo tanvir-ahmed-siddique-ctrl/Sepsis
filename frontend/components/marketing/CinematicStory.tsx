@@ -103,78 +103,129 @@ function FilmGrain() {
 function VideoLayer({
   chapter,
   active,
-  warm,
   allowLoad,
   reduceMotion,
 }: {
   chapter: Chapter;
   active: boolean;
-  /** Prefetch next/prev chapter only — never all three at once. */
-  warm: boolean;
-  /** Section near viewport — keeps hero/first paint free of video bytes. */
+  /** Section near viewport — hero stays free of video bytes until then. */
   allowLoad: boolean;
   reduceMotion: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [failed, setFailed] = useState(false);
-  const shouldMount = allowLoad && (active || warm) && !reduceMotion && !failed;
+  // Sticky mount: once the section is near, keep the <video> forever so we never
+  // remount mid-scroll (remount = poster flash + 1.5s stutter loop).
+  const [kept, setKept] = useState(false);
+  const [showFootage, setShowFootage] = useState(false);
+
+  useEffect(() => {
+    if (allowLoad && !reduceMotion && !failed) setKept(true);
+  }, [allowLoad, reduceMotion, failed]);
 
   useEffect(() => {
     const el = videoRef.current;
-    if (!el || !shouldMount) return;
+    if (!el || !kept) return;
+
+    const markReady = () => {
+      if (el.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) setShowFootage(true);
+    };
+
+    const onPlaying = () => setShowFootage(true);
+    const onWaiting = () => {
+      // Stay on last decoded frame — never tear down to poster mid-play.
+    };
+    const onError = () => setFailed(true);
+
+    el.addEventListener("canplaythrough", markReady);
+    el.addEventListener("loadeddata", markReady);
+    el.addEventListener("playing", onPlaying);
+    el.addEventListener("waiting", onWaiting);
+    el.addEventListener("error", onError);
+
+    // Prefetch fully while mounted (even when not active).
+    el.preload = "auto";
+    if (el.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      try {
+        el.load();
+      } catch {
+        /* ignore */
+      }
+    } else {
+      markReady();
+    }
+
+    return () => {
+      el.removeEventListener("canplaythrough", markReady);
+      el.removeEventListener("loadeddata", markReady);
+      el.removeEventListener("playing", onPlaying);
+      el.removeEventListener("waiting", onWaiting);
+      el.removeEventListener("error", onError);
+    };
+  }, [kept, chapter.videoUrl]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !kept) return;
 
     if (!active) {
       el.pause();
       return;
     }
 
-    // Autoplay can throw AbortError when the chapter flips mid-play — never treat that as a hard fail.
+    let cancelled = false;
     const tryPlay = () => {
+      if (cancelled || !active) return;
       el.muted = true;
+      // Wait until we have future data — avoids the 1.5s play → stall → poster loop.
+      if (el.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) return;
       const run = el.play();
       if (run && typeof run.then === "function") {
-        void run.catch((err: unknown) => {
-          const name = err instanceof Error ? err.name : "";
-          if (name !== "AbortError" && name !== "NotAllowedError") {
-            setFailed(true);
-          }
-        });
+        void run
+          .then(() => {
+            if (!cancelled) setShowFootage(true);
+          })
+          .catch((err: unknown) => {
+            const name = err instanceof Error ? err.name : "";
+            if (name !== "AbortError" && name !== "NotAllowedError") setFailed(true);
+          });
       }
     };
 
-    if (el.readyState >= 2) tryPlay();
-    else {
-      const onCanPlay = () => tryPlay();
-      el.addEventListener("canplay", onCanPlay, { once: true });
-      el.load();
-      return () => el.removeEventListener("canplay", onCanPlay);
-    }
-  }, [active, shouldMount, chapter.videoUrl]);
+    tryPlay();
+    el.addEventListener("canplaythrough", tryPlay);
+    el.addEventListener("canplay", tryPlay);
+    return () => {
+      cancelled = true;
+      el.removeEventListener("canplaythrough", tryPlay);
+      el.removeEventListener("canplay", tryPlay);
+    };
+  }, [active, kept]);
 
   return (
     <motion.div
       className="absolute inset-0 h-full w-full"
       initial={false}
       animate={{ opacity: active ? 1 : 0 }}
-      transition={{ duration: reduceMotion ? 0 : 0.9, ease: "easeInOut" }}
-      style={{ zIndex: active ? 10 : 0, visibility: active ? "visible" : "hidden" }}
+      transition={{ duration: reduceMotion ? 0 : 0.7, ease: "easeInOut" }}
+      style={{ zIndex: active ? 10 : 0, pointerEvents: active ? "auto" : "none" }}
       aria-hidden={!active}
     >
+      {/* Poster always under — only covered once footage is decoded & playing */}
       <div className="absolute inset-0" style={{ background: chapter.poster }} />
-      {shouldMount && (
+      {kept && (
         <video
           ref={videoRef}
           src={chapter.videoUrl}
-          className="absolute inset-0 h-full w-full object-cover opacity-100"
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+          style={{ opacity: showFootage && active ? 1 : showFootage ? 0.001 : 0 }}
           muted
           loop
           playsInline
-          autoPlay={active}
-          preload={active ? "auto" : "metadata"}
-          onError={() => setFailed(true)}
+          preload="auto"
+          // Keep inactive layers decoded (tiny opacity) so swaps don't flash poster.
         />
       )}
-      {/* Soft vignette — lighter so footage stays readable */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#0B1422]/55 via-[#0B1422]/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1422]/45 via-transparent to-[#0B1422]/15" />
       {active && failed && (
@@ -286,9 +337,10 @@ export function CinematicStory() {
   useEffect(() => {
     const node = containerRef.current;
     if (!node) return;
+    // Prefetch early (600px before sticky pins) so chapter 1 is buffered before play.
     const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio > 0.05),
-      { threshold: [0, 0.05, 0.2, 0.5] },
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "600px 0px 600px 0px", threshold: [0, 0.01, 0.1] },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -296,9 +348,17 @@ export function CinematicStory() {
 
   useEffect(() => {
     if (reduceMotion) return;
+    // Hysteresis stops chapter index flicker at scroll boundaries (which pauses/resets video).
     return scrollYProgress.on("change", (latest) => {
-      const next = Math.min(Math.floor(latest * CHAPTERS.length), CHAPTERS.length - 1);
-      setActiveIndex(Number.isFinite(next) ? Math.max(0, next) : 0);
+      const raw = latest * CHAPTERS.length;
+      setActiveIndex((prev) => {
+        const floored = Math.min(Math.floor(raw), CHAPTERS.length - 1);
+        const target = Number.isFinite(floored) ? Math.max(0, floored) : 0;
+        if (target === prev) return prev;
+        if (target > prev && raw < prev + 1 + 0.08) return prev;
+        if (target < prev && raw > prev - 0.08) return prev;
+        return target;
+      });
     });
   }, [reduceMotion, scrollYProgress]);
 
@@ -318,7 +378,6 @@ export function CinematicStory() {
               key={chapter.id}
               chapter={chapter}
               active={index === activeIndex}
-              warm={Math.abs(index - activeIndex) === 1}
               allowLoad={inView}
               reduceMotion={Boolean(reduceMotion)}
             />
